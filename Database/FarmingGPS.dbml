@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="FarmingDatabase" Class="FarmingGPSDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Connection Mode="AppSettings" ConnectionString="Data Source=SERVER\SQLEXPRESS;Initial Catalog=FarmingDatabase;Integrated Security=True" SettingsObjectName="FarmingGPS.Database.Properties.Settings" SettingsPropertyName="FarmingDatabaseConnectionString" Provider="System.Data.SqlClient" />
+  <Table Name="dbo.Equipment" Member="Equipments">
+    <Type Name="Equipment">
+      <Column Name="EquipmentId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="DistFromAttach" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="AngleFromAttach" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Association Name="Equipment_FieldRecording" Member="FieldRecordings" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="FieldRecording" />
+    </Type>
+  </Table>
+  <Table Name="dbo.VechileAttach" Member="VechileAttaches">
+    <Type Name="VechileAttach">
+      <Column Name="VechileAttachId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="VechileId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="AttachDistFromCenter" Type="System.Single" DbType="Real NOT NULL" CanBeNull="false" />
+      <Column Name="AttachAngleFromCenter" Type="System.Single" DbType="Real NOT NULL" CanBeNull="false" />
+      <Association Name="Vechile_VechileAttach" Member="Vechile" ThisKey="VechileId" OtherKey="VechileId" Type="Vechile" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Field" Member="Fields">
+    <Type Name="Field">
+      <Column Name="FieldId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="FieldName" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="ParentField" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Association Name="Field_Field" Member="Fields" ThisKey="FieldId" OtherKey="ParentField" Type="Field" />
+      <Association Name="Field_FieldBoundary" Member="FieldBoundaries" ThisKey="FieldId" OtherKey="FieldId" Type="FieldBoundary" />
+      <Association Name="Field_FieldRecording" Member="FieldRecordings" ThisKey="FieldId" OtherKey="FieldId" Type="FieldRecording" />
+      <Association Name="Field_SubFieldIntersect" Member="SubFieldIntersects" ThisKey="FieldId" OtherKey="FieldId" Type="SubFieldIntersect" />
+      <Association Name="Field_Field" Member="Field1" ThisKey="ParentField" OtherKey="FieldId" Type="Field" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.FieldBoundary" Member="FieldBoundaries">
+    <Type Name="FieldBoundary">
+      <Column Name="FieldBoundId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="FieldId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="PosId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="OrderId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="Field_FieldBoundary" Member="Field" ThisKey="FieldId" OtherKey="FieldId" Type="Field" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+      <Association Name="GpsCoordinate_FieldBoundary" Member="GpsCoordinate" ThisKey="PosId" OtherKey="PosId" Type="GpsCoordinate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.FieldRecording" Member="FieldRecordings">
+    <Type Name="FieldRecording">
+      <Column Name="RecordingId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="DateTime" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Column Name="FieldId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="EquipmentId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="FieldRecording_RecordingPosition" Member="RecordingPositions" ThisKey="RecordingId" OtherKey="RecordingId" Type="RecordingPosition" />
+      <Association Name="Equipment_FieldRecording" Member="Equipment" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="Equipment" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+      <Association Name="Field_FieldRecording" Member="Field" ThisKey="FieldId" OtherKey="FieldId" Type="Field" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.GpsCoordinate" Member="GpsCoordinates">
+    <Type Name="GpsCoordinate">
+      <Column Name="PosId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Latitude" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="Longitude" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Association Name="GpsCoordinate_FieldBoundary" Member="FieldBoundaries" ThisKey="PosId" OtherKey="PosId" Type="FieldBoundary" />
+      <Association Name="GpsCoordinate_Obstacle" Member="Obstacles" ThisKey="PosId" OtherKey="PosId" Type="Obstacle" />
+      <Association Name="GpsCoordinate_RecordingPosition" Member="RecordingPositions" ThisKey="PosId" OtherKey="PosId" Type="RecordingPosition" />
+      <Association Name="GpsCoordinate_Reminder" Member="Reminders" ThisKey="PosId" OtherKey="PosId" Type="Reminder" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Obstacle" Member="Obstacles">
+    <Type Name="Obstacle">
+      <Column Name="ObstacleId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Type" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="PosId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="GpsCoordinate_Obstacle" Member="GpsCoordinate" ThisKey="PosId" OtherKey="PosId" Type="GpsCoordinate" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.RecordingPosition" Member="RecordingPositions">
+    <Type Name="RecordingPosition">
+      <Column Name="RecordPosId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="RecordingId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="PosId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="FieldRecording_RecordingPosition" Member="FieldRecording" ThisKey="RecordingId" OtherKey="RecordingId" Type="FieldRecording" IsForeignKey="true" />
+      <Association Name="GpsCoordinate_RecordingPosition" Member="GpsCoordinate" ThisKey="PosId" OtherKey="PosId" Type="GpsCoordinate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Reminder" Member="Reminders">
+    <Type Name="Reminder">
+      <Column Name="ReminderId" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Type" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="PosId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="GpsCoordinate_Reminder" Member="GpsCoordinate" ThisKey="PosId" OtherKey="PosId" Type="GpsCoordinate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.SubFieldIntersect" Member="SubFieldIntersects">
+    <Type Name="SubFieldIntersect">
+      <Column Name="SubFieldIntersectId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="FieldId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="FirstPosId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="SecondPosId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="Field_SubFieldIntersect" Member="Field" ThisKey="FieldId" OtherKey="FieldId" Type="Field" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Vechile" Member="Vechiles">
+    <Type Name="Vechile">
+      <Column Name="VechileId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Model" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="Manufacturer" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="ReceiverDistFromCenter" Type="System.Single" DbType="Real NOT NULL" CanBeNull="false" />
+      <Column Name="ReceiverAngleFromCenter" Type="System.Single" DbType="Real NOT NULL" CanBeNull="false" />
+      <Association Name="Vechile_VechileAttach" Member="VechileAttaches" ThisKey="VechileId" OtherKey="VechileId" Type="VechileAttach" />
+    </Type>
+  </Table>
+</Database>

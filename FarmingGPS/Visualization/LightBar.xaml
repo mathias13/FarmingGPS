@@ -1,0 +1,270 @@
+﻿<UserControl x:Class="FarmingGPS.Visualization.LightBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:FarmingGPS.Visualization">
+             
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="VisualizationDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Background="Silver">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsLeft9, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsLeft9, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsLeft8, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsLeft8, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsLeft7, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsLeft7, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsLeft6, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsLeft6, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsLeft5, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsLeft5, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsLeft4, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsLeft4, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsLeft3, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsLeft3, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsLeft2, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_GREEN_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsLeft2, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_GREEN_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsLeft1, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_GREEN_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsLeft1, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_GREEN_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Ellipse Style="{StaticResource LIGHT_BULB}" Fill="{StaticResource LIGHT_BULB_GREEN_ON}"/>
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsRight1, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_GREEN_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsRight1, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_GREEN_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsRight2, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_GREEN_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsRight2, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_GREEN_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsRight3, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsRight3, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsRight4, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsRight4, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsRight5, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsRight5, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsRight6, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsRight6, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsRight7, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsRight7, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsRight8, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsRight8, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+            <Ellipse>
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse" BasedOn="{StaticResource LIGHT_BULB}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsRight9, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_ON}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsRight9, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:LightBar}}}" Value="False">
+                                <Setter Property="Fill" Value="{StaticResource LIGHT_BULB_RED_OFF}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+        </StackPanel>
+    </Grid>
+</UserControl>
