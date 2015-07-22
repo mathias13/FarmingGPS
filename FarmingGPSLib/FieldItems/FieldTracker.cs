@@ -154,17 +154,52 @@ namespace FarmingGPSLib.FieldItems
                                 throw new Exception("No instersection point found but turning around itself");
                         }
 
-                        int holeHash = _polygons[_currentPolygonIndex].Holes.GetHashCode();
+                        List<ILinearRing> newHoles = new List<ILinearRing>();
 
-                        IGeometry newGeometry = _polygons[_currentPolygonIndex].Union(rectPolygon);
-                        if (!(newGeometry is Polygon))
-                            throw new Exception("Union of polygons failed");
+                        IGeometry newGeometry = new Polygon(_polygons[_currentPolygonIndex].Shell).Union(rectPolygon);
+                        if (newGeometry is Polygon)
+                        {
+                            Polygon newPolygon = (Polygon)newGeometry;
+                            _polygons[_currentPolygonIndex].Shell = newPolygon.Shell;
+                            if (newPolygon.Holes.Length > 0)
+                            {
+                                polygonHoleChanged = true;
+                                newHoles.AddRange(newPolygon.Holes);
+                            }
+                        }
+                        else
+                            throw new Exception("Geometry is not a polygon after union");
 
-                        Polygon newPolygon = newGeometry as Polygon;
+                        List<ILinearRing> holes = new List<ILinearRing>(_polygons[_currentPolygonIndex].Holes);
+                        for (int i = 0; i < holes.Count; i++ )
+                        {
+                            Polygon holeAsPolygon = new Polygon(holes[i]);
+                            IGeometry newHoleGeometry = new Polygon(holes[i]).Difference(rectPolygon);
+                            if(!newHoleGeometry.Equals((IGeometry)holeAsPolygon))
+                            {
+                                if(newHoleGeometry is Polygon)
+                                    holes[i] = ((Polygon)newHoleGeometry).Shell;
+                                else if(newHoleGeometry is MultiPolygon)
+                                {
+                                    holes.RemoveAt(i);
+                                    i--;
+                                    foreach (Polygon polygon in (MultiPolygon)newHoleGeometry)
+                                        newHoles.Add(polygon.Shell);
+                                }
+                                else if(newHoleGeometry.IsEmpty)
+                                {
+                                    holes.RemoveAt(i);
+                                    i--;
+                                }
+                                polygonHoleChanged = true;
+                            }
+                        }
 
-                        polygonHoleChanged = holeHash != newPolygon.Holes.GetHashCode();
-
-                        _polygons[_currentPolygonIndex] = newPolygon;
+                        if(polygonHoleChanged)
+                        {
+                            holes.AddRange(newHoles);
+                            _polygons[_currentPolygonIndex].Holes = holes.ToArray();
+                        }
 
                         //TODO Remove this
                         polygonHoleChanged = true;
