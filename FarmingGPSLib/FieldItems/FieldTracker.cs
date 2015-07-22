@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using DotSpatial.Topology;
 using DotSpatial.Topology.Algorithm;
+using DotSpatial.Topology.Precision;
 
 namespace FarmingGPSLib.FieldItems
 {
@@ -155,16 +156,25 @@ namespace FarmingGPSLib.FieldItems
                         }
 
                         List<ILinearRing> newHoles = new List<ILinearRing>();
-
-                        IGeometry newGeometry = new Polygon(_polygons[_currentPolygonIndex].Shell).Union(rectPolygon);
+                        
+                        IGeometry newGeometry = EnhancedPrecisionOp.Union(new Polygon(_polygons[_currentPolygonIndex].Shell), rectPolygon);
                         if (newGeometry is Polygon)
                         {
                             Polygon newPolygon = (Polygon)newGeometry;
                             _polygons[_currentPolygonIndex].Shell = newPolygon.Shell;
-                            if (newPolygon.Holes.Length > 0)
+                            foreach(ILinearRing hole in newPolygon.Holes)
                             {
+                                if (!CheckHoleValidity(hole))
+                                    continue;
                                 polygonHoleChanged = true;
-                                newHoles.AddRange(newPolygon.Holes);
+                                if (!CgAlgorithms.IsCounterClockwise(hole.Coordinates))
+                                {
+                                    List<Coordinate> coords = new List<Coordinate>(hole.Coordinates);
+                                    coords.Reverse();
+                                    newHoles.Add(new LinearRing(coords));
+                                }
+                                else
+                                    newHoles.Add(hole);
                             }
                         }
                         else
@@ -174,25 +184,53 @@ namespace FarmingGPSLib.FieldItems
                         for (int i = 0; i < holes.Count; i++ )
                         {
                             Polygon holeAsPolygon = new Polygon(holes[i]);
-                            IGeometry newHoleGeometry = new Polygon(holes[i]).Difference(rectPolygon);
-                            if(!newHoleGeometry.Equals((IGeometry)holeAsPolygon))
+                            IGeometry newHoleGeometry = EnhancedPrecisionOp.Difference(new Polygon(holes[i]), rectPolygon);
+                            if (!newHoleGeometry.Equals((IGeometry)holeAsPolygon))
                             {
-                                if(newHoleGeometry is Polygon)
-                                    holes[i] = ((Polygon)newHoleGeometry).Shell;
-                                else if(newHoleGeometry is MultiPolygon)
+                                if (newHoleGeometry is Polygon)
+                                {
+                                    if (!CheckHoleValidity(((Polygon)newHoleGeometry).Shell))
+                                        continue;
+                                    if (!CgAlgorithms.IsCounterClockwise(((Polygon)newHoleGeometry).Shell.Coordinates))
+                                    {
+                                        List<Coordinate> coords = new List<Coordinate>(((Polygon)newHoleGeometry).Shell.Coordinates);
+                                        coords.Reverse();
+                                        holes[i] = new LinearRing(coords);
+                                    }
+                                    else
+                                        holes[i] = ((Polygon)newHoleGeometry).Shell;
+                                }
+                                else if (newHoleGeometry is MultiPolygon)
                                 {
                                     holes.RemoveAt(i);
                                     i--;
-                                    foreach (Polygon polygon in (MultiPolygon)newHoleGeometry)
-                                        newHoles.Add(polygon.Shell);
+                                    foreach (IGeometry geometry in (MultiPolygon)newHoleGeometry)
+                                    {
+                                        if (geometry is Polygon)
+                                        {
+                                            Polygon polygon = (Polygon)geometry;
+                                            if (!CheckHoleValidity(polygon.Shell))
+                                                continue;
+                                            if (!CgAlgorithms.IsCounterClockwise(polygon.Shell.Coordinates))
+                                            {
+                                                List<Coordinate> coords = new List<Coordinate>(polygon.Shell.Coordinates);
+                                                coords.Reverse();
+                                                newHoles.Add(new LinearRing(coords));
+                                            }
+                                            else
+                                                newHoles.Add(polygon.Shell);
+                                        }
+                                    }
                                 }
-                                else if(newHoleGeometry.IsEmpty)
+                                else if (newHoleGeometry.IsEmpty)
                                 {
                                     holes.RemoveAt(i);
                                     i--;
                                 }
                                 polygonHoleChanged = true;
                             }
+                            else
+                                polygonHoleChanged = false;
                         }
 
                         if(polygonHoleChanged)
@@ -729,6 +767,29 @@ namespace FarmingGPSLib.FieldItems
         #endregion
 
         #region Private Methods
+
+        private bool CheckHoleValidity(ILinearRing hole)
+        {
+            if (hole.Coordinates.Count != 4)
+                return true;
+
+            if (CheckCoordinateEqualRounded(hole.Coordinates[0], hole.Coordinates[3], 5) && CheckCoordinateEqualRounded(hole.Coordinates[1], hole.Coordinates[2], 5))
+                return false;
+
+            if (hole.Area < 0.01)
+                return false;
+
+            return true;
+        }
+
+        private bool CheckCoordinateEqualRounded(Coordinate coord1, Coordinate coord2, int digits)
+        {
+            double x1 = Math.Round(coord1.X, digits);
+            double x2 = Math.Round(coord2.X, digits);
+            double y1 = Math.Round(coord1.Y, digits);
+            double y2 = Math.Round(coord2.Y, digits);
+            return x1 == x2 && y1 == y2;
+        }
 
         private List<Coordinate> GetCoordsNegDirection(IList<Coordinate> coords, int startIndex, int endIndex)
         {
