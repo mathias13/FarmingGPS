@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DotSpatial.Topology;
 using DotSpatial.Topology.Algorithm;
 using DotSpatial.Topology.Precision;
+using FarmingGPSLib.HelperClasses;
 
 namespace FarmingGPSLib.FieldItems
 {
@@ -773,22 +774,13 @@ namespace FarmingGPSLib.FieldItems
             if (hole.Coordinates.Count != 4)
                 return true;
 
-            if (CheckCoordinateEqualRounded(hole.Coordinates[0], hole.Coordinates[3], 5) && CheckCoordinateEqualRounded(hole.Coordinates[1], hole.Coordinates[2], 5))
+            if (HelperClassCoordinate.CoordinateEqualsRoundedmm(hole.Coordinates[0], hole.Coordinates[3]) && HelperClassCoordinate.CoordinateEqualsRoundedmm(hole.Coordinates[1], hole.Coordinates[2]))
                 return false;
 
             if (hole.Area < 0.01)
                 return false;
 
             return true;
-        }
-
-        private bool CheckCoordinateEqualRounded(Coordinate coord1, Coordinate coord2, int digits)
-        {
-            double x1 = Math.Round(coord1.X, digits);
-            double x2 = Math.Round(coord2.X, digits);
-            double y1 = Math.Round(coord1.Y, digits);
-            double y2 = Math.Round(coord2.Y, digits);
-            return x1 == x2 && y1 == y2;
         }
 
         private List<Coordinate> GetCoordsNegDirection(IList<Coordinate> coords, int startIndex, int endIndex)

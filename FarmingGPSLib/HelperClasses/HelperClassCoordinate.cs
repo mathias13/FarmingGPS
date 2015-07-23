@@ -10,6 +10,11 @@ namespace FarmingGPSLib.HelperClasses
             return Math.Round(coord1.X, 3) == Math.Round(coord2.X, 3) && Math.Round(coord1.Y, 3) == Math.Round(coord2.Y, 3);
         }
 
+        public static Coordinate CoordinateRoundedmm(Coordinate coord)
+        {
+            return new Coordinate(Math.Round(coord.X, 3), Math.Round(coord.Y, 3));
+        }
+
         public static Coordinate ComputePoint(Coordinate coord, double angle, double distance)
         {
             angle = (360.0 * (Math.PI / 180.0)) - angle;
