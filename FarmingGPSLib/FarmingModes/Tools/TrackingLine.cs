@@ -70,6 +70,19 @@ namespace FarmingGPSLib.FarmingModes.Tools
             return new OrientationToLine(side, distance);
         }
         
+        public double GetDistanceToLine(Coordinate point)
+        {
+            double tempDistance = 0.0;
+            double distance = double.MaxValue;
+            for (int i = 0; i < _line.Coordinates.Count - 1; i++)
+            {
+                tempDistance = CgAlgorithms.DistancePointLine(point, _line.Coordinates[i], _line.Coordinates[i + 1]);
+                if (tempDistance < distance)
+                    distance = tempDistance;
+            }
+            return distance;
+        }
+
         public bool Depleted
         {
             get { return _depleted; }
