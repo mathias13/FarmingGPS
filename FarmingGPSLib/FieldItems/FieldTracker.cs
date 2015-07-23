@@ -78,8 +78,8 @@ namespace FarmingGPSLib.FieldItems
 
         public FieldTracker(Coordinate initLeftPoint, Coordinate initRightPoint)
         {
-            _prevLeftPoint = initLeftPoint;
-            _prevRightPoint = initRightPoint;
+            _prevLeftPoint = HelperClassCoordinate.CoordinateRoundedmm(initLeftPoint);
+            _prevRightPoint = HelperClassCoordinate.CoordinateRoundedmm(initRightPoint);
             _currentPolygonIndex = -1;
         }
 
@@ -87,6 +87,8 @@ namespace FarmingGPSLib.FieldItems
 
         public void AddTrackPoint(Coordinate leftPoint, Coordinate rightPoint)
         {
+            leftPoint = HelperClassCoordinate.CoordinateRoundedmm(leftPoint);
+            rightPoint = HelperClassCoordinate.CoordinateRoundedmm(rightPoint);
             lock (_syncObject)
             {
                 if (_currentPolygonIndex > -1 && _currentPolygonIndex < _polygons.Count)
@@ -687,8 +689,8 @@ namespace FarmingGPSLib.FieldItems
         {
             lock (_syncObject)
             {
-                _prevLeftPoint = initLeftPoint;
-                _prevRightPoint = initRightPoint;
+                _prevLeftPoint = HelperClassCoordinate.CoordinateRoundedmm(initLeftPoint);
+                _prevRightPoint = HelperClassCoordinate.CoordinateRoundedmm(initRightPoint);
                 _currentPolygonIndex = -1;
             }
         }
