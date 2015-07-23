@@ -180,8 +180,6 @@ namespace FarmingGPSLib.FieldItems
                             _polygons[_currentPolygonIndex].Holes = holes.ToArray();
                         }
 
-                        //TODO Remove this
-                        polygonHoleChanged = true;
                         OnPolygonUpdated(_currentPolygonIndex, newCoordinates, polygonHoleChanged);
                     }
                 }
