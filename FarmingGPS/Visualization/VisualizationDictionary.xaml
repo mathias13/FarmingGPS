@@ -60,4 +60,5 @@
     <SolidColorBrush x:Key="FIELD_OUTLINE">#FFFF0000</SolidColorBrush>
     <Color x:Key="FIELD_FILL">#FF008000</Color>
     <Color x:Key="TRACK_FILL">#FFADD8E6</Color>
+    <Color x:Key="TRACK_HOLE">#FFFF0000</Color>
 </ResourceDictionary>
