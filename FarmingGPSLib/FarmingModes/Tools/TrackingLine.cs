@@ -92,7 +92,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
                 {
                     DepletedChangedEventHandler handler = DepletedChanged;
                     if (handler != null)
-                        handler.Invoke(this, _depleted);
+                        handler.Invoke(this, value);
                 }
                 _depleted = value;
             }
@@ -107,7 +107,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
                 {
                     ActiveChangedEventHandler handler = ActiveChanged;
                     if (handler != null)
-                        handler.Invoke(this, _active);
+                        handler.Invoke(this, value);
                 }
                 _active = value;
             }
