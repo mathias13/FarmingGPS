@@ -91,6 +91,8 @@ namespace FarmingGPS.Visualization
 
         private Color _fieldTrackColor = Colors.LightBlue;
 
+        private Color _fieldTrackHoleColor = Colors.LightBlue;
+
         private IDictionary<int, MeshVisual3D> _trackMesh = new Dictionary<int, MeshVisual3D>();
 
         private IDictionary<int, MeshBuilder> _trackMeshBuilder = new Dictionary<int, MeshBuilder>();
@@ -215,64 +217,16 @@ namespace FarmingGPS.Visualization
 
                 visualLine.Diameter = LINE_THICKNESS;
                 visualLine.Path = points;
-
-                //TODO fix color for tracking lines
-                if (_testColor == Brushes.Blue)
-                    _testColor = Brushes.Yellow;
-                else if (_testColor == Brushes.Yellow)
-                    _testColor = Brushes.Blue;
-
-                visualLine.Fill = _testColor;
+                
+                visualLine.Fill = _lineNormalColor;
 
                 trackingLine.ActiveChanged += trackingLine_ActiveChanged;
                 trackingLine.DepletedChanged += trackingLine_DepletedChanged;
                 _trackingLines.Add(trackingLine, visualLine);
                 _viewPort.Children.Add(visualLine);
-                //TODO finish to new TrackingLine class
             }
             else
                 Dispatcher.Invoke(new LineDelegate(AddLine), System.Windows.Threading.DispatcherPriority.Render, trackingLine);
-        }
-
-        public void AddLine(TrackingLine trackingLine, Brush color)
-        {
-            if (_trackingLines.ContainsKey(trackingLine))
-                return;
-            if (Dispatcher.Thread.Equals(Thread.CurrentThread))
-            {
-                TubeVisual3D visualLine = new TubeVisual3D();
-                Point3DCollection points = new Point3DCollection();
-                for (int i = 0; i < trackingLine.Points.Count - 1; i++)
-                {
-                    double x1 = trackingLine.Points[i].X;
-                    double y1 = trackingLine.Points[i].Y;
-                    double x2 = trackingLine.Points[i + 1].X;
-                    double y2 = trackingLine.Points[i + 1].Y;
-                    if (_minPoint != null)
-                    {
-                        x1 -= _minPoint.X;
-                        y1 -= _minPoint.Y;
-                        x2 -= _minPoint.X;
-                        y2 -= _minPoint.Y;
-                    }
-                    points.Add(new Point3D(x1, y1, LINE_Z_INDEX));
-                    points.Add(new Point3D(x2, y2, LINE_Z_INDEX));
-                }
-
-                visualLine.Diameter = LINE_THICKNESS;
-
-                visualLine.Fill = color;
-
-                visualLine.Path = points;
-
-                trackingLine.ActiveChanged += trackingLine_ActiveChanged;
-                trackingLine.DepletedChanged += trackingLine_DepletedChanged;
-                _trackingLines.Add(trackingLine, visualLine);
-                _viewPort.Children.Add(visualLine);
-                //TODO finish to new TrackingLine class
-            }
-            else
-                Dispatcher.Invoke(new LineDelegateColor(AddLine), System.Windows.Threading.DispatcherPriority.Render, trackingLine, color);
         }
 
         public void DeleteLine(TrackingLine trackingLine)
@@ -537,7 +491,7 @@ namespace FarmingGPS.Visualization
                         MeshVisual3D holeMesh = new MeshVisual3D();
                         //DiffuseMaterial holeMaterial = new DiffuseMaterial(new SolidColorBrush(_fieldFillColor));
                         //holeMaterial.Color = _fieldFillColor; 
-                        DiffuseMaterial holeMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.Red));
+                        DiffuseMaterial holeMaterial = new DiffuseMaterial(new SolidColorBrush(_fieldTrackHoleColor));
                         holeMaterial.Color = Colors.Red;
                         holeMesh.FaceMaterial = holeMaterial;
                         holeMesh.EdgeDiameter = 0;
@@ -637,6 +591,10 @@ namespace FarmingGPS.Visualization
             resource = TryFindResource("TRACK_FILL");
             if (resource != null && resource is Color)
                 _fieldTrackColor = (Color)resource;
+
+            resource = TryFindResource("TRACK_HOLE");
+            if (resource != null && resource is Color)
+                _fieldTrackHoleColor = (Color)resource;
         }
 
         #endregion
