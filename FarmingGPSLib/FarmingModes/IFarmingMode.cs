@@ -17,6 +17,6 @@ namespace FarmingGPSLib.FarmingModes
             get;
         }
 
-        TrackingLine GetClosestLine();
+        TrackingLine GetClosestLine(Coordinate position);
     }
 }
