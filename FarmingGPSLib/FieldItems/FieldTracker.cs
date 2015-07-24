@@ -4,6 +4,7 @@ using DotSpatial.Topology;
 using DotSpatial.Topology.Algorithm;
 using DotSpatial.Topology.Precision;
 using FarmingGPSLib.HelperClasses;
+using FarmingGPSLib.FarmingModes.Tools;
 
 namespace FarmingGPSLib.FieldItems
 {
@@ -222,6 +223,37 @@ namespace FarmingGPSLib.FieldItems
             {
                 _prevLeftPoint = Coordinate.Empty;
                 _prevRightPoint = Coordinate.Empty;
+            }
+        }
+
+        public double GetTrackingLineCoverage(TrackingLine trackingLine)
+        {
+            lock(_syncObject)
+            {
+                IMultiLineString remainsOfLine = new MultiLineString(new IBasicLineString[1] { trackingLine.Line });
+                foreach(Polygon polygon in _polygons.Values)
+                {
+                    IGeometry remains = polygon.Difference(remainsOfLine);
+                    if (remains is MultiLineString)
+                        remainsOfLine = (MultiLineString)remains;
+                    else if (remains is LineString)
+                        new MultiLineString(new IBasicLineString[1] { (LineString)remains });
+                    else if (remains.IsEmpty)
+                    {
+                        remainsOfLine = MultiLineString.Empty;
+                        break;
+                    }
+                    else
+                    {
+                        remainsOfLine = MultiLineString.Empty;
+                        break;
+                    }
+                }
+
+                if (remainsOfLine.IsEmpty)
+                    return 1.0;
+                else
+                    return 1.0 - (remainsOfLine.Length / trackingLine.Length);
             }
         }
 
