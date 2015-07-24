@@ -88,10 +88,13 @@ namespace FarmingGPSLib.FarmingModes.Tools
             get { return _depleted; }
             set 
             { 
+                if(_depleted != value)
+                {
+                    DepletedChangedEventHandler handler = DepletedChanged;
+                    if (handler != null)
+                        handler.Invoke(this, _depleted);
+                }
                 _depleted = value;
-                DepletedChangedEventHandler handler = DepletedChanged;
-                if (handler != null)
-                    handler.Invoke(this, _depleted);
             }
         }
 
@@ -100,10 +103,13 @@ namespace FarmingGPSLib.FarmingModes.Tools
             get { return _active; }
             set
             {
+                if(_active != value)
+                {
+                    ActiveChangedEventHandler handler = ActiveChanged;
+                    if (handler != null)
+                        handler.Invoke(this, _active);
+                }
                 _active = value;
-                ActiveChangedEventHandler handler = ActiveChanged;
-                if (handler != null)
-                    handler.Invoke(this, _active);
             }
         }
 
