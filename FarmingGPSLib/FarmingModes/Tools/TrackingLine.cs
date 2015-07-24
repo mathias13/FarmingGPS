@@ -37,7 +37,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
             _line = line;
         }
 
-        public OrientationToLine GetOrientationToLine(Coordinate point, Angle directionOfTravel)
+        public OrientationToLine GetOrientationToLine(Coordinate point, DotSpatial.Positioning.Azimuth directionOfTravel)
         {
             Coordinate p0 = Coordinate.Empty;
             Coordinate p1 = Coordinate.Empty;
@@ -54,7 +54,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
                 }
             }
             LineSegment line = new LineSegment(p0, p1);
-            Angle angleDiff = new Angle(line.Angle - directionOfTravel.Radians);
+            Angle angleDiff = new Angle(line.Angle - directionOfTravel.ToRadians().Value);
             if (angleDiff.Radians > Math.PI)
                 angleDiff = new Angle(angleDiff.Radians - Math.PI * 2);
             else if (angleDiff.Radians < Math.PI * -1)
