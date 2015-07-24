@@ -120,5 +120,29 @@ namespace FarmingGPSLib.FarmingModes.Tools
                 return _line.Coordinates;
             }
         }
+
+        public double Length
+        {
+            get
+            {
+                return _line.Length;
+            }
+        }
+
+        public ILineString Line
+        {
+            get { return _line; }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is TrackingLine)
+            {
+                TrackingLine trackingLine = (TrackingLine)obj;
+                return trackingLine.Line.Equals(this.Line);
+            }
+            else
+                return false;
+        }
     }
 }
