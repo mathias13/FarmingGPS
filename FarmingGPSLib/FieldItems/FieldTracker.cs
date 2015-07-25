@@ -233,7 +233,7 @@ namespace FarmingGPSLib.FieldItems
                 IMultiLineString remainsOfLine = new MultiLineString(new IBasicLineString[1] { trackingLine.Line });
                 foreach(Polygon polygon in _polygons.Values)
                 {
-                    IGeometry remains = polygon.Difference(remainsOfLine);
+                    IGeometry remains = remainsOfLine.Difference(polygon);
                     if (remains is MultiLineString)
                         remainsOfLine = (MultiLineString)remains;
                     else if (remains is LineString)
@@ -250,7 +250,7 @@ namespace FarmingGPSLib.FieldItems
                     }
                 }
 
-                if (remainsOfLine.IsEmpty)
+                if (remainsOfLine == MultiLineString.Empty)
                     return 1.0;
                 else
                     return 1.0 - (remainsOfLine.Length / trackingLine.Length);
