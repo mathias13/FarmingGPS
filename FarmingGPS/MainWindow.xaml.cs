@@ -127,22 +127,6 @@ namespace FarmingGPS
         
         void Current_Exit(object sender, ExitEventArgs e)
         {
-            //_receiverManager.Dispose();
-            stopGpsFinder = true;
-            //gpsThread.Join();
-            //_interpreter.Stop();
-            //if (_interpreter.Device != null)
-            //{
-            //    _interpreter.Device.Close();
-            //    _interpreter.Device.Dispose();
-            //}
-
-            //_interpreter1.Stop();
-            //if (_interpreter1.Device != null)
-            //{
-            //    _interpreter1.Device.Close();
-            //    _interpreter1.Device.Dispose();
-            //}
             _ntripClient.Dispose();
             _receiver.Dispose();
             _sbpReceiverSender.Dispose();
