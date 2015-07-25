@@ -79,6 +79,8 @@ namespace FarmingGPS.Visualization
 
         private SolidColorBrush _trackingBrush = new SolidColorBrush(Colors.Yellow);
 
+        private DiffuseMaterial _trackingLineMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.Red));
+
         private Brush _lineNormalColor = Brushes.White;
 
         private Brush _lineDepletedColor = Brushes.Black;
@@ -310,50 +312,6 @@ namespace FarmingGPS.Visualization
                 
                 _viewPort.Children.Add(mesh);
                 _viewPort.Children.Add(outline);
-
-                //TODO remove this only for testing
-                Polygon3D polygon1 = new Polygon3D();
-                Polygon polygon2D1 = new Polygon();
-
-                polygon2D1.Points.Add(new Point(405.0, 400.0));
-                polygon2D1.Points.Add(new Point(405.0, 401.0));
-                polygon2D1.Points.Add(new Point(405.0, 402.0));
-                polygon2D1.Points.Add(new Point(405.0, 403.0));
-                polygon2D1.Points.Add(new Point(405.0, 404.0));
-                polygon2D1.Points.Add(new Point(404.75, 404.5));
-                polygon2D1.Points.Add(new Point(404.5, 405.0));
-                polygon2D1.Points.Add(new Point(404.25, 404.5));
-                polygon2D1.Points.Add(new Point(404.0, 404.0));
-                polygon2D1.Points.Add(new Point(404.0, 403.5));
-                polygon2D1.Points.Add(new Point(404.0, 403.0));//
-                polygon2D1.Points.Add(new Point(404.0, 402.0));//
-                polygon2D1.Points.Add(new Point(404.0, 401.0));
-                polygon2D1.Points.Add(new Point(404.0, 400.0));
-                polygon2D1.Points.Add(new Point(400.0, 400.0));
-                polygon2D1.Points.Add(new Point(400.0, 401.0));
-                polygon2D1.Points.Add(new Point(400.0, 402.0));
-                polygon2D1.Points.Add(new Point(400.0, 403.0));
-                polygon2D1.Points.Add(new Point(400.0, 403.5));
-                polygon2D1.Points.Add(new Point(400.0, 404.0));
-                polygon2D1.Points.Add(new Point(402.5, 407.0));
-                polygon2D1.Points.Add(new Point(405.0, 409.0));
-                polygon2D1.Points.Add(new Point(407.5, 407.0));
-                polygon2D1.Points.Add(new Point(410.0, 404.0));
-                polygon2D1.Points.Add(new Point(410.0, 403.0));
-                polygon2D1.Points.Add(new Point(410.0, 402.0));
-                polygon2D1.Points.Add(new Point(410.0, 401.0));
-                polygon2D1.Points.Add(new Point(410.0, 400.0));
-                foreach (Point point in polygon2D1.Points)
-                    polygon1.Points.Add(new Point3D(point.X, point.Y, 0.1));
-                Mesh3D mesh3D1 = new Mesh3D(polygon1.Points, polygon2D1.Triangulate());
-                MeshVisual3D mesh1 = new MeshVisual3D();
-                DiffuseMaterial material1 = new DiffuseMaterial(new SolidColorBrush(Colors.LightBlue));
-                material1.Color = Colors.LightBlue;
-                mesh1.FaceMaterial = material1;
-                mesh1.EdgeDiameter = 0;
-                mesh1.VertexRadius = 0;
-                mesh1.Mesh = mesh3D1;
-                _viewPort.Children.Add(mesh1);
             }
             else
                 Dispatcher.Invoke(new AddFieldDelegate(AddField), System.Windows.Threading.DispatcherPriority.Render, field);
@@ -409,22 +367,22 @@ namespace FarmingGPS.Visualization
 
         private void ActivateTrackingLine(TubeVisual3D visualLine)
         {
-            visualLine.Fill = _trackingBrush;
-        }
-
-        private void DeactivateTrackingLine(TubeVisual3D visualLine)
-        {
-            visualLine.Fill = _lineNormalColor;
+            visualLine.Material = _trackingLineMaterial;
+            visualLine.BackMaterial = _trackingLineMaterial;
         }
 
         private void DepletedTrackingLine(TubeVisual3D visualLine)
-        {            
-            visualLine.Fill = _lineDepletedColor;
+        {
+            DiffuseMaterial material = new DiffuseMaterial(_lineDepletedColor);
+            visualLine.Material = material;
+            visualLine.BackMaterial = material;
         }
 
         private void NormalTrackingLine(TubeVisual3D visualLine)
         {
-            visualLine.Fill = Brushes.Red;
+            DiffuseMaterial material = new DiffuseMaterial(_lineNormalColor);
+            visualLine.Material = material;
+            visualLine.BackMaterial = material;
         }
         
         #endregion
@@ -506,7 +464,7 @@ namespace FarmingGPS.Visualization
                         _trackMesh.Remove(e.ID);
                     }
                     _trackMesh.Add(e.ID, mesh);
-                    _viewPort.Children.Add(mesh);
+                    _viewPort.Children.Insert(4, mesh);
 
                     if (_trackMeshBuilder.ContainsKey(e.ID))
                         _trackMeshBuilder.Remove(e.ID);
@@ -524,7 +482,7 @@ namespace FarmingGPS.Visualization
                     {
                         _trackMeshHoles.Add(e.ID, holes);
                         foreach (MeshVisual3D hole in holes)
-                            _viewPort.Children.Add(hole);
+                            _viewPort.Children.Insert(5, hole);
                     }
 
                 }
@@ -537,51 +495,30 @@ namespace FarmingGPS.Visualization
         #endregion
 
         #region Private Methods
-
-        //private void AddLine(int id, TubeVisual3D line)
-        //{
-        //    _lines.Add(id, line);
-        //    _viewPort.Children.Add(line);
-        //}
-
-        //private void AddLine(int id, LinesVisual3D line)
-        //{
-        //    _lines.Add(id, line);
-        //    _viewPort.Children.Add(line);
-        //}
-
+        
         private void FarmingVisualizer_Loaded(object sender, RoutedEventArgs e)
         {
             object resource = TryFindResource("TRACK_LINE_ANIMATION");
-
-            _trackingBrush = new SolidColorBrush();
-
+            
             this.RegisterName("TrackingAnimationBrush", _trackingBrush);
             _trackingAnimation = (ColorAnimation)resource;
             Storyboard.SetTargetName(_trackingAnimation, "TrackingAnimationBrush");
-            Storyboard.SetTargetProperty(
-                _trackingAnimation, new PropertyPath(SolidColorBrush.ColorProperty));
-            Storyboard mouseEnterStoryboard = new Storyboard();
-            mouseEnterStoryboard.Children.Add(_trackingAnimation);
-            mouseEnterStoryboard.Begin(this);
-            //if (resource != null && resource is ColorAnimationUsingKeyFrames)
-            //{
-            //    _trackingAnimation = resource as ColorAnimationUsingKeyFrames;
-            //    Storyboard storyboard = new Storyboard();
-            //    storyboard.Children.Add(_trackingAnimation);
-            //    Storyboard.SetTargetProperty(_trackingAnimation, new PropertyPath(TubeVisual3D.FillProperty));
-            //    storyboard.Begin(this);
-            //}
+            Storyboard.SetTargetProperty(_trackingAnimation, new PropertyPath(SolidColorBrush.ColorProperty));
+            _trackingLineMaterial = new DiffuseMaterial(_trackingBrush);
+            Storyboard storyBoard = new Storyboard();
+            storyBoard.Children.Add(_trackingAnimation);
+            storyBoard.Begin(this);
+
             resource = TryFindResource("TRACK_LINE_INACTIVE");
-            if (resource != null && resource is Color)
+            if (resource != null && resource is SolidColorBrush)
                 _lineNormalColor = (Brush)resource;
 
             resource = TryFindResource("TRACK_LINE_DEPLETED");
-            if (resource != null && resource is Color)
+            if (resource != null && resource is SolidColorBrush)
                 _lineDepletedColor = (Brush)resource;
 
             resource = TryFindResource("FIELD_OUTLINE");
-            if (resource != null && resource is Color)
+            if (resource != null && resource is SolidColorBrush)
                 _fieldOutlineColor = (Brush)resource;
 
             resource = TryFindResource("FIELD_FILL");
