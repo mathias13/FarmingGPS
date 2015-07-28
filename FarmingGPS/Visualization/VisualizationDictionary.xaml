@@ -2,6 +2,23 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:helix="clr-namespace:HelixToolkit.Wpf;assembly=HelixToolkit.Wpf">
 
+    <Style x:Key="PiPvideo" TargetType="Border">
+        <Setter Property="Margin" Value="10,10,10,10"/>
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+        <Setter Property="Width" Value="Auto"/>
+        <Setter Property="Height" Value="72"/>
+        <Setter Property="BorderBrush" Value="Black"/>
+    </Style>
+    <Style x:Key="Fullvideo" TargetType="Border">
+        <Setter Property="Margin" Value="0,0,0,0"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="Width" Value="Auto"/>
+        <Setter Property="Height" Value="Auto"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+    </Style>
+    
     <RadialGradientBrush Center="0.4,0.4" x:Key="LIGHT_BULB_GREEN_ON">
         <RadialGradientBrush.GradientStops>
             <GradientStopCollection>
