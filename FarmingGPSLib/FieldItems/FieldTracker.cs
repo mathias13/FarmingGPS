@@ -161,6 +161,7 @@ namespace FarmingGPSLib.FieldItems
                         int holeHash = _polygons[_currentPolygonIndex].Holes.GetHashCode();
 
                         _polygons[_currentPolygonIndex] = (Polygon)_polygons[_currentPolygonIndex].Union(rectPolygon);
+                        _polygons[_currentPolygonIndex].Shell = RoundCoordinates(_polygons[_currentPolygonIndex].Shell);
 
                         if (holeHash != _polygons[_currentPolygonIndex].Holes.GetHashCode())
                         {
@@ -174,7 +175,7 @@ namespace FarmingGPSLib.FieldItems
                                     i--;
                                 }
                                 else
-                                    holes[i] = RoundHoleCoordinates(holes[i]);
+                                    holes[i] = RoundCoordinates(holes[i]);
 
                             }
                             _polygons[_currentPolygonIndex].Holes = holes.ToArray();
@@ -301,10 +302,10 @@ namespace FarmingGPSLib.FieldItems
             return true;
         }
 
-        private ILinearRing RoundHoleCoordinates(ILinearRing hole)
+        private ILinearRing RoundCoordinates(ILinearRing ring)
         {
             List<Coordinate> coords = new List<Coordinate>();
-            foreach (Coordinate coord in hole.Coordinates)
+            foreach (Coordinate coord in ring.Coordinates)
                 coords.Add(HelperClassCoordinate.CoordinateRoundedmm(coord));
             return new LinearRing(coords);
         }
