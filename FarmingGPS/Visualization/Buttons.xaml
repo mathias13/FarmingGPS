@@ -60,5 +60,65 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
+    <Style TargetType="{x:Type Button}" x:Key="BUTTON_INFO" BasedOn="{StaticResource BUTTON_BASE}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid Background="Transparent" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" ClipToBounds="True">
+                        <Rectangle Style="{StaticResource BUTTON_RECT}" />
+                        <Viewbox Style="{StaticResource BUTTON_SYMBOL_VIEWBOX}">
+                            <Path Fill="{StaticResource BUTTON_SYMBOL_COLOR}" Data="{StaticResource SYMBOL_INFO}"/>
+                        </Viewbox>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type Button}" x:Key="BUTTON_CAMERA" BasedOn="{StaticResource BUTTON_BASE}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid Background="Transparent" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" ClipToBounds="True">
+                        <Rectangle Style="{StaticResource BUTTON_RECT}" />
+                        <Viewbox Style="{StaticResource BUTTON_SYMBOL_VIEWBOX}">
+                            <Path Fill="{StaticResource BUTTON_SYMBOL_COLOR}" Data="{StaticResource SYMBOL_CAMERA}"/>
+                        </Viewbox>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type Button}" x:Key="BUTTON_ZOOM_IN" BasedOn="{StaticResource BUTTON_BASE}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid Background="Transparent" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" ClipToBounds="True">
+                        <Rectangle Style="{StaticResource BUTTON_RECT}" />
+                        <Viewbox Style="{StaticResource BUTTON_SYMBOL_VIEWBOX}">
+                            <Path Fill="{StaticResource BUTTON_SYMBOL_COLOR}" Data="{StaticResource SYMBOL_ZOOM_IN}"/>
+                        </Viewbox>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type Button}" x:Key="BUTTON_ZOOM_OUT" BasedOn="{StaticResource BUTTON_BASE}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid Background="Transparent" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" ClipToBounds="True">
+                        <Rectangle Style="{StaticResource BUTTON_RECT}" />
+                        <Viewbox Style="{StaticResource BUTTON_SYMBOL_VIEWBOX}">
+                            <Path Fill="{StaticResource BUTTON_SYMBOL_COLOR}" Data="{StaticResource SYMBOL_ZOOM_OUT}"/>
+                        </Viewbox>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>
