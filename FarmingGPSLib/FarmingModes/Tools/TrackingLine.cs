@@ -54,6 +54,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
                 }
             }
             LineSegment line = new LineSegment(p0, p1);
+            directionOfTravel =  DotSpatial.Positioning.Azimuth.Maximum - directionOfTravel.Subtract(90.0).DecimalDegrees;
             Angle angleDiff = new Angle(line.Angle - directionOfTravel.ToRadians().Value);
             if (angleDiff.Radians > Math.PI)
                 angleDiff = new Angle(angleDiff.Radians - Math.PI * 2);
