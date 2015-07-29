@@ -71,20 +71,6 @@ namespace FarmingGPS
             Application.Current.Exit += Current_Exit;
             WindowState = WindowState.Maximized;
 
-            //_interpreter.PositionChanged += _interpreter_PositionChanged;
-            //_interpreter.PositionReceived += _interpreter_PositionReceived;
-            //AverageFilter filter = new AverageFilter(3000);
-            //CdfFilter filter = new CdfFilter();
-            //_interpreter.IsFilterEnabled = true;
-
-            //_interpreter1.PositionChanged += _interpreter1_PositionChanged;
-            //_interpreter1.IsFilterEnabled = false;
-
-            //_receiverManager = new GPSReceiverManager(TimeSpan.FromSeconds(0.5));
-            //_receiverManager.PositionUpdateEvent += _receiverManager_PositionUpdateEvent;
-
-            //gpsThread = new System.Threading.Thread(new System.Threading.ThreadStart(gpsFinder));
-            //gpsThread.Start();
             System.Threading.Thread delayedActionsThread = new System.Threading.Thread(new System.Threading.ThreadStart(delayedActions));
             delayedActionsThread.Start();
             this.Loaded += MainWindow_Loaded;
