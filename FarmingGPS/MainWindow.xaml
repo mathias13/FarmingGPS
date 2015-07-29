@@ -6,33 +6,28 @@
         x:Class="FarmingGPS.MainWindow"
         Title="MainWindow" Height="350" Width="525">
     <Window.Resources>
-        <Style x:Key="PiPvideo" TargetType="Border">
-            <Setter Property="Margin" Value="10,10,10,10"/>
-            <Setter Property="HorizontalAlignment" Value="Right"/>
-            <Setter Property="VerticalAlignment" Value="Bottom"/>
-            <Setter Property="Width" Value="Auto"/>
-            <Setter Property="Height" Value="72"/>
-            <Setter Property="BorderBrush" Value="Black"/>
-        </Style>
-        <Style x:Key="Fullvideo" TargetType="Border">
-            <Setter Property="Margin" Value="0,0,0,0"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="VerticalAlignment" Value="Stretch"/>
-            <Setter Property="Width" Value="Auto"/>
-            <Setter Property="Height" Value="Auto"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Visualization/Buttons.xaml" />
+                <ResourceDictionary Source="Visualization/VisualizationDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="1.5*"/>
             <RowDefinition Height="9*"/>
         </Grid.RowDefinitions>
-        
+
         <visualization:LightBar Grid.Row="0" x:FieldModifier="private" x:Name="_lightBar"/>
         <visualization:FarmingVisualizer Grid.Row="1" x:FieldModifier="private" x:Name="_visualization"/>
+        <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Right">
+            <Button x:Name="BTN_ZOOM_IN" Style="{StaticResource BUTTON_ZOOM_IN}" Width="80" Height="80" Margin="20,20,20,20" Click="BTN_ZOOM_IN_Click"/>
+            <Button x:Name="BTN_ZOOM_OUT" Style="{StaticResource BUTTON_ZOOM_OUT}" Width="80" Height="80" Margin="20,20,20,20" Click="BTN_ZOOM_OUT_Click"/>
+            <Button x:Name="BTN_VIEW_CHANGE" Style="{StaticResource BUTTON_CAMERA}" Width="80" Height="80" Margin="20,20,20,20" Click="BTN_VIEW_CHANGE_Click"/>
+        </StackPanel>
         <visualization:SpeedBar Grid.Row="1" Width="Auto" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" x:FieldModifier="private" x:Name="_speedBar"/>
-        <TextBlock x:FieldModifier="private" x:Name="_fixMode" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Top" Background="White"/>
+        <TextBlock x:FieldModifier="private" x:Name="_fixMode" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Background="White"/>
         <Border Background="White" BorderThickness="2" CornerRadius="5" Grid.Row="1" Style="{Binding Path=CameraSize, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" >
             <Image Source="{Binding Path=CameraImage, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" MouseLeftButtonUp="Image_MouseLeftButtonUp"/>
         </Border>

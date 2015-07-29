@@ -268,5 +268,23 @@ namespace FarmingGPS
                 SetValue(CameraSizeProperty, pipvideo);
         }
 
+        #region Button Events
+
+        private void BTN_ZOOM_IN_Click(object sender, RoutedEventArgs e)
+        {
+            _visualization.ZoomIn();
+        }
+
+        private void BTN_ZOOM_OUT_Click(object sender, RoutedEventArgs e)
+        {
+            _visualization.ZoomOut();
+        }
+
+        private void BTN_VIEW_CHANGE_Click(object sender, RoutedEventArgs e)
+        {
+            _visualization.ChangeView();
+        }
+
+        #endregion
     }
 }
