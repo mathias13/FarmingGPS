@@ -22,8 +22,9 @@
         <visualization:LightBar Grid.Row="0" x:FieldModifier="private" x:Name="_lightBar"/>
         <visualization:FarmingVisualizer Grid.Row="1" x:FieldModifier="private" x:Name="_visualization"/>
         <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Right">
-            <Button Style="{StaticResource BUTTON_PLUS}" Width="80" Height="80" Margin="20,20,20,20" Click="Button_Click"/>
-            <Button Style="{StaticResource BUTTON_MINUS}" Width="80" Height="80" Margin="20,20,20,20"/>
+            <Button x:Name="BTN_ZOOM_IN" Style="{StaticResource BUTTON_ZOOM_IN}" Width="80" Height="80" Margin="20,20,20,20" Click="BTN_ZOOM_IN_Click"/>
+            <Button x:Name="BTN_ZOOM_OUT" Style="{StaticResource BUTTON_ZOOM_OUT}" Width="80" Height="80" Margin="20,20,20,20" Click="BTN_ZOOM_OUT_Click"/>
+            <Button x:Name="BTN_VIEW_CHANGE" Style="{StaticResource BUTTON_CAMERA}" Width="80" Height="80" Margin="20,20,20,20" Click="BTN_VIEW_CHANGE_Click"/>
         </StackPanel>
         <visualization:SpeedBar Grid.Row="1" Width="Auto" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" x:FieldModifier="private" x:Name="_speedBar"/>
         <TextBlock x:FieldModifier="private" x:Name="_fixMode" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Background="White"/>

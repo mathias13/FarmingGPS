@@ -59,6 +59,24 @@ namespace FarmingGPS.Visualization
 
         private const double FIELD_Z_INDEX = 0.0;
 
+        private readonly Point3D VIEW_TOP_POSTION = new Point3D(2.0, 0.0, 30.0);
+
+        private readonly Vector3D VIEW_TOP_ZOOM_VECTOR = new Vector3D(0.0, 0.0, 10.0);
+
+        private readonly Vector3D VIEW_TOP_LOOK_DIRECTION = new Vector3D(0.0, 0.0, -30.0);
+
+        private readonly Point3D VIEW_BEHIND_POSTION = new Point3D(-30.0, 0.0, 12.0);
+
+        private readonly Vector3D VIEW_BEHIND_ZOOM_VECTOR = new Vector3D(-4.7, 0.0, 1);
+
+        private readonly Vector3D VIEW_BEHIND_LOOK_DIRECTION = new Vector3D(4.7, 0.0, -1.0);
+
+        private const double VIEW_ZOOM_INCREMENT = 0.5;
+
+        private const double VIEW_ZOOM_MIN = 0.0;
+
+        private const double VIEW_ZOOM_MAX = 10.0;
+
         #endregion
 
         #region Private Variables
@@ -100,6 +118,12 @@ namespace FarmingGPS.Visualization
         private IDictionary<int, MeshBuilder> _trackMeshBuilder = new Dictionary<int, MeshBuilder>();
 
         private IDictionary<int, IList<MeshVisual3D>> _trackMeshHoles = new Dictionary<int, IList<MeshVisual3D>>();
+
+        private bool _viewTopActive = false;
+
+        private double _viewTopZoomLevel = 0.0;
+
+        private double _viewBehindZoomLevel = 0.0;
 
         #endregion
 
@@ -321,7 +345,56 @@ namespace FarmingGPS.Visualization
         {
             fieldTracker.PolygonUpdated += fieldTracker_PolygonUpdated;
         }
-                
+
+        public void ZoomOut()
+        {
+            lock (_syncObject)
+            {
+                if(_viewTopActive)
+                {
+                    _viewTopZoomLevel += VIEW_ZOOM_INCREMENT;
+                    if (_viewTopZoomLevel > VIEW_ZOOM_MAX)
+                        _viewTopZoomLevel = VIEW_ZOOM_MAX;
+                }
+                else
+                {
+                    _viewBehindZoomLevel += VIEW_ZOOM_INCREMENT;
+                    if (_viewBehindZoomLevel > VIEW_ZOOM_MAX)
+                        _viewBehindZoomLevel = VIEW_ZOOM_MAX;
+                }
+                Dispatcher.Invoke(new Action(UpdateZoomLevel), System.Windows.Threading.DispatcherPriority.Render);
+            }
+        }
+
+        public void ZoomIn()
+        {
+            lock (_syncObject)
+            {
+                if (_viewTopActive)
+                {
+                    _viewTopZoomLevel -= VIEW_ZOOM_INCREMENT;
+                    if (_viewTopZoomLevel < VIEW_ZOOM_MIN)
+                        _viewTopZoomLevel = VIEW_ZOOM_MIN;
+                }
+                else
+                {
+                    _viewBehindZoomLevel -= VIEW_ZOOM_INCREMENT;
+                    if (_viewBehindZoomLevel < VIEW_ZOOM_MIN)
+                        _viewBehindZoomLevel = VIEW_ZOOM_MIN;
+                }
+                Dispatcher.Invoke(new Action(UpdateZoomLevel), System.Windows.Threading.DispatcherPriority.Render);
+            }
+        }
+
+        public void ChangeView()
+        {
+            lock(_syncObject)
+            {
+                _viewTopActive = !_viewTopActive;
+                Dispatcher.Invoke(new Action(UpdateZoomLevel), System.Windows.Threading.DispatcherPriority.Render);
+            }
+        }
+
         #endregion
 
         #region TrackingLineEvents
@@ -532,6 +605,22 @@ namespace FarmingGPS.Visualization
             resource = TryFindResource("TRACK_HOLE");
             if (resource != null && resource is Color)
                 _fieldTrackHoleColor = (Color)resource;
+
+            UpdateZoomLevel();
+        }
+
+        private void UpdateZoomLevel()
+        {
+            if (_viewTopActive)
+            {
+                SetValue(CameraPositionProperty, VIEW_TOP_POSTION + (VIEW_TOP_ZOOM_VECTOR * _viewTopZoomLevel));
+                SetValue(CameraLookDirectionProperty, VIEW_TOP_LOOK_DIRECTION);
+            }
+            else
+            {
+                SetValue(CameraPositionProperty, VIEW_BEHIND_POSTION + (VIEW_BEHIND_ZOOM_VECTOR * _viewBehindZoomLevel));
+                SetValue(CameraLookDirectionProperty, VIEW_BEHIND_LOOK_DIRECTION);
+            }
         }
 
         #endregion
@@ -543,6 +632,10 @@ namespace FarmingGPS.Visualization
         protected static readonly DependencyProperty ShiftYProperty = DependencyProperty.Register("ShiftY", typeof(double), typeof(FarmingVisualizer));
 
         protected static readonly DependencyProperty ShiftHeadingProperty = DependencyProperty.Register("ShiftHeading", typeof(double), typeof(FarmingVisualizer));
+
+        protected static readonly DependencyProperty CameraPositionProperty = DependencyProperty.Register("CameraPosition", typeof(Point3D), typeof(FarmingVisualizer));
+
+        protected static readonly DependencyProperty CameraLookDirectionProperty = DependencyProperty.Register("CameraLookDirection", typeof(Vector3D), typeof(FarmingVisualizer));
 
         #endregion
     }
