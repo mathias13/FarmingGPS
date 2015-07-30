@@ -64,9 +64,14 @@
 
     <Color x:Key="TRACK_LINE_INACTIVE">#FF0000FF</Color>
     <Color x:Key="TRACK_LINE_DEPLETED">#FFFFFFFF</Color>
-    
-    <ColorAnimation x:Key="TRACK_LINE_ANIMATION" Duration="0:0:1.0" RepeatBehavior="Forever" From="Blue" To="Yellow"/>
 
+    <ColorAnimationUsingKeyFrames x:Key="TRACK_LINE_ANIMATION" BeginTime="0:0:0" RepeatBehavior="Forever">
+        <ColorKeyFrameCollection>
+            <DiscreteColorKeyFrame KeyTime="0:0:2" Value="Yellow"/>
+            <DiscreteColorKeyFrame KeyTime="0:0:4" Value="Blue"/>
+        </ColorKeyFrameCollection>
+    </ColorAnimationUsingKeyFrames>
+    
     <Color x:Key="FIELD_OUTLINE">#FFFF0000</Color>
     <Color x:Key="FIELD_FILL">#FF008000</Color>
     <SolidColorBrush x:Key="TRACK_FILL">#FF32CD32</SolidColorBrush>

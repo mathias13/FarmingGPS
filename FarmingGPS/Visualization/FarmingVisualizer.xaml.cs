@@ -95,7 +95,7 @@ namespace FarmingGPS.Visualization
 
         private Storyboard _lineActiveStoryboard = new Storyboard();
 
-        private ColorAnimation _lineActiveAnimation = new ColorAnimation();
+        private ColorAnimationUsingKeyFrames _lineActiveAnimation = new ColorAnimationUsingKeyFrames();
 
         private Color _lineNormalColor = Colors.Blue;
 
@@ -527,9 +527,9 @@ namespace FarmingGPS.Visualization
         private void FarmingVisualizer_Loaded(object sender, RoutedEventArgs e)
         {
             object resource = TryFindResource("TRACK_LINE_ANIMATION");
-            if (resource != null && resource is ColorAnimation)
+            if (resource != null && resource is ColorAnimationUsingKeyFrames)
             {
-                _lineActiveAnimation = (ColorAnimation)resource;
+                _lineActiveAnimation = (ColorAnimationUsingKeyFrames)resource;
                 Storyboard.SetTargetProperty(_lineActiveAnimation, new PropertyPath(LinesVisual3D.ColorProperty));
                 _lineActiveStoryboard.Children.Add(_lineActiveAnimation);
             }
