@@ -20,7 +20,9 @@
                                Background="AntiqueWhite" 
                                ShowViewCube="False"
                                IsPanEnabled="False"
-                               IsRotationEnabled="False">
+                               IsRotationEnabled="False"
+                               IsHitTestVisible="False"
+                               ClipToBounds="False">
             <helix:HelixViewport3D.Camera>
                 <PerspectiveCamera Position="{Binding Path=CameraPosition, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:FarmingVisualizer}}}" 
                                    LookDirection="{Binding Path=CameraLookDirection, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:FarmingVisualizer}}}" 
