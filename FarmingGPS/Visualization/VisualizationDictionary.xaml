@@ -62,12 +62,12 @@
         <Setter Property="Height" Value="{Binding ActualWidth, RelativeSource={RelativeSource Self}}"/>
     </Style>
 
-    <SolidColorBrush x:Key="TRACK_LINE_INACTIVE">#FF0000FF</SolidColorBrush>
-    <SolidColorBrush x:Key="TRACK_LINE_DEPLETED">#FFFFFFFF</SolidColorBrush>
-
+    <Color x:Key="TRACK_LINE_INACTIVE">#FF0000FF</Color>
+    <Color x:Key="TRACK_LINE_DEPLETED">#FFFFFFFF</Color>
+    
     <ColorAnimation x:Key="TRACK_LINE_ANIMATION" Duration="0:0:1.0" RepeatBehavior="Forever" From="Blue" To="Yellow"/>
 
-    <SolidColorBrush x:Key="FIELD_OUTLINE">#FFFF0000</SolidColorBrush>
+    <Color x:Key="FIELD_OUTLINE">#FFFF0000</Color>
     <Color x:Key="FIELD_FILL">#FF008000</Color>
     <SolidColorBrush x:Key="TRACK_FILL">#FF32CD32</SolidColorBrush>
     <SolidColorBrush x:Key="TRACK_HOLE">#FFFF0000</SolidColorBrush>
