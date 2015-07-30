@@ -469,6 +469,7 @@ namespace FarmingGPS.Visualization
                 if (_trackMesh.Keys.Contains(e.ID) && !e.PolygonHolesChanged)
                 {
                     MeshVisual3D mesh = _trackMesh[e.ID];
+                    _viewPort.Children.Remove(mesh);
                     MeshBuilder meshBuilder = _trackMeshBuilder[e.ID];
                     Polygon3D polygon = new Polygon3D();
                     Polygon polygon2D = new Polygon();
@@ -483,6 +484,7 @@ namespace FarmingGPS.Visualization
                     meshBuilder.Append(polygon.Points, polygon2D.Triangulate(), vectors, polygon2D.Points);
                     GeometryModel3D geometry = mesh.Content as GeometryModel3D;
                     geometry.Geometry = meshBuilder.ToMesh();
+                    _viewPort.Children.Insert(4, mesh);
                 }
                 else
                 {
