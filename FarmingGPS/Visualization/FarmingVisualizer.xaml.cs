@@ -89,17 +89,17 @@ namespace FarmingGPS.Visualization
 
         private DotSpatial.Topology.Coordinate _minPoint;
 
-        private IDictionary<TrackingLine, MeshVisual3D> _trackingLines = new Dictionary<TrackingLine, MeshVisual3D>();
+        private IDictionary<TrackingLine, ModelVisual3D> _trackingLines = new Dictionary<TrackingLine, ModelVisual3D>();
 
         private object _syncObject = new object();
 
-        private Storyboard _lineActiveStoryboard = new Storyboard();
+        private DiffuseMaterial _lineNormalMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.Blue));
 
-        private ColorAnimationUsingKeyFrames _lineActiveAnimation = new ColorAnimationUsingKeyFrames();
+        private DiffuseMaterial _lineDepletedMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.White));
 
-        private Color _lineNormalColor = Colors.Blue;
+        private DiffuseMaterial _lineActiveMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.Red));
 
-        private Color _lineDepletedColor = Colors.White;
+        private SolidColorBrush _lineActiveColor = new SolidColorBrush(Colors.Red);
         
         private Color _fieldFillColor = Colors.Green;
 
@@ -241,19 +241,15 @@ namespace FarmingGPS.Visualization
                 Int32Collection indices = builder.CreateIndices(linePoints.Count);
 
                 Mesh3D mesh3D = new Mesh3D(points, indices);
-                MeshVisual3D mesh = new MeshVisual3D();
-                DiffuseMaterial material = new DiffuseMaterial(new SolidColorBrush(_lineNormalColor));
-                material.Freeze();
-                mesh.FaceMaterial = material;
-                mesh.FaceBackMaterial = material;
-                mesh.EdgeDiameter = 0;
-                mesh.VertexRadius = 0;
-                mesh.Mesh = mesh3D;
+                GeometryModel3D model3D = new GeometryModel3D(mesh3D.ToMeshGeometry3D(), _lineActiveMaterial);
+                model3D.BackMaterial = _lineNormalMaterial;
+                ModelVisual3D modelVisual = new ModelVisual3D();
+                modelVisual.Content = model3D;
 
                 trackingLine.ActiveChanged += trackingLine_ActiveChanged;
                 trackingLine.DepletedChanged += trackingLine_DepletedChanged;
-                _trackingLines.Add(trackingLine, mesh);
-                _viewPort.Children.Add(mesh);
+                _trackingLines.Add(trackingLine, modelVisual);
+                _viewPort.Children.Add(modelVisual);
             }
             else
                 Dispatcher.Invoke(new LineDelegate(AddLine), System.Windows.Threading.DispatcherPriority.Render, trackingLine);
@@ -265,7 +261,7 @@ namespace FarmingGPS.Visualization
             {
                 if (_trackingLines.ContainsKey(trackingLine))
                 {
-                    MeshVisual3D lineVisual = _trackingLines[trackingLine];
+                    ModelVisual3D lineVisual = _trackingLines[trackingLine];
                     _viewPort.Children.Remove(lineVisual);
                     _trackingLines.Remove(trackingLine);
                     trackingLine.ActiveChanged -= trackingLine_ActiveChanged;
@@ -377,7 +373,7 @@ namespace FarmingGPS.Visualization
                 TrackingLine trackingLine = (TrackingLine)sender;
                 if (!_trackingLines.ContainsKey(trackingLine))
                     return;
-                MeshVisual3D visualLine = _trackingLines[trackingLine];
+                ModelVisual3D visualLine = _trackingLines[trackingLine];
                 if (active)
                     ActivateTrackingLine(visualLine);
                 else
@@ -399,7 +395,7 @@ namespace FarmingGPS.Visualization
                 TrackingLine trackingLine = (TrackingLine)sender;
                 if (!_trackingLines.ContainsKey(trackingLine))
                     return;
-                MeshVisual3D visualLine = _trackingLines[trackingLine];
+                ModelVisual3D visualLine = _trackingLines[trackingLine];
                 if (depleted)
                     DepletedTrackingLine(visualLine);
                 else
@@ -408,24 +404,22 @@ namespace FarmingGPS.Visualization
             else
                 Dispatcher.Invoke(new TrackingLineEventDelegate(trackingLine_DepletedChanged), System.Windows.Threading.DispatcherPriority.Render, sender, depleted);
         }
-
-        private void ActivateTrackingLine(MeshVisual3D visualLine)
+  
+        private void ActivateTrackingLine(ModelVisual3D visualLine)
         {
-            //_lineActiveStoryboard.Stop();
-            //Storyboard.SetTarget(_lineActiveAnimation, visualLine);
-            //_lineActiveStoryboard.Begin();
+            ((GeometryModel3D)visualLine.Content).BackMaterial = _lineActiveMaterial;
         }
 
-        private void DepletedTrackingLine(MeshVisual3D visualLine)
+        private void DepletedTrackingLine(ModelVisual3D visualLine)
         {
-            //visualLine.Color = _lineDepletedColor;
+            ((GeometryModel3D)visualLine.Content).BackMaterial = _lineDepletedMaterial;
         }
 
-        private void NormalTrackingLine(MeshVisual3D visualLine)
+        private void NormalTrackingLine(ModelVisual3D visualLine)
         {
-            //visualLine.Color = _lineNormalColor;
+            ((GeometryModel3D)visualLine.Content).BackMaterial = _lineNormalMaterial;
         }
-        
+
         #endregion
 
         #region FieldTrackerEvents
@@ -532,25 +526,29 @@ namespace FarmingGPS.Visualization
         #endregion
 
         #region Private Methods
-        
+
         private void FarmingVisualizer_Loaded(object sender, RoutedEventArgs e)
         {
             object resource = TryFindResource("TRACK_LINE_ANIMATION");
             if (resource != null && resource is ColorAnimationUsingKeyFrames)
             {
-                _lineActiveAnimation = (ColorAnimationUsingKeyFrames)resource;
-                Storyboard.SetTargetProperty(_lineActiveAnimation, new PropertyPath(LinesVisual3D.ColorProperty));
-                _lineActiveStoryboard.Children.Add(_lineActiveAnimation);
+                this.RegisterName("LineActiveColor", _lineActiveColor);
+                ColorAnimationUsingKeyFrames animation = (ColorAnimationUsingKeyFrames)resource;
+                Storyboard.SetTargetName(animation, "LineActiveColor");
+                Storyboard.SetTargetProperty(animation, new PropertyPath(SolidColorBrush.ColorProperty));
+                _lineActiveMaterial = new DiffuseMaterial(_lineActiveColor);
+                Storyboard storyboard = new Storyboard();
+                storyboard.Children.Add(animation);
+                storyboard.Begin(this);
             }
 
-
             resource = TryFindResource("TRACK_LINE_INACTIVE");
-            if (resource != null && resource is Color)
-                _lineNormalColor = (Color)resource;
+            if (resource != null && resource is SolidColorBrush)
+                _lineNormalMaterial = new DiffuseMaterial((SolidColorBrush)resource);
 
             resource = TryFindResource("TRACK_LINE_DEPLETED");
-            if (resource != null && resource is Color)
-                _lineDepletedColor = (Color)resource;
+            if (resource != null && resource is SolidColorBrush)
+                _lineDepletedMaterial = new DiffuseMaterial((SolidColorBrush)resource);
 
             resource = TryFindResource("FIELD_OUTLINE");
             if (resource != null && resource is Color)
