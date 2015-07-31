@@ -425,7 +425,7 @@ namespace FarmingGPS.Visualization
         {
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
             {
-                if (_trackMesh.Keys.Contains(e.ID) && !e.PolygonHolesChanged)
+                if (_trackMesh.Keys.Contains(e.ID) && !e.RedrawPolygon)
                 {
                     MeshVisual3D mesh = _trackMesh[e.ID];
                     _viewPort.Children.Remove(mesh);

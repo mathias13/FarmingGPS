@@ -60,9 +60,17 @@ namespace FarmingGPSLib.FieldItems
 
         #endregion
 
+        #region Consts
+
+        private const int SIMPLIFIER_COUNT_LIMIT = 400;
+
+        #endregion
+
         #region Private Variables
 
         private IDictionary<int, Polygon> _polygons = new Dictionary<int, Polygon>();
+
+        private IDictionary<int, int> _polygonSimplifierCount = new Dictionary<int, int>();
                 
         private Coordinate _prevLeftPoint = Coordinate.Empty;
 
@@ -104,7 +112,7 @@ namespace FarmingGPSLib.FieldItems
                     }
                     else
                     {
-                        bool polygonHoleChanged = false;
+                        bool redrawPolygon = false;
 
                         List<Coordinate> newCoords = new List<Coordinate>();
                         newCoords.Add(_prevRightPoint);
@@ -163,10 +171,20 @@ namespace FarmingGPSLib.FieldItems
 
                         _polygons[_currentPolygonIndex] = (Polygon)_polygons[_currentPolygonIndex].Union(rectPolygon);
                         _polygons[_currentPolygonIndex].Shell = RoundCoordinates(_polygons[_currentPolygonIndex].Shell);
+                        if (_polygons[_currentPolygonIndex].Coordinates.Count > _polygonSimplifierCount[_currentPolygonIndex])
+                        {
+                            IGeometry geometry = DotSpatial.Topology.Simplify.TopologyPreservingSimplifier.Simplify(_polygons[_currentPolygonIndex], 0.03);
+                            if (geometry is Polygon)
+                            {
+                                _polygons[_currentPolygonIndex] = geometry as Polygon;
+                                _polygonSimplifierCount[_currentPolygonIndex] = geometry.Coordinates.Count + SIMPLIFIER_COUNT_LIMIT;
+                                redrawPolygon = true;
+                            }
+                        }
 
                         if (holeHash != _polygons[_currentPolygonIndex].Holes.GetHashCode())
                         {
-                            polygonHoleChanged = true;
+                            redrawPolygon = true;
                             List<ILinearRing> holes = new List<ILinearRing>(_polygons[_currentPolygonIndex].Holes);
                             for (int i = 0; i < holes.Count; i++)
                             {
@@ -182,7 +200,7 @@ namespace FarmingGPSLib.FieldItems
                             _polygons[_currentPolygonIndex].Holes = holes.ToArray();
                         }
 
-                        OnPolygonUpdated(_currentPolygonIndex, newCoordinates, polygonHoleChanged);
+                        OnPolygonUpdated(_currentPolygonIndex, newCoordinates, redrawPolygon);
                     }
                 }
                 else
@@ -200,6 +218,7 @@ namespace FarmingGPSLib.FieldItems
                     while (_polygons.Keys.Contains(id))
                         id++;
                     _polygons.Add(id, polygon);
+                    _polygonSimplifierCount.Add(id, SIMPLIFIER_COUNT_LIMIT);
                     _currentPolygonIndex = id;
                     OnPolygonUpdated(_currentPolygonIndex, newCoordinates, false);
                 }
