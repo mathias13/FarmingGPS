@@ -279,16 +279,19 @@ namespace FarmingGPS.Visualization
                 _minPoint = field.Polygon.Envelope.Minimum;
                 Polygon3D polygon = new Polygon3D();
                 Polygon polygon2D = new Polygon();
-                LinesVisual3D outline = new LinesVisual3D();
-                outline.Thickness = LINE_THICKNESS;
+
+                LineGeometryBuilder builder = new LineGeometryBuilder(_viewPort.Children[0]);
+                List<Point3D> outlinePoints = new List<Point3D>();
+
                 Point3DCollection polygonPoints = new Point3DCollection();
                 for (int i = 0; i < field.Polygon.Coordinates.Count - 1; i++)
                 {
                     polygon.Points.Add(new Point3D(field.Polygon.Coordinates[i].X - _minPoint.X, field.Polygon.Coordinates[i].Y - _minPoint.Y, FIELD_Z_INDEX));
                     polygon2D.Points.Add(new Point(field.Polygon.Coordinates[i].X - _minPoint.X, field.Polygon.Coordinates[i].Y - _minPoint.Y));
-                    polygonPoints.Add(new Point3D(field.Polygon.Coordinates[i].X - _minPoint.X, field.Polygon.Coordinates[i].Y - _minPoint.Y, LINE_Z_INDEX));
-                    polygonPoints.Add(new Point3D(field.Polygon.Coordinates[i + 1].X - _minPoint.X, field.Polygon.Coordinates[i + 1].Y - _minPoint.Y, LINE_Z_INDEX));
+                    outlinePoints.Add(new Point3D(field.Polygon.Coordinates[i].X - _minPoint.X, field.Polygon.Coordinates[i].Y - _minPoint.Y, LINE_Z_INDEX));
                 }
+                outlinePoints.Add(outlinePoints[0]);
+
                 Mesh3D mesh3D = new Mesh3D(polygon.Points, polygon2D.Triangulate());
                 MeshVisual3D mesh = new MeshVisual3D();
                 DiffuseMaterial material = new DiffuseMaterial(new SolidColorBrush(_fieldFillColor));
@@ -298,11 +301,19 @@ namespace FarmingGPS.Visualization
                 mesh.VertexRadius = 0;
                 mesh.Mesh = mesh3D;
 
-                outline.Color = _fieldOutlineColor;
-                outline.Points = polygonPoints;
+                Point3DCollection points = builder.CreatePositions(outlinePoints, LINE_THICKNESS, 0.0, null);
+                Int32Collection indices = builder.CreateIndices(outlinePoints.Count);
+
+                Mesh3D outlienMesh3D = new Mesh3D(points, indices);
+                DiffuseMaterial outlineMaterial = new DiffuseMaterial(new SolidColorBrush(_fieldOutlineColor));
+                outlineMaterial.Freeze();
+                GeometryModel3D outlineModel3D = new GeometryModel3D(outlienMesh3D.ToMeshGeometry3D(), outlineMaterial);
+                outlineModel3D.BackMaterial = outlineMaterial;
+                ModelVisual3D modelVisual = new ModelVisual3D();
+                modelVisual.Content = outlineModel3D;
                 
-                _viewPort.Children.Insert(0, mesh);
-                _viewPort.Children.Insert(1, outline);
+                _viewPort.Children.Add(mesh);
+                _viewPort.Children.Add(modelVisual);
             }
             else
                 Dispatcher.Invoke(new AddFieldDelegate(AddField), System.Windows.Threading.DispatcherPriority.Render, field);
@@ -446,7 +457,7 @@ namespace FarmingGPS.Visualization
                     meshBuilder.Append(polygon.Points, polygon2D.Triangulate(), vectors, polygon2D.Points);
                     GeometryModel3D geometry = mesh.Content as GeometryModel3D;
                     geometry.Geometry = meshBuilder.ToMesh();
-                    _viewPort.Children.Insert(2, mesh);
+                    _viewPort.Children.Add(mesh);
                 }
                 else
                 {
@@ -495,7 +506,7 @@ namespace FarmingGPS.Visualization
                         _trackMesh.Remove(e.ID);
                     }
                     _trackMesh.Add(e.ID, mesh);
-                    _viewPort.Children.Insert(2, mesh);
+                    _viewPort.Children.Add(mesh);
 
                     if (_trackMeshBuilder.ContainsKey(e.ID))
                         _trackMeshBuilder.Remove(e.ID);
@@ -513,7 +524,7 @@ namespace FarmingGPS.Visualization
                     {
                         _trackMeshHoles.Add(e.ID, holes);
                         foreach (MeshVisual3D hole in holes)
-                            _viewPort.Children.Insert(3, hole);
+                            _viewPort.Children.Add(hole);
                     }
 
                 }
