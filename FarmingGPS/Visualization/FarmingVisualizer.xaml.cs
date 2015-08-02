@@ -312,8 +312,8 @@ namespace FarmingGPS.Visualization
                 ModelVisual3D modelVisual = new ModelVisual3D();
                 modelVisual.Content = outlineModel3D;
                 
-                _viewPort.Children.Insert(0, mesh);
-                _viewPort.Children.Insert(1, modelVisual);
+                _viewPort.Children.Add(mesh);
+                _viewPort.Children.Add(modelVisual);
             }
             else
                 Dispatcher.Invoke(new AddFieldDelegate(AddField), System.Windows.Threading.DispatcherPriority.Render, field);
@@ -457,7 +457,7 @@ namespace FarmingGPS.Visualization
                     meshBuilder.Append(polygon.Points, polygon2D.Triangulate(), vectors, polygon2D.Points);
                     GeometryModel3D geometry = mesh.Content as GeometryModel3D;
                     geometry.Geometry = meshBuilder.ToMesh();
-                    _viewPort.Children.Insert(2, mesh);
+                    _viewPort.Children.Add(mesh);
                 }
                 else
                 {
@@ -506,7 +506,7 @@ namespace FarmingGPS.Visualization
                         _trackMesh.Remove(e.ID);
                     }
                     _trackMesh.Add(e.ID, mesh);
-                    _viewPort.Children.Insert(2, mesh);
+                    _viewPort.Children.Add(mesh);
 
                     if (_trackMeshBuilder.ContainsKey(e.ID))
                         _trackMeshBuilder.Remove(e.ID);
@@ -524,7 +524,7 @@ namespace FarmingGPS.Visualization
                     {
                         _trackMeshHoles.Add(e.ID, holes);
                         foreach (MeshVisual3D hole in holes)
-                            _viewPort.Children.Insert(3, hole);
+                            _viewPort.Children.Add(hole);
                     }
 
                 }
