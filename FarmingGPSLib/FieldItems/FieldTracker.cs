@@ -8,30 +8,6 @@ using FarmingGPSLib.FarmingModes.Tools;
 
 namespace FarmingGPSLib.FieldItems
 {
-    //internal struct IntersectionInfo
-    //{
-    //    internal enum CutEnum
-    //    {
-    //        Right,
-    //        Center,
-    //        Left
-    //    }
-
-    //    internal IntersectionInfo(int index, Coordinate coord, CutEnum cutSide)
-    //    {
-    //        Index = index;
-    //        IntersectCoordinate = coord;
-    //        CutSide = cutSide;
-    //    }
-
-    //    internal int Index;
-
-    //    internal Coordinate IntersectCoordinate;
-        
-    //    internal CutEnum CutSide;
-
-    //}
-
     internal class CSVCoordinates
     {
         private IEnumerable<Coordinate> _coords;
