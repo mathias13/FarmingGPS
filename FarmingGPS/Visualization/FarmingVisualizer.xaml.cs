@@ -439,94 +439,115 @@ namespace FarmingGPS.Visualization
         {
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
             {
-                if (_trackMesh.Keys.Contains(e.ID) && !e.RedrawPolygon)
+                try
                 {
-                    MeshVisual3D mesh = _trackMesh[e.ID];
-                    _viewPort.Children.Remove(mesh);
-                    MeshBuilder meshBuilder = _trackMeshBuilder[e.ID];
-                    Polygon3D polygon = new Polygon3D();
-                    Polygon polygon2D = new Polygon();
-                    IList<Vector3D> vectors = new List<Vector3D>();
-                    foreach (DotSpatial.Topology.Coordinate coord in e.NewCoordinates.Coordinates)
+                    if (_trackMesh.Keys.Contains(e.ID) && !e.RedrawPolygon)
                     {
-                        polygon.Points.Add(new Point3D(coord.X - _minPoint.X, coord.Y - _minPoint.Y, FIELD_TRACK_Z_INDEX));
-                        polygon2D.Points.Add(new Point(coord.X - _minPoint.X, coord.Y - _minPoint.Y));
-                        vectors.Add(new Vector3D(0.0, 0.0, 1.0));
-                    }
-
-                    meshBuilder.Append(polygon.Points, polygon2D.Triangulate(), vectors, polygon2D.Points);
-                    GeometryModel3D geometry = mesh.Content as GeometryModel3D;
-                    geometry.Geometry = meshBuilder.ToMesh();
-                    _viewPort.Children.Add(mesh);
-                }
-                else
-                {
-                    MeshBuilder meshBuilder = new MeshBuilder(true, true);
-                    Polygon3D polygon = new Polygon3D();
-                    Polygon polygon2D = new Polygon();
-                    IList<Vector3D> vectors = new List<Vector3D>();
-                    for (int i = 0; i < e.Polygon.Shell.Coordinates.Count - 1; i++)
-                    {
-                        polygon.Points.Add(new Point3D(e.Polygon.Shell.Coordinates[i].X - _minPoint.X, e.Polygon.Shell.Coordinates[i].Y - _minPoint.Y, FIELD_TRACK_Z_INDEX));
-                        polygon2D.Points.Add(new Point(e.Polygon.Shell.Coordinates[i].X - _minPoint.X, e.Polygon.Shell.Coordinates[i].Y - _minPoint.Y));
-                        vectors.Add(new Vector3D(0.0, 0.0, 1.0));
-                    }
-                    meshBuilder.Append(polygon.Points, polygon2D.Triangulate(), vectors, polygon2D.Points);
-                    MeshVisual3D mesh = new MeshVisual3D();
-                    GeometryModel3D geometry = new GeometryModel3D();
-                    geometry.Material = _fieldTrackMaterial;
-                    geometry.Geometry = meshBuilder.ToMesh();
-                    mesh.FaceMaterial = _fieldTrackMaterial;
-                    mesh.EdgeDiameter = 0;
-                    mesh.VertexRadius = 0;
-                    mesh.Content = geometry;
-
-                    IList<MeshVisual3D> holes = new List<MeshVisual3D>();
-                    foreach(DotSpatial.Topology.ILinearRing hole in e.Polygon.Holes)
-                    {
-                        Polygon3D holePolygon = new Polygon3D();
-                        Polygon holePolygon2D = new Polygon();
-                        for (int i = 0; i < hole.Coordinates.Count - 1; i++)
+                        MeshVisual3D mesh = _trackMesh[e.ID];
+                        _viewPort.Children.Remove(mesh);
+                        MeshBuilder meshBuilder = _trackMeshBuilder[e.ID];
+                        Polygon3D polygon = new Polygon3D();
+                        Polygon polygon2D = new Polygon();
+                        IList<Vector3D> vectors = new List<Vector3D>();
+                        foreach (DotSpatial.Topology.Coordinate coord in e.NewCoordinates.Coordinates)
                         {
-                            holePolygon.Points.Add(new Point3D(hole.Coordinates[i].X - _minPoint.X, hole.Coordinates[i].Y - _minPoint.Y, FIELD_TRACK_HOLES_Z_INDEX));
-                            holePolygon2D.Points.Add(new Point(hole.Coordinates[i].X - _minPoint.X, hole.Coordinates[i].Y - _minPoint.Y));
+                            polygon.Points.Add(new Point3D(coord.X - _minPoint.X, coord.Y - _minPoint.Y, FIELD_TRACK_Z_INDEX));
+                            polygon2D.Points.Add(new Point(coord.X - _minPoint.X, coord.Y - _minPoint.Y));
+                            vectors.Add(new Vector3D(0.0, 0.0, 1.0));
                         }
-                        Mesh3D holeMesh3D = new Mesh3D(holePolygon.Points, holePolygon2D.Triangulate());
-                        MeshVisual3D holeMesh = new MeshVisual3D();
-                        holeMesh.FaceMaterial = _fieldTrackHoleMaterial;
-                        holeMesh.EdgeDiameter = 0;
-                        holeMesh.VertexRadius = 0;
-                        holeMesh.Mesh = holeMesh3D;
-                        holes.Add(holeMesh);
-                    }
 
-                    if (_trackMesh.ContainsKey(e.ID))
+                        meshBuilder.Append(polygon.Points, polygon2D.Triangulate(), vectors, polygon2D.Points);
+                        GeometryModel3D geometry = mesh.Content as GeometryModel3D;
+                        geometry.Geometry = meshBuilder.ToMesh();
+                        _viewPort.Children.Add(mesh);
+                    }
+                    else
                     {
-                        _viewPort.Children.Remove(_trackMesh[e.ID]);
-                        _trackMesh.Remove(e.ID);
+                        MeshBuilder meshBuilder = new MeshBuilder(true, true);
+                        Polygon3D polygon = new Polygon3D();
+                        Polygon polygon2D = new Polygon();
+                        IList<Vector3D> vectors = new List<Vector3D>();
+                        for (int i = 0; i < e.Polygon.Shell.Coordinates.Count - 1; i++)
+                        {
+                            polygon.Points.Add(new Point3D(e.Polygon.Shell.Coordinates[i].X - _minPoint.X, e.Polygon.Shell.Coordinates[i].Y - _minPoint.Y, FIELD_TRACK_Z_INDEX));
+                            polygon2D.Points.Add(new Point(e.Polygon.Shell.Coordinates[i].X - _minPoint.X, e.Polygon.Shell.Coordinates[i].Y - _minPoint.Y));
+                            vectors.Add(new Vector3D(0.0, 0.0, 1.0));
+                        }
+                        meshBuilder.Append(polygon.Points, polygon2D.Triangulate(), vectors, polygon2D.Points);
+                        MeshVisual3D mesh = new MeshVisual3D();
+                        GeometryModel3D geometry = new GeometryModel3D();
+                        geometry.Material = _fieldTrackMaterial;
+                        geometry.Geometry = meshBuilder.ToMesh();
+                        mesh.FaceMaterial = _fieldTrackMaterial;
+                        mesh.EdgeDiameter = 0;
+                        mesh.VertexRadius = 0;
+                        mesh.Content = geometry;
+
+                        IList<MeshVisual3D> holes = new List<MeshVisual3D>();
+                        foreach (DotSpatial.Topology.ILinearRing hole in e.Polygon.Holes)
+                        {
+                            Polygon3D holePolygon = new Polygon3D();
+                            Polygon holePolygon2D = new Polygon();
+                            for (int i = 0; i < hole.Coordinates.Count - 1; i++)
+                            {
+                                holePolygon.Points.Add(new Point3D(hole.Coordinates[i].X - _minPoint.X, hole.Coordinates[i].Y - _minPoint.Y, FIELD_TRACK_HOLES_Z_INDEX));
+                                holePolygon2D.Points.Add(new Point(hole.Coordinates[i].X - _minPoint.X, hole.Coordinates[i].Y - _minPoint.Y));
+                            }
+                            Mesh3D holeMesh3D = new Mesh3D(holePolygon.Points, holePolygon2D.Triangulate());
+                            MeshVisual3D holeMesh = new MeshVisual3D();
+                            holeMesh.FaceMaterial = _fieldTrackHoleMaterial;
+                            holeMesh.EdgeDiameter = 0;
+                            holeMesh.VertexRadius = 0;
+                            holeMesh.Mesh = holeMesh3D;
+                            holes.Add(holeMesh);
+                        }
+
+                        if (_trackMesh.ContainsKey(e.ID))
+                        {
+                            _viewPort.Children.Remove(_trackMesh[e.ID]);
+                            _trackMesh.Remove(e.ID);
+                        }
+                        _trackMesh.Add(e.ID, mesh);
+                        _viewPort.Children.Add(mesh);
+
+                        if (_trackMeshBuilder.ContainsKey(e.ID))
+                            _trackMeshBuilder.Remove(e.ID);
+
+                        _trackMeshBuilder.Add(e.ID, meshBuilder);
+
+                        if (_trackMeshHoles.ContainsKey(e.ID))
+                        {
+                            foreach (MeshVisual3D meshHole in _trackMeshHoles[e.ID])
+                                _viewPort.Children.Remove(meshHole);
+                            _trackMeshHoles.Remove(e.ID);
+                        }
+
+                        if (holes.Count > 0)
+                        {
+                            _trackMeshHoles.Add(e.ID, holes);
+                            foreach (MeshVisual3D hole in holes)
+                                _viewPort.Children.Add(hole);
+                        }
+
                     }
-                    _trackMesh.Add(e.ID, mesh);
-                    _viewPort.Children.Add(mesh);
-
-                    if (_trackMeshBuilder.ContainsKey(e.ID))
-                        _trackMeshBuilder.Remove(e.ID);
-
-                    _trackMeshBuilder.Add(e.ID, meshBuilder);
-
-                    if(_trackMeshHoles.ContainsKey(e.ID))
+                }
+                catch (Exception e1)
+                {
+                    System.IO.StreamWriter streamWriter = new System.IO.StreamWriter(@"C:\Binaries\positions.csv");
+                    streamWriter.Write(DateTime.Now.ToString("hh:mm:ss") + Environment.NewLine);
+                    streamWriter.Write(e1.ToString() + Environment.NewLine);
+                    streamWriter.Write("Shell" + Environment.NewLine);
+                    FarmingGPSLib.HelperClasses.CSVCoordinates shellCoord = new FarmingGPSLib.HelperClasses.CSVCoordinates(e.Polygon.Shell.Coordinates);
+                    streamWriter.Write(shellCoord.ToString());
+                    foreach (DotSpatial.Topology.ILinearRing hole in e.Polygon.Holes)
                     {
-                        foreach (MeshVisual3D meshHole in _trackMeshHoles[e.ID])
-                            _viewPort.Children.Remove(meshHole);
-                        _trackMeshHoles.Remove(e.ID);
+                        streamWriter.Write("Hole" + Environment.NewLine);
+                        FarmingGPSLib.HelperClasses.CSVCoordinates holeCoord = new FarmingGPSLib.HelperClasses.CSVCoordinates(hole.Coordinates);
+                        streamWriter.Write(holeCoord.ToString());
                     }
+                    streamWriter.Flush();
 
-                    if(holes.Count > 0)
-                    {
-                        _trackMeshHoles.Add(e.ID, holes);
-                        foreach (MeshVisual3D hole in holes)
-                            _viewPort.Children.Add(hole);
-                    }
-
+                    streamWriter.Dispose();
                 }
             }
             else
