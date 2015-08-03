@@ -61,7 +61,7 @@ namespace FarmingGPS.Visualization
 
         private readonly Point3D VIEW_TOP_POSTION = new Point3D(2.0, 0.0, 30.0);
 
-        private readonly Vector3D VIEW_TOP_ZOOM_VECTOR = new Vector3D(0.0, 0.0, 10.0);
+        private readonly Vector3D VIEW_TOP_ZOOM_VECTOR = new Vector3D(1.0, 0.0, 10.0);
 
         private readonly Vector3D VIEW_TOP_LOOK_DIRECTION = new Vector3D(0.0, 0.0, -30.0);
 
