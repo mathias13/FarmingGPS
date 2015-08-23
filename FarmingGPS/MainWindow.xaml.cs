@@ -285,6 +285,15 @@ namespace FarmingGPS
             _visualization.ChangeView();
         }
 
+        private void BTN_SETTINGS_Click(object sender, RoutedEventArgs e)
+        {
+            if (_settingsGrid.Visibility == System.Windows.Visibility.Hidden)
+                _settingsGrid.Visibility = System.Windows.Visibility.Visible;
+            else
+                _settingsGrid.Visibility = System.Windows.Visibility.Hidden;
+        }
+
         #endregion
+
     }
 }

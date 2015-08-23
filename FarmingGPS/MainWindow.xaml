@@ -25,11 +25,15 @@
             <Button x:Name="BTN_ZOOM_IN" Style="{StaticResource BUTTON_ZOOM_IN}" Width="60" Height="60" Margin="10,10,10,10" Click="BTN_ZOOM_IN_Click"/>
             <Button x:Name="BTN_ZOOM_OUT" Style="{StaticResource BUTTON_ZOOM_OUT}" Width="60" Height="60" Margin="10,10,10,10" Click="BTN_ZOOM_OUT_Click"/>
             <Button x:Name="BTN_VIEW_CHANGE" Style="{StaticResource BUTTON_CAMERA}" Width="60" Height="60" Margin="10,10,10,10" Click="BTN_VIEW_CHANGE_Click"/>
+            <Button x:Name="BTN_SETTINGS" Style="{StaticResource BUTTON_TOOLS}" Width="60" Height="60" Margin="10,10,10,10" Click="BTN_SETTINGS_Click"/>
         </StackPanel>
         <visualization:SpeedBar Grid.Row="1" Width="Auto" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" x:FieldModifier="private" x:Name="_speedBar"/>
         <TextBlock x:FieldModifier="private" x:Name="_fixMode" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Background="White"/>
         <Border Background="White" BorderThickness="2" CornerRadius="5" Grid.Row="1" Style="{Binding Path=CameraSize, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" >
             <Image Source="{Binding Path=CameraImage, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" MouseLeftButtonUp="Image_MouseLeftButtonUp"/>
         </Border>
+        <Grid Background="Black" Grid.Row="1" Margin="10,10,50,10" x:Name="_settingsGrid" x:FieldModifier="private" Visibility="Hidden">
+            
+        </Grid>
     </Grid>
 </Window>
