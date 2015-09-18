@@ -17,7 +17,7 @@
     <Grid>
         <helix:HelixViewport3D x:Name="_viewPort" x:FieldModifier="private" 
                                IsZoomEnabled="False" 
-                               Background="AntiqueWhite" 
+                               Background="Transparent" 
                                ShowViewCube="False"
                                IsPanEnabled="False"
                                IsRotationEnabled="False"

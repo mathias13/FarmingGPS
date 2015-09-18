@@ -10,7 +10,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid Background="Silver">
+    <Grid>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
             <Ellipse>
                 <Ellipse.Style>
