@@ -37,6 +37,26 @@
         </Border>
         <Grid Grid.Row="1" Margin="10,10,70,10" x:Name="_settingsGrid" x:FieldModifier="private" Visibility="Hidden">
             <Border Style="{StaticResource MenuBorder}" Opacity="0.9"/>
+            <Grid Margin="10,10,10,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Column="0">
+                    <TreeView>
+                        <TreeViewItem Header="test">
+                            <TreeViewItem Header="undertest"/>
+                        
+                        </TreeViewItem>
+                        <TreeViewItem Header="test1">
+                            
+                        </TreeViewItem>
+                    </TreeView>
+                </Grid>
+                <Grid Grid.Column="1" Background="Red">
+
+                </Grid>
+            </Grid>
         </Grid>
     </Grid>
 </Window>
