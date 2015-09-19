@@ -181,6 +181,14 @@ namespace FarmingGPSLib.FieldItems
                             _polygons[_currentPolygonIndex].Holes = holes.ToArray();
                         }
 
+                        for (int i = 0; i < _polygons.Count; i++)
+                        {
+                            if(i == _currentPolygonIndex)
+                                continue;
+                            if (_polygons[_currentPolygonIndex].Intersects(_polygons[i]))
+                                _polygons[_currentPolygonIndex] = (Polygon)_polygons[_currentPolygonIndex].Union(_polygons[i]);
+                        }
+                        
                         OnPolygonUpdated(_currentPolygonIndex, newCoordinates, polygonHoleChanged);
                     }
                 }
