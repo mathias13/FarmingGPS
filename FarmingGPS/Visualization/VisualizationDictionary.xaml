@@ -2,6 +2,23 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:helix="clr-namespace:HelixToolkit.Wpf;assembly=HelixToolkit.Wpf">
 
+    <Style x:Key="PiPvideo" TargetType="Border">
+        <Setter Property="Margin" Value="10,10,10,10"/>
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+        <Setter Property="Width" Value="Auto"/>
+        <Setter Property="Height" Value="72"/>
+        <Setter Property="BorderBrush" Value="Black"/>
+    </Style>
+    <Style x:Key="Fullvideo" TargetType="Border">
+        <Setter Property="Margin" Value="0,0,0,0"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="Width" Value="Auto"/>
+        <Setter Property="Height" Value="Auto"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+    </Style>
+    
     <RadialGradientBrush Center="0.4,0.4" x:Key="LIGHT_BULB_GREEN_ON">
         <RadialGradientBrush.GradientStops>
             <GradientStopCollection>
@@ -45,19 +62,18 @@
         <Setter Property="Height" Value="{Binding ActualWidth, RelativeSource={RelativeSource Self}}"/>
     </Style>
 
-    <SolidColorBrush x:Key="TRACK_LINE_INACTIVE">#FF000000</SolidColorBrush>
-    <SolidColorBrush x:Key="TRACK_LINE_DEPLETED">#FF808080</SolidColorBrush>
-    <!--<ColorAnimationUsingKeyFrames x:Key="TRACK_LINE_ANIMATION" Duration="0:0:1.0" RepeatBehavior="Forever">
-        <ColorAnimationUsingKeyFrames.KeyFrames>
-            <DiscreteColorKeyFrame Value="Blue" KeyTime="0:0:0"/>
-            <DiscreteColorKeyFrame Value="Orange" KeyTime="0:0:0.5"/>
-        </ColorAnimationUsingKeyFrames.KeyFrames>
-    </ColorAnimationUsingKeyFrames>-->
+    <SolidColorBrush x:Key="TRACK_LINE_INACTIVE">#FF0000FF</SolidColorBrush>
+    <SolidColorBrush x:Key="TRACK_LINE_DEPLETED">#FFFFFFFF</SolidColorBrush>
 
-    <ColorAnimation x:Key="TRACK_LINE_ANIMATION" Duration="0:0:1.0" RepeatBehavior="Forever" From="Blue" To="Orange"/>
-
-    <!--<Color x:Key="FIELD_OUTLINE">#FFFF0000</Color>-->
-    <SolidColorBrush x:Key="FIELD_OUTLINE">#FFFF0000</SolidColorBrush>
+    <ColorAnimationUsingKeyFrames x:Key="TRACK_LINE_ANIMATION" BeginTime="0:0:0" Duration="0:0:4" RepeatBehavior="Forever">
+        <ColorKeyFrameCollection>
+            <DiscreteColorKeyFrame KeyTime="0:0:0" Value="Yellow"/>
+            <DiscreteColorKeyFrame KeyTime="0:0:2" Value="Blue"/>
+        </ColorKeyFrameCollection>
+    </ColorAnimationUsingKeyFrames>
+    
+    <Color x:Key="FIELD_OUTLINE">#FFFF0000</Color>
     <Color x:Key="FIELD_FILL">#FF008000</Color>
-    <Color x:Key="TRACK_FILL">#FFADD8E6</Color>
+    <SolidColorBrush x:Key="TRACK_FILL">#FF32CD32</SolidColorBrush>
+    <SolidColorBrush x:Key="TRACK_HOLE">#FFFF0000</SolidColorBrush>
 </ResourceDictionary>

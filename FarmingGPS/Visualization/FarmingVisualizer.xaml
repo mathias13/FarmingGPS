@@ -15,10 +15,20 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-        <helix:HelixViewport3D x:Name="_viewPort" x:FieldModifier="private" IsZoomEnabled="True" Background="AntiqueWhite">
+        <helix:HelixViewport3D x:Name="_viewPort" x:FieldModifier="private" 
+                               IsZoomEnabled="False" 
+                               Background="AntiqueWhite" 
+                               ShowViewCube="False"
+                               IsPanEnabled="False"
+                               IsRotationEnabled="False"
+                               IsHitTestVisible="False"
+                               ClipToBounds="False">
             <helix:HelixViewport3D.Camera>
-                <PerspectiveCamera Position="-30,0,12" LookDirection="4.7,0,-1 " 
-                         UpDirection="0,0,1">
+                <PerspectiveCamera Position="{Binding Path=CameraPosition, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:FarmingVisualizer}}}" 
+                                   LookDirection="{Binding Path=CameraLookDirection, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:FarmingVisualizer}}}" 
+                                   UpDirection="1,0,1">
+                <!--<PerspectiveCamera Position="0,0,80" LookDirection="0,0,-80 " 
+                         UpDirection="1,0,1">-->
                     <PerspectiveCamera.Transform>
                         <Transform3DGroup>
                             <TranslateTransform3D OffsetX="{Binding Path=ShiftX, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:FarmingVisualizer}}}"
@@ -91,5 +101,8 @@
                 </ModelVisual3D.Content>
             </ModelVisual3D>
         </helix:HelixViewport3D>
+        <TextBlock>
+            
+        </TextBlock>
     </Grid>
 </UserControl>

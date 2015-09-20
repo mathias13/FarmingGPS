@@ -149,9 +149,37 @@ namespace FarmingGPSLib.FarmingModes
             get { return _trackingLines; }
         }
 
-        public TrackingLine GetClosestLine()
+        public TrackingLine GetClosestLine(Coordinate position)
         {
-            throw new NotImplementedException();
+            double distanceToLine = double.MaxValue;
+            TrackingLine closestLine = null;
+            foreach(TrackingLine trackingLine in _trackingLines)
+            {
+                if (trackingLine.Depleted)
+                    continue;
+
+                double tempDistance = trackingLine.GetDistanceToLine(position);
+                if(tempDistance < distanceToLine)
+                {
+                    distanceToLine = tempDistance;
+                    closestLine = trackingLine;
+                }
+            }
+
+            foreach (TrackingLine trackingLine in _trackingLinesHeadLand)
+            {
+                if (trackingLine.Depleted)
+                    continue;
+
+                double tempDistance = trackingLine.GetDistanceToLine(position);
+                if (tempDistance < distanceToLine)
+                {
+                    distanceToLine = tempDistance;
+                    closestLine = trackingLine;
+                }
+            }
+
+            return closestLine;
         }
 
         #endregion

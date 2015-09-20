@@ -37,7 +37,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
             _line = line;
         }
 
-        public OrientationToLine GetOrientationToLine(Coordinate point, Angle directionOfTravel)
+        public OrientationToLine GetOrientationToLine(Coordinate point, DotSpatial.Positioning.Azimuth directionOfTravel)
         {
             Coordinate p0 = Coordinate.Empty;
             Coordinate p1 = Coordinate.Empty;
@@ -54,7 +54,8 @@ namespace FarmingGPSLib.FarmingModes.Tools
                 }
             }
             LineSegment line = new LineSegment(p0, p1);
-            Angle angleDiff = new Angle(line.Angle - directionOfTravel.Radians);
+            directionOfTravel =  DotSpatial.Positioning.Azimuth.Maximum - directionOfTravel.Subtract(90.0).DecimalDegrees;
+            Angle angleDiff = new Angle(line.Angle - directionOfTravel.ToRadians().Value);
             if (angleDiff.Radians > Math.PI)
                 angleDiff = new Angle(angleDiff.Radians - Math.PI * 2);
             else if (angleDiff.Radians < Math.PI * -1)
@@ -70,15 +71,31 @@ namespace FarmingGPSLib.FarmingModes.Tools
             return new OrientationToLine(side, distance);
         }
         
+        public double GetDistanceToLine(Coordinate point)
+        {
+            double tempDistance = 0.0;
+            double distance = double.MaxValue;
+            for (int i = 0; i < _line.Coordinates.Count - 1; i++)
+            {
+                tempDistance = CgAlgorithms.DistancePointLine(point, _line.Coordinates[i], _line.Coordinates[i + 1]);
+                if (tempDistance < distance)
+                    distance = tempDistance;
+            }
+            return distance;
+        }
+
         public bool Depleted
         {
             get { return _depleted; }
             set 
             { 
+                if(_depleted != value)
+                {
+                    DepletedChangedEventHandler handler = DepletedChanged;
+                    if (handler != null)
+                        handler.Invoke(this, value);
+                }
                 _depleted = value;
-                DepletedChangedEventHandler handler = DepletedChanged;
-                if (handler != null)
-                    handler.Invoke(this, _depleted);
             }
         }
 
@@ -87,10 +104,13 @@ namespace FarmingGPSLib.FarmingModes.Tools
             get { return _active; }
             set
             {
+                if(_active != value)
+                {
+                    ActiveChangedEventHandler handler = ActiveChanged;
+                    if (handler != null)
+                        handler.Invoke(this, value);
+                }
                 _active = value;
-                ActiveChangedEventHandler handler = ActiveChanged;
-                if (handler != null)
-                    handler.Invoke(this, _active);
             }
         }
 
@@ -100,6 +120,30 @@ namespace FarmingGPSLib.FarmingModes.Tools
             {
                 return _line.Coordinates;
             }
+        }
+
+        public double Length
+        {
+            get
+            {
+                return _line.Length;
+            }
+        }
+
+        public ILineString Line
+        {
+            get { return _line; }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is TrackingLine)
+            {
+                TrackingLine trackingLine = (TrackingLine)obj;
+                return trackingLine.Line.Equals(this.Line);
+            }
+            else
+                return false;
         }
     }
 }

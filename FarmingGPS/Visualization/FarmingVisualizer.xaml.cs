@@ -51,13 +51,31 @@ namespace FarmingGPS.Visualization
 
         private const double LINE_THICKNESS = 0.05;
 
-        private const double LINE_Z_INDEX = 0.003;
+        private const double LINE_Z_INDEX = 0.0;
 
-        private const double FIELD_TRACK_HOLES_Z_INDEX = 0.008;
+        private const double FIELD_TRACK_HOLES_Z_INDEX = -0.004;
 
-        private const double FIELD_TRACK_Z_INDEX = 0.004;
+        private const double FIELD_TRACK_Z_INDEX = -0.008;
 
-        private const double FIELD_Z_INDEX = 0.0;
+        private const double FIELD_Z_INDEX = -0.012;
+
+        private readonly Point3D VIEW_TOP_POSTION = new Point3D(2.0, 0.0, 30.0);
+
+        private readonly Vector3D VIEW_TOP_ZOOM_VECTOR = new Vector3D(1.0, 0.0, 10.0);
+
+        private readonly Vector3D VIEW_TOP_LOOK_DIRECTION = new Vector3D(0.0, 0.0, -30.0);
+
+        private readonly Point3D VIEW_BEHIND_POSTION = new Point3D(-30.0, 0.0, 12.0);
+
+        private readonly Vector3D VIEW_BEHIND_ZOOM_VECTOR = new Vector3D(-4.7, 0.0, 1);
+
+        private readonly Vector3D VIEW_BEHIND_LOOK_DIRECTION = new Vector3D(4.7, 0.0, -1.0);
+
+        private const double VIEW_ZOOM_INCREMENT = 0.5;
+
+        private const double VIEW_ZOOM_MIN = 0.0;
+
+        private const double VIEW_ZOOM_MAX = 10.0;
 
         #endregion
 
@@ -70,32 +88,38 @@ namespace FarmingGPS.Visualization
         private Point _lastPoint = new Point(0.0, 0.0);
 
         private DotSpatial.Topology.Coordinate _minPoint;
-        
-        private IDictionary<TrackingLine, TubeVisual3D> _trackingLines = new Dictionary<TrackingLine, TubeVisual3D>();
+
+        private IDictionary<TrackingLine, ModelVisual3D> _trackingLines = new Dictionary<TrackingLine, ModelVisual3D>();
 
         private object _syncObject = new object();
+
+        private DiffuseMaterial _lineNormalMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.Blue));
+
+        private DiffuseMaterial _lineDepletedMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.White));
+
+        private DiffuseMaterial _lineActiveMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.Red));
+
+        private SolidColorBrush _lineActiveColor = new SolidColorBrush(Colors.Red);
         
-        private ColorAnimation _trackingAnimation;
-
-        private SolidColorBrush _trackingBrush = new SolidColorBrush(Colors.Yellow);
-
-        private Brush _lineNormalColor = Brushes.White;
-
-        private Brush _lineDepletedColor = Brushes.Black;
-
         private Color _fieldFillColor = Colors.Green;
 
-        private Brush _fieldOutlineColor = Brushes.Black;
+        private Color _fieldOutlineColor = Colors.Black;
+
+        private DiffuseMaterial _fieldTrackMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.LightBlue));
+
+        private DiffuseMaterial _fieldTrackHoleMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.LightBlue));
         
-        private Brush _testColor = Brushes.Blue;
-
-        private Color _fieldTrackColor = Colors.LightBlue;
-
         private IDictionary<int, MeshVisual3D> _trackMesh = new Dictionary<int, MeshVisual3D>();
 
         private IDictionary<int, MeshBuilder> _trackMeshBuilder = new Dictionary<int, MeshBuilder>();
 
         private IDictionary<int, IList<MeshVisual3D>> _trackMeshHoles = new Dictionary<int, IList<MeshVisual3D>>();
+
+        private bool _viewTopActive = false;
+
+        private double _viewTopZoomLevel = 0.0;
+
+        private double _viewBehindZoomLevel = 0.0;
 
         #endregion
 
@@ -194,8 +218,8 @@ namespace FarmingGPS.Visualization
                 return;
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
             {
-                TubeVisual3D visualLine = new TubeVisual3D();
-                Point3DCollection points = new Point3DCollection();
+                LineGeometryBuilder builder = new LineGeometryBuilder(_viewPort.Children[0]);
+                List<Point3D> linePoints = new List<Point3D>();
                 for (int i = 0; i < trackingLine.Points.Count - 1; i++)
                 {
                     double x1 = trackingLine.Points[i].X;
@@ -209,70 +233,26 @@ namespace FarmingGPS.Visualization
                         x2 -= _minPoint.X;
                         y2 -= _minPoint.Y;
                     }
-                    points.Add(new Point3D(x1, y1, LINE_Z_INDEX));
-                    points.Add(new Point3D(x2, y2, LINE_Z_INDEX));
+                    linePoints.Add(new Point3D(x1, y1, LINE_Z_INDEX));
+                    linePoints.Add(new Point3D(x2, y2, LINE_Z_INDEX));
                 }
 
-                visualLine.Diameter = LINE_THICKNESS;
-                visualLine.Path = points;
+                Point3DCollection points = builder.CreatePositions(linePoints, LINE_THICKNESS, 0.0, null);
+                Int32Collection indices = builder.CreateIndices(linePoints.Count);
 
-                //TODO fix color for tracking lines
-                if (_testColor == Brushes.Blue)
-                    _testColor = Brushes.Yellow;
-                else if (_testColor == Brushes.Yellow)
-                    _testColor = Brushes.Blue;
-
-                visualLine.Fill = _testColor;
+                Mesh3D mesh3D = new Mesh3D(points, indices);
+                GeometryModel3D model3D = new GeometryModel3D(mesh3D.ToMeshGeometry3D(), _lineActiveMaterial);
+                model3D.BackMaterial = _lineNormalMaterial;
+                ModelVisual3D modelVisual = new ModelVisual3D();
+                modelVisual.Content = model3D;
 
                 trackingLine.ActiveChanged += trackingLine_ActiveChanged;
                 trackingLine.DepletedChanged += trackingLine_DepletedChanged;
-                _trackingLines.Add(trackingLine, visualLine);
-                _viewPort.Children.Add(visualLine);
-                //TODO finish to new TrackingLine class
+                _trackingLines.Add(trackingLine, modelVisual);
+                _viewPort.Children.Add(modelVisual);
             }
             else
                 Dispatcher.Invoke(new LineDelegate(AddLine), System.Windows.Threading.DispatcherPriority.Render, trackingLine);
-        }
-
-        public void AddLine(TrackingLine trackingLine, Brush color)
-        {
-            if (_trackingLines.ContainsKey(trackingLine))
-                return;
-            if (Dispatcher.Thread.Equals(Thread.CurrentThread))
-            {
-                TubeVisual3D visualLine = new TubeVisual3D();
-                Point3DCollection points = new Point3DCollection();
-                for (int i = 0; i < trackingLine.Points.Count - 1; i++)
-                {
-                    double x1 = trackingLine.Points[i].X;
-                    double y1 = trackingLine.Points[i].Y;
-                    double x2 = trackingLine.Points[i + 1].X;
-                    double y2 = trackingLine.Points[i + 1].Y;
-                    if (_minPoint != null)
-                    {
-                        x1 -= _minPoint.X;
-                        y1 -= _minPoint.Y;
-                        x2 -= _minPoint.X;
-                        y2 -= _minPoint.Y;
-                    }
-                    points.Add(new Point3D(x1, y1, LINE_Z_INDEX));
-                    points.Add(new Point3D(x2, y2, LINE_Z_INDEX));
-                }
-
-                visualLine.Diameter = LINE_THICKNESS;
-
-                visualLine.Fill = color;
-
-                visualLine.Path = points;
-
-                trackingLine.ActiveChanged += trackingLine_ActiveChanged;
-                trackingLine.DepletedChanged += trackingLine_DepletedChanged;
-                _trackingLines.Add(trackingLine, visualLine);
-                _viewPort.Children.Add(visualLine);
-                //TODO finish to new TrackingLine class
-            }
-            else
-                Dispatcher.Invoke(new LineDelegateColor(AddLine), System.Windows.Threading.DispatcherPriority.Render, trackingLine, color);
         }
 
         public void DeleteLine(TrackingLine trackingLine)
@@ -281,7 +261,7 @@ namespace FarmingGPS.Visualization
             {
                 if (_trackingLines.ContainsKey(trackingLine))
                 {
-                    TubeVisual3D lineVisual = _trackingLines[trackingLine];
+                    ModelVisual3D lineVisual = _trackingLines[trackingLine];
                     _viewPort.Children.Remove(lineVisual);
                     _trackingLines.Remove(trackingLine);
                     trackingLine.ActiveChanged -= trackingLine_ActiveChanged;
@@ -291,115 +271,49 @@ namespace FarmingGPS.Visualization
             else
                 Dispatcher.Invoke(new LineDelegate(DeleteLine), System.Windows.Threading.DispatcherPriority.Render, trackingLine);
         }
-
-        public void SetTrackingLine(TrackingLine trackingLine)
-        {
-            if (!Dispatcher.Thread.Equals(Thread.CurrentThread))
-                Dispatcher.Invoke(new LineDelegate(SetTrackingLine), System.Windows.Threading.DispatcherPriority.Render, trackingLine);
-            else
-            {
-                lock (_syncObject)
-                {
-                    if (!_trackingLines.ContainsKey(trackingLine))
-                        return;
-
-                    if (_trackingAnimation != null)
-                        _trackingLines[trackingLine].Fill = _trackingBrush;
-
-                }
-            }
-        }
-
+        
         public void AddField(IField field)
         {
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
             {
                 _minPoint = field.Polygon.Envelope.Minimum;
-                //TODO remove this only for testing
-                TubeVisual3D envelope = new TubeVisual3D();
-                envelope.Diameter = LINE_THICKNESS;
-                envelope.Fill = Brushes.LightSeaGreen;
-                Point3DCollection points = new Point3DCollection();
-                points.Add(new Point3D(field.Polygon.Envelope.Minimum.X - _minPoint.X, field.Polygon.Envelope.Minimum.Y - _minPoint.Y, FIELD_Z_INDEX));
-                points.Add(new Point3D(field.Polygon.Envelope.Minimum.X - _minPoint.X, field.Polygon.Envelope.Maximum.Y - _minPoint.Y, FIELD_Z_INDEX));
-                points.Add(new Point3D(field.Polygon.Envelope.Minimum.X - _minPoint.X, field.Polygon.Envelope.Maximum.Y - _minPoint.Y, FIELD_Z_INDEX));
-                points.Add(new Point3D(field.Polygon.Envelope.Maximum.X - _minPoint.X, field.Polygon.Envelope.Maximum.Y - _minPoint.Y, FIELD_Z_INDEX));
-                points.Add(new Point3D(field.Polygon.Envelope.Maximum.X - _minPoint.X, field.Polygon.Envelope.Maximum.Y - _minPoint.Y, FIELD_Z_INDEX));
-                points.Add(new Point3D(field.Polygon.Envelope.Maximum.X - _minPoint.X, field.Polygon.Envelope.Minimum.Y - _minPoint.Y, FIELD_Z_INDEX));
-                points.Add(new Point3D(field.Polygon.Envelope.Maximum.X - _minPoint.X, field.Polygon.Envelope.Minimum.Y - _minPoint.Y, FIELD_Z_INDEX));
-                points.Add(new Point3D(field.Polygon.Envelope.Minimum.X - _minPoint.X, field.Polygon.Envelope.Minimum.Y - _minPoint.Y, FIELD_Z_INDEX));
-                envelope.Path = points;
-                _viewPort.Children.Add(envelope);
                 Polygon3D polygon = new Polygon3D();
                 Polygon polygon2D = new Polygon();
-                TubeVisual3D outline = new TubeVisual3D();
-                outline.Diameter = LINE_THICKNESS;
+
+                LineGeometryBuilder builder = new LineGeometryBuilder(_viewPort.Children[0]);
+                List<Point3D> outlinePoints = new List<Point3D>();
+
                 Point3DCollection polygonPoints = new Point3DCollection();
                 for (int i = 0; i < field.Polygon.Coordinates.Count - 1; i++)
                 {
                     polygon.Points.Add(new Point3D(field.Polygon.Coordinates[i].X - _minPoint.X, field.Polygon.Coordinates[i].Y - _minPoint.Y, FIELD_Z_INDEX));
                     polygon2D.Points.Add(new Point(field.Polygon.Coordinates[i].X - _minPoint.X, field.Polygon.Coordinates[i].Y - _minPoint.Y));
-                    polygonPoints.Add(new Point3D(field.Polygon.Coordinates[i].X - _minPoint.X, field.Polygon.Coordinates[i].Y - _minPoint.Y, LINE_Z_INDEX));
-                    polygonPoints.Add(new Point3D(field.Polygon.Coordinates[i + 1].X - _minPoint.X, field.Polygon.Coordinates[i + 1].Y - _minPoint.Y, LINE_Z_INDEX));
+                    outlinePoints.Add(new Point3D(field.Polygon.Coordinates[i].X - _minPoint.X, field.Polygon.Coordinates[i].Y - _minPoint.Y, LINE_Z_INDEX));
                 }
+                outlinePoints.Add(outlinePoints[0]);
+
                 Mesh3D mesh3D = new Mesh3D(polygon.Points, polygon2D.Triangulate());
                 MeshVisual3D mesh = new MeshVisual3D();
                 DiffuseMaterial material = new DiffuseMaterial(new SolidColorBrush(_fieldFillColor));
-                material.Color = _fieldFillColor;
+                material.Freeze();
                 mesh.FaceMaterial = material;
                 mesh.EdgeDiameter = 0;
                 mesh.VertexRadius = 0;
                 mesh.Mesh = mesh3D;
-                
-                outline.Fill = _fieldOutlineColor;
-                outline.Path = polygonPoints;
+
+                Point3DCollection points = builder.CreatePositions(outlinePoints, LINE_THICKNESS, 0.0, null);
+                Int32Collection indices = builder.CreateIndices(outlinePoints.Count);
+
+                Mesh3D outlienMesh3D = new Mesh3D(points, indices);
+                DiffuseMaterial outlineMaterial = new DiffuseMaterial(new SolidColorBrush(_fieldOutlineColor));
+                outlineMaterial.Freeze();
+                GeometryModel3D outlineModel3D = new GeometryModel3D(outlienMesh3D.ToMeshGeometry3D(), outlineMaterial);
+                outlineModel3D.BackMaterial = outlineMaterial;
+                ModelVisual3D modelVisual = new ModelVisual3D();
+                modelVisual.Content = outlineModel3D;
                 
                 _viewPort.Children.Add(mesh);
-                _viewPort.Children.Add(outline);
-
-                //TODO remove this only for testing
-                Polygon3D polygon1 = new Polygon3D();
-                Polygon polygon2D1 = new Polygon();
-
-                polygon2D1.Points.Add(new Point(405.0, 400.0));
-                polygon2D1.Points.Add(new Point(405.0, 401.0));
-                polygon2D1.Points.Add(new Point(405.0, 402.0));
-                polygon2D1.Points.Add(new Point(405.0, 403.0));
-                polygon2D1.Points.Add(new Point(405.0, 404.0));
-                polygon2D1.Points.Add(new Point(404.75, 404.5));
-                polygon2D1.Points.Add(new Point(404.5, 405.0));
-                polygon2D1.Points.Add(new Point(404.25, 404.5));
-                polygon2D1.Points.Add(new Point(404.0, 404.0));
-                polygon2D1.Points.Add(new Point(404.0, 403.5));
-                polygon2D1.Points.Add(new Point(404.0, 403.0));//
-                polygon2D1.Points.Add(new Point(404.0, 402.0));//
-                polygon2D1.Points.Add(new Point(404.0, 401.0));
-                polygon2D1.Points.Add(new Point(404.0, 400.0));
-                polygon2D1.Points.Add(new Point(400.0, 400.0));
-                polygon2D1.Points.Add(new Point(400.0, 401.0));
-                polygon2D1.Points.Add(new Point(400.0, 402.0));
-                polygon2D1.Points.Add(new Point(400.0, 403.0));
-                polygon2D1.Points.Add(new Point(400.0, 403.5));
-                polygon2D1.Points.Add(new Point(400.0, 404.0));
-                polygon2D1.Points.Add(new Point(402.5, 407.0));
-                polygon2D1.Points.Add(new Point(405.0, 409.0));
-                polygon2D1.Points.Add(new Point(407.5, 407.0));
-                polygon2D1.Points.Add(new Point(410.0, 404.0));
-                polygon2D1.Points.Add(new Point(410.0, 403.0));
-                polygon2D1.Points.Add(new Point(410.0, 402.0));
-                polygon2D1.Points.Add(new Point(410.0, 401.0));
-                polygon2D1.Points.Add(new Point(410.0, 400.0));
-                foreach (Point point in polygon2D1.Points)
-                    polygon1.Points.Add(new Point3D(point.X, point.Y, 0.1));
-                Mesh3D mesh3D1 = new Mesh3D(polygon1.Points, polygon2D1.Triangulate());
-                MeshVisual3D mesh1 = new MeshVisual3D();
-                DiffuseMaterial material1 = new DiffuseMaterial(new SolidColorBrush(Colors.LightBlue));
-                material1.Color = Colors.LightBlue;
-                mesh1.FaceMaterial = material1;
-                mesh1.EdgeDiameter = 0;
-                mesh1.VertexRadius = 0;
-                mesh1.Mesh = mesh3D1;
-                _viewPort.Children.Add(mesh1);
+                _viewPort.Children.Add(modelVisual);
             }
             else
                 Dispatcher.Invoke(new AddFieldDelegate(AddField), System.Windows.Threading.DispatcherPriority.Render, field);
@@ -409,7 +323,56 @@ namespace FarmingGPS.Visualization
         {
             fieldTracker.PolygonUpdated += fieldTracker_PolygonUpdated;
         }
-                
+
+        public void ZoomOut()
+        {
+            lock (_syncObject)
+            {
+                if(_viewTopActive)
+                {
+                    _viewTopZoomLevel += VIEW_ZOOM_INCREMENT;
+                    if (_viewTopZoomLevel > VIEW_ZOOM_MAX)
+                        _viewTopZoomLevel = VIEW_ZOOM_MAX;
+                }
+                else
+                {
+                    _viewBehindZoomLevel += VIEW_ZOOM_INCREMENT;
+                    if (_viewBehindZoomLevel > VIEW_ZOOM_MAX)
+                        _viewBehindZoomLevel = VIEW_ZOOM_MAX;
+                }
+                Dispatcher.Invoke(new Action(UpdateZoomLevel), System.Windows.Threading.DispatcherPriority.Render);
+            }
+        }
+
+        public void ZoomIn()
+        {
+            lock (_syncObject)
+            {
+                if (_viewTopActive)
+                {
+                    _viewTopZoomLevel -= VIEW_ZOOM_INCREMENT;
+                    if (_viewTopZoomLevel < VIEW_ZOOM_MIN)
+                        _viewTopZoomLevel = VIEW_ZOOM_MIN;
+                }
+                else
+                {
+                    _viewBehindZoomLevel -= VIEW_ZOOM_INCREMENT;
+                    if (_viewBehindZoomLevel < VIEW_ZOOM_MIN)
+                        _viewBehindZoomLevel = VIEW_ZOOM_MIN;
+                }
+                Dispatcher.Invoke(new Action(UpdateZoomLevel), System.Windows.Threading.DispatcherPriority.Render);
+            }
+        }
+
+        public void ChangeView()
+        {
+            lock(_syncObject)
+            {
+                _viewTopActive = !_viewTopActive;
+                Dispatcher.Invoke(new Action(UpdateZoomLevel), System.Windows.Threading.DispatcherPriority.Render);
+            }
+        }
+
         #endregion
 
         #region TrackingLineEvents
@@ -421,7 +384,7 @@ namespace FarmingGPS.Visualization
                 TrackingLine trackingLine = (TrackingLine)sender;
                 if (!_trackingLines.ContainsKey(trackingLine))
                     return;
-                TubeVisual3D visualLine = _trackingLines[trackingLine];
+                ModelVisual3D visualLine = _trackingLines[trackingLine];
                 if (active)
                     ActivateTrackingLine(visualLine);
                 else
@@ -443,7 +406,7 @@ namespace FarmingGPS.Visualization
                 TrackingLine trackingLine = (TrackingLine)sender;
                 if (!_trackingLines.ContainsKey(trackingLine))
                     return;
-                TubeVisual3D visualLine = _trackingLines[trackingLine];
+                ModelVisual3D visualLine = _trackingLines[trackingLine];
                 if (depleted)
                     DepletedTrackingLine(visualLine);
                 else
@@ -452,27 +415,22 @@ namespace FarmingGPS.Visualization
             else
                 Dispatcher.Invoke(new TrackingLineEventDelegate(trackingLine_DepletedChanged), System.Windows.Threading.DispatcherPriority.Render, sender, depleted);
         }
-
-        private void ActivateTrackingLine(TubeVisual3D visualLine)
+  
+        private void ActivateTrackingLine(ModelVisual3D visualLine)
         {
-            visualLine.Fill = _trackingBrush;
+            ((GeometryModel3D)visualLine.Content).BackMaterial = _lineActiveMaterial;
         }
 
-        private void DeactivateTrackingLine(TubeVisual3D visualLine)
+        private void DepletedTrackingLine(ModelVisual3D visualLine)
         {
-            visualLine.Fill = _lineNormalColor;
+            ((GeometryModel3D)visualLine.Content).BackMaterial = _lineDepletedMaterial;
         }
 
-        private void DepletedTrackingLine(TubeVisual3D visualLine)
-        {            
-            visualLine.Fill = _lineDepletedColor;
-        }
-
-        private void NormalTrackingLine(TubeVisual3D visualLine)
+        private void NormalTrackingLine(ModelVisual3D visualLine)
         {
-            visualLine.Fill = Brushes.Red;
+            ((GeometryModel3D)visualLine.Content).BackMaterial = _lineNormalMaterial;
         }
-        
+
         #endregion
 
         #region FieldTrackerEvents
@@ -481,9 +439,10 @@ namespace FarmingGPS.Visualization
         {
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
             {
-                if (_trackMesh.Keys.Contains(e.ID) && !e.PolygonHolesChanged)
+                if (_trackMesh.Keys.Contains(e.ID) && !e.RedrawPolygon)
                 {
                     MeshVisual3D mesh = _trackMesh[e.ID];
+                    _viewPort.Children.Remove(mesh);
                     MeshBuilder meshBuilder = _trackMeshBuilder[e.ID];
                     Polygon3D polygon = new Polygon3D();
                     Polygon polygon2D = new Polygon();
@@ -498,6 +457,7 @@ namespace FarmingGPS.Visualization
                     meshBuilder.Append(polygon.Points, polygon2D.Triangulate(), vectors, polygon2D.Points);
                     GeometryModel3D geometry = mesh.Content as GeometryModel3D;
                     geometry.Geometry = meshBuilder.ToMesh();
+                    _viewPort.Children.Add(mesh);
                 }
                 else
                 {
@@ -514,11 +474,9 @@ namespace FarmingGPS.Visualization
                     meshBuilder.Append(polygon.Points, polygon2D.Triangulate(), vectors, polygon2D.Points);
                     MeshVisual3D mesh = new MeshVisual3D();
                     GeometryModel3D geometry = new GeometryModel3D();
-                    DiffuseMaterial material = new DiffuseMaterial(new SolidColorBrush(_fieldTrackColor));
-                    material.Color = _fieldTrackColor;
-                    geometry.Material = material;
+                    geometry.Material = _fieldTrackMaterial;
                     geometry.Geometry = meshBuilder.ToMesh();
-                    mesh.FaceMaterial = material;
+                    mesh.FaceMaterial = _fieldTrackMaterial;
                     mesh.EdgeDiameter = 0;
                     mesh.VertexRadius = 0;
                     mesh.Content = geometry;
@@ -535,11 +493,7 @@ namespace FarmingGPS.Visualization
                         }
                         Mesh3D holeMesh3D = new Mesh3D(holePolygon.Points, holePolygon2D.Triangulate());
                         MeshVisual3D holeMesh = new MeshVisual3D();
-                        //DiffuseMaterial holeMaterial = new DiffuseMaterial(new SolidColorBrush(_fieldFillColor));
-                        //holeMaterial.Color = _fieldFillColor; 
-                        DiffuseMaterial holeMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.Red));
-                        holeMaterial.Color = Colors.Red;
-                        holeMesh.FaceMaterial = holeMaterial;
+                        holeMesh.FaceMaterial = _fieldTrackHoleMaterial;
                         holeMesh.EdgeDiameter = 0;
                         holeMesh.VertexRadius = 0;
                         holeMesh.Mesh = holeMesh3D;
@@ -584,59 +538,63 @@ namespace FarmingGPS.Visualization
 
         #region Private Methods
 
-        //private void AddLine(int id, TubeVisual3D line)
-        //{
-        //    _lines.Add(id, line);
-        //    _viewPort.Children.Add(line);
-        //}
-
-        //private void AddLine(int id, LinesVisual3D line)
-        //{
-        //    _lines.Add(id, line);
-        //    _viewPort.Children.Add(line);
-        //}
-
         private void FarmingVisualizer_Loaded(object sender, RoutedEventArgs e)
         {
             object resource = TryFindResource("TRACK_LINE_ANIMATION");
+            if (resource != null && resource is ColorAnimationUsingKeyFrames)
+            {
+                this.RegisterName("LineActiveColor", _lineActiveColor);
+                ColorAnimationUsingKeyFrames animation = (ColorAnimationUsingKeyFrames)resource;
+                Storyboard.SetTargetName(animation, "LineActiveColor");
+                Storyboard.SetTargetProperty(animation, new PropertyPath(SolidColorBrush.ColorProperty));
+                _lineActiveMaterial = new DiffuseMaterial(_lineActiveColor);
+                Storyboard storyboard = new Storyboard();
+                storyboard.Children.Add(animation);
+                storyboard.Begin(this);
+            }
 
-            _trackingBrush = new SolidColorBrush();
-
-            this.RegisterName("TrackingAnimationBrush", _trackingBrush);
-            _trackingAnimation = (ColorAnimation)resource;
-            Storyboard.SetTargetName(_trackingAnimation, "TrackingAnimationBrush");
-            Storyboard.SetTargetProperty(
-                _trackingAnimation, new PropertyPath(SolidColorBrush.ColorProperty));
-            Storyboard mouseEnterStoryboard = new Storyboard();
-            mouseEnterStoryboard.Children.Add(_trackingAnimation);
-            mouseEnterStoryboard.Begin(this);
-            //if (resource != null && resource is ColorAnimationUsingKeyFrames)
-            //{
-            //    _trackingAnimation = resource as ColorAnimationUsingKeyFrames;
-            //    Storyboard storyboard = new Storyboard();
-            //    storyboard.Children.Add(_trackingAnimation);
-            //    Storyboard.SetTargetProperty(_trackingAnimation, new PropertyPath(TubeVisual3D.FillProperty));
-            //    storyboard.Begin(this);
-            //}
             resource = TryFindResource("TRACK_LINE_INACTIVE");
-            if (resource != null && resource is Color)
-                _lineNormalColor = (Brush)resource;
+            if (resource != null && resource is SolidColorBrush)
+                _lineNormalMaterial = new DiffuseMaterial((SolidColorBrush)resource);
 
             resource = TryFindResource("TRACK_LINE_DEPLETED");
-            if (resource != null && resource is Color)
-                _lineDepletedColor = (Brush)resource;
+            if (resource != null && resource is SolidColorBrush)
+                _lineDepletedMaterial = new DiffuseMaterial((SolidColorBrush)resource);
 
             resource = TryFindResource("FIELD_OUTLINE");
             if (resource != null && resource is Color)
-                _fieldOutlineColor = (Brush)resource;
+                _fieldOutlineColor = (Color)resource;
 
             resource = TryFindResource("FIELD_FILL");
             if (resource != null && resource is Color)
                 _fieldFillColor = (Color)resource;
 
             resource = TryFindResource("TRACK_FILL");
-            if (resource != null && resource is Color)
-                _fieldTrackColor = (Color)resource;
+            if (resource != null && resource is SolidColorBrush)
+                _fieldTrackMaterial = new DiffuseMaterial((SolidColorBrush)resource);
+
+            resource = TryFindResource("TRACK_HOLE");
+            if (resource != null && resource is SolidColorBrush)
+                _fieldTrackHoleMaterial = new DiffuseMaterial((SolidColorBrush)resource);
+
+            _fieldTrackMaterial.Freeze();
+            _fieldTrackHoleMaterial.Freeze();
+
+            UpdateZoomLevel();
+        }
+
+        private void UpdateZoomLevel()
+        {
+            if (_viewTopActive)
+            {
+                SetValue(CameraPositionProperty, VIEW_TOP_POSTION + (VIEW_TOP_ZOOM_VECTOR * _viewTopZoomLevel));
+                SetValue(CameraLookDirectionProperty, VIEW_TOP_LOOK_DIRECTION);
+            }
+            else
+            {
+                SetValue(CameraPositionProperty, VIEW_BEHIND_POSTION + (VIEW_BEHIND_ZOOM_VECTOR * _viewBehindZoomLevel));
+                SetValue(CameraLookDirectionProperty, VIEW_BEHIND_LOOK_DIRECTION);
+            }
         }
 
         #endregion
@@ -648,6 +606,10 @@ namespace FarmingGPS.Visualization
         protected static readonly DependencyProperty ShiftYProperty = DependencyProperty.Register("ShiftY", typeof(double), typeof(FarmingVisualizer));
 
         protected static readonly DependencyProperty ShiftHeadingProperty = DependencyProperty.Register("ShiftHeading", typeof(double), typeof(FarmingVisualizer));
+
+        protected static readonly DependencyProperty CameraPositionProperty = DependencyProperty.Register("CameraPosition", typeof(Point3D), typeof(FarmingVisualizer));
+
+        protected static readonly DependencyProperty CameraLookDirectionProperty = DependencyProperty.Register("CameraLookDirection", typeof(Vector3D), typeof(FarmingVisualizer));
 
         #endregion
     }

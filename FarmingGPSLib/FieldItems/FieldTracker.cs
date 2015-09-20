@@ -4,6 +4,7 @@ using DotSpatial.Topology;
 using DotSpatial.Topology.Algorithm;
 using DotSpatial.Topology.Precision;
 using FarmingGPSLib.HelperClasses;
+using FarmingGPSLib.FarmingModes.Tools;
 
 namespace FarmingGPSLib.FieldItems
 {
@@ -59,9 +60,17 @@ namespace FarmingGPSLib.FieldItems
 
         #endregion
 
+        #region Consts
+
+        private const int SIMPLIFIER_COUNT_LIMIT = 400;
+
+        #endregion
+
         #region Private Variables
 
         private IDictionary<int, Polygon> _polygons = new Dictionary<int, Polygon>();
+
+        private IDictionary<int, int> _polygonSimplifierCount = new Dictionary<int, int>();
                 
         private Coordinate _prevLeftPoint = Coordinate.Empty;
 
@@ -103,7 +112,7 @@ namespace FarmingGPSLib.FieldItems
                     }
                     else
                     {
-                        bool polygonHoleChanged = false;
+                        bool redrawPolygon = false;
 
                         List<Coordinate> newCoords = new List<Coordinate>();
                         newCoords.Add(_prevRightPoint);
@@ -162,10 +171,20 @@ namespace FarmingGPSLib.FieldItems
 
                         _polygons[_currentPolygonIndex] = (Polygon)_polygons[_currentPolygonIndex].Union(rectPolygon);
                         _polygons[_currentPolygonIndex].Shell = RoundCoordinates(_polygons[_currentPolygonIndex].Shell);
+                        if (_polygons[_currentPolygonIndex].Coordinates.Count > _polygonSimplifierCount[_currentPolygonIndex])
+                        {
+                            IGeometry geometry = DotSpatial.Topology.Simplify.TopologyPreservingSimplifier.Simplify(_polygons[_currentPolygonIndex], 0.03);
+                            if (geometry is Polygon)
+                            {
+                                _polygons[_currentPolygonIndex] = geometry as Polygon;
+                                _polygonSimplifierCount[_currentPolygonIndex] = geometry.Coordinates.Count + SIMPLIFIER_COUNT_LIMIT;
+                                redrawPolygon = true;
+                            }
+                        }
 
                         if (holeHash != _polygons[_currentPolygonIndex].Holes.GetHashCode())
                         {
-                            polygonHoleChanged = true;
+                            redrawPolygon = true;
                             List<ILinearRing> holes = new List<ILinearRing>(_polygons[_currentPolygonIndex].Holes);
                             for (int i = 0; i < holes.Count; i++)
                             {
@@ -181,15 +200,7 @@ namespace FarmingGPSLib.FieldItems
                             _polygons[_currentPolygonIndex].Holes = holes.ToArray();
                         }
 
-                        for (int i = 0; i < _polygons.Count; i++)
-                        {
-                            if(i == _currentPolygonIndex)
-                                continue;
-                            if (_polygons[_currentPolygonIndex].Intersects(_polygons[i]))
-                                _polygons[_currentPolygonIndex] = (Polygon)_polygons[_currentPolygonIndex].Union(_polygons[i]);
-                        }
-                        
-                        OnPolygonUpdated(_currentPolygonIndex, newCoordinates, polygonHoleChanged);
+                        OnPolygonUpdated(_currentPolygonIndex, newCoordinates, redrawPolygon);
                     }
                 }
                 else
@@ -207,6 +218,7 @@ namespace FarmingGPSLib.FieldItems
                     while (_polygons.Keys.Contains(id))
                         id++;
                     _polygons.Add(id, polygon);
+                    _polygonSimplifierCount.Add(id, SIMPLIFIER_COUNT_LIMIT);
                     _currentPolygonIndex = id;
                     OnPolygonUpdated(_currentPolygonIndex, newCoordinates, false);
                 }
@@ -231,6 +243,37 @@ namespace FarmingGPSLib.FieldItems
             {
                 _prevLeftPoint = Coordinate.Empty;
                 _prevRightPoint = Coordinate.Empty;
+            }
+        }
+
+        public double GetTrackingLineCoverage(TrackingLine trackingLine)
+        {
+            lock(_syncObject)
+            {
+                IMultiLineString remainsOfLine = new MultiLineString(new IBasicLineString[1] { trackingLine.Line });
+                foreach(Polygon polygon in _polygons.Values)
+                {
+                    IGeometry remains = remainsOfLine.Difference(polygon);
+                    if (remains is MultiLineString)
+                        remainsOfLine = (MultiLineString)remains;
+                    else if (remains is LineString)
+                        new MultiLineString(new IBasicLineString[1] { (LineString)remains });
+                    else if (remains.IsEmpty)
+                    {
+                        remainsOfLine = MultiLineString.Empty;
+                        break;
+                    }
+                    else
+                    {
+                        remainsOfLine = MultiLineString.Empty;
+                        break;
+                    }
+                }
+
+                if (remainsOfLine == MultiLineString.Empty)
+                    return 1.0;
+                else
+                    return 1.0 - (remainsOfLine.Length / trackingLine.Length);
             }
         }
 

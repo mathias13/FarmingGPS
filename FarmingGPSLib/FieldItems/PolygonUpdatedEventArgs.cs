@@ -12,14 +12,14 @@ namespace FarmingGPSLib.FieldItems
 
         private ILineString _newCoordinates;
 
-        private bool _polygonHolesChanged;
+        private bool _redrawPolygon;
 
-        public PolygonUpdatedEventArgs(int id, IPolygon polygon, ILineString newCoordinates, bool polygonHolesChanged)
+        public PolygonUpdatedEventArgs(int id, IPolygon polygon, ILineString newCoordinates, bool redrawPolygon)
         {
             _id = id;
             _polygon = polygon;
             _newCoordinates = newCoordinates;
-            _polygonHolesChanged = polygonHolesChanged;
+            _redrawPolygon = redrawPolygon;
         }
 
         public int ID
@@ -37,9 +37,9 @@ namespace FarmingGPSLib.FieldItems
             get { return _newCoordinates; }
         }
 
-        public bool PolygonHolesChanged
+        public bool RedrawPolygon
         {
-            get { return _polygonHolesChanged; }
+            get { return _redrawPolygon; }
         }
     }
 }
