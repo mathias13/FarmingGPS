@@ -100,7 +100,7 @@ namespace FarmingGPSLib.FieldItems
             rightPoint = HelperClassCoordinate.CoordinateRoundedmm(rightPoint);
             lock (_syncObject)
             {
-                if (_currentPolygonIndex > -1 && _currentPolygonIndex < _polygons.Count)
+                if (_currentPolygonIndex > -1)
                 {
                     if (_polygons[_currentPolygonIndex].Shell.Coordinates.Count == 0)
                     {
@@ -198,6 +198,18 @@ namespace FarmingGPSLib.FieldItems
 
                             }
                             _polygons[_currentPolygonIndex].Holes = holes.ToArray();
+                        }
+
+                        for (int i = 0; i < _polygons.Count; i++)
+                        {
+                            if (i == _currentPolygonIndex || !_polygons.ContainsKey(i))
+                                continue;
+                            if (_polygons[_currentPolygonIndex].Intersects(_polygons[i]))
+                            {
+                                _polygons[_currentPolygonIndex] = (Polygon)_polygons[_currentPolygonIndex].Union(_polygons[i]);
+                                _polygons.Remove(i);
+                                redrawPolygon = true;
+                            }
                         }
 
                         OnPolygonUpdated(_currentPolygonIndex, newCoordinates, redrawPolygon);

@@ -20,6 +20,7 @@ using DotSpatial.Topology;
 using GpsUtilities;
 using FarmingGPSLib.Positioning;
 using FarmingGPSLib.FarmingModes.Tools;
+using FarmingGPSLib.FarmingModes;
 using FarmingGPSLib.FieldItems;
 using ManagedUPnP;
 using SwiftBinaryProtocol;
@@ -63,8 +64,6 @@ namespace FarmingGPS
         private FieldTracker _fieldTracker = new FieldTracker();
 
         private bool _fieldTrackerActive = false;
-
-        private bool _fieldTrackReinit = false;
 
         private FarmingGPSLib.FarmingModes.GeneralHarrowingMode _farmingMode;
 
@@ -150,20 +149,25 @@ namespace FarmingGPS
         {
             _actualCoordinate = field.GetPositionInField(actualPosition);
             _visualization.UpdatePosition(_actualCoordinate, _actAngle);
-            
-            //TODO Fix the distance needed before we draw a new track.
-            if (!_fieldTracker.IsTracking)
+
+            EquipmentTips equipment = _farmingMode.GetEquipmentTips(_actualCoordinate, _actAngle);
+
+            if (_fieldTracker.IsTracking && !_fieldTrackerActive)
+                _fieldTracker.StopTrack();
+            else if (_fieldTrackerActive && !_fieldTracker.IsTracking)
             {
-                FarmingGPSLib.FarmingModes.EquipmentTips equipment = _farmingMode.GetEquipmentTips(_actualCoordinate, _actAngle);
                 _fieldTracker.InitTrack(equipment.LeftTip, equipment.RightTip);
                 _prevTrackCoordinate = _actualCoordinate;
             }
-            else if (_actualCoordinate.Distance(_prevTrackCoordinate) > 0.5)
+            else if (_fieldTrackerActive)
             {
-                FarmingGPSLib.FarmingModes.EquipmentTips equipment = _farmingMode.GetEquipmentTips(_actualCoordinate, _actAngle);
-                _fieldTracker.AddTrackPoint(equipment.LeftTip, equipment.RightTip);
-                _prevTrackCoordinate = _actualCoordinate;
-            } 
+                //TODO Fix the distance needed before we draw a new track.
+                if (_actualCoordinate.Distance(_prevTrackCoordinate) > 0.5)
+                {
+                    _fieldTracker.AddTrackPoint(equipment.LeftTip, equipment.RightTip);
+                    _prevTrackCoordinate = _actualCoordinate;
+                }
+            }
 
             if(DateTime.Now > _trackingLineEvaluationTimeout)
             {
@@ -300,10 +304,7 @@ namespace FarmingGPS
         {
             _fieldTrackerActive = !_fieldTrackerActive;
             if (_fieldTrackerActive)
-            {
-                _fieldTrackReinit = true;
                 SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PAUSE"));
-            }
             else
                 SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
         }
