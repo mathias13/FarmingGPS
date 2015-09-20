@@ -35,7 +35,7 @@ namespace FarmingGPS
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
-    {
+    {        
         private FarmingGPSLib.FieldItems.Field field;
         
         private string _cameraIp = String.Empty;
@@ -61,6 +61,10 @@ namespace FarmingGPS
         private Coordinate _prevTrackCoordinate = new Coordinate(0.0, 0.0);
 
         private FieldTracker _fieldTracker = new FieldTracker();
+
+        private bool _fieldTrackerActive = false;
+
+        private bool _fieldTrackReinit = false;
 
         private FarmingGPSLib.FarmingModes.GeneralHarrowingMode _farmingMode;
 
@@ -120,7 +124,8 @@ namespace FarmingGPS
         }
 
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {   
+        {
+            SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
             SetValue(CameraSizeProperty, (Style)this.FindResource("PiPvideo"));
         }
         
@@ -268,6 +273,12 @@ namespace FarmingGPS
                 SetValue(CameraSizeProperty, pipvideo);
         }
 
+        #region DependencyProperties
+
+        protected static readonly DependencyProperty FieldTrackerButtonStyleProperty = DependencyProperty.Register("FieldTrackerButtonStyle", typeof(Style), typeof(MainWindow));
+
+        #endregion
+
         #region Button Events
 
         private void BTN_ZOOM_IN_Click(object sender, RoutedEventArgs e)
@@ -283,6 +294,18 @@ namespace FarmingGPS
         private void BTN_VIEW_CHANGE_Click(object sender, RoutedEventArgs e)
         {
             _visualization.ChangeView();
+        }
+
+        private void BTN_PLAY_TRACKER_Click(object sender, RoutedEventArgs e)
+        {
+            _fieldTrackerActive = !_fieldTrackerActive;
+            if (_fieldTrackerActive)
+            {
+                _fieldTrackReinit = true;
+                SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PAUSE"));
+            }
+            else
+                SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
         }
 
         #endregion
