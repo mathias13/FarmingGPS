@@ -121,6 +121,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="GeometryUtilities\Lines.cs" />
+    <Compile Include="Settings\ISetting.cs" />
+    <Compile Include="Settings\ISettingsCollection.cs" />
     <Compile Include="Visualization\FarmingVisualizer.xaml.cs">
       <DependentUpon>FarmingVisualizer.xaml</DependentUpon>
     </Compile>
