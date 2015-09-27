@@ -9,5 +9,17 @@ namespace FarmingGPS.Settings
         {
             get;
         }
+
+        ISettingsCollection ChildSettings
+        {
+            get;
+            set;
+        }
+
+        ISettingsCollection ParentSetting
+        {
+            get;
+            set;
+        }
     }
 }
