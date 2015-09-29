@@ -9,12 +9,12 @@ namespace FarmingGPS.Settings
             get;
         }
 
-        public Type ValueType
+        Type ValueType
         {
             get;
         }
 
-        public object Value
+        object Value
         {
             get;
         }

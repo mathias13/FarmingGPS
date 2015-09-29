@@ -20,7 +20,7 @@
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0" Margin="5,5,5,5">
-            <Border Style="{StaticResource MenuBorder}"/>
+            <ContentControl Template="{DynamicResource MenuBorder}"/>
             <visualization:LightBar Grid.Row="0" x:FieldModifier="private" x:Name="_lightBar"/>
         </Grid>
         <visualization:FarmingVisualizer Grid.Row="1" x:FieldModifier="private" x:Name="_visualization"/>
@@ -36,7 +36,7 @@
             <Image Source="{Binding Path=CameraImage, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" MouseLeftButtonUp="Image_MouseLeftButtonUp"/>
         </Border>
         <Grid Grid.Row="1" Margin="10,10,70,10" x:Name="_settingsGrid" x:FieldModifier="private" Visibility="Hidden">
-            <Border Style="{StaticResource MenuBorder}" Opacity="0.9"/>
+            <ContentControl Template="{DynamicResource MenuBorder}"/>
             <Grid Margin="10,10,10,10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>

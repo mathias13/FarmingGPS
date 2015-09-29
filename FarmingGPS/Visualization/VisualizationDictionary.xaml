@@ -2,19 +2,18 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:helix="clr-namespace:HelixToolkit.Wpf;assembly=HelixToolkit.Wpf">
 
-    <Style x:Key="MenuBorder" TargetType="Border">
-        <Setter Property="Background" Value="LightBlue"/>
-        <Setter Property="BorderBrush">
-            <Setter.Value>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="Blue" Offset="1"/>
-                    <GradientStop Color="White" Offset="0"/>
-                </LinearGradientBrush>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="BorderThickness" Value="4,4,2,2"/>
-        <Setter Property="CornerRadius" Value="10"/>
-    </Style>
+    <ControlTemplate  x:Key="MenuBorder" TargetType="ContentControl">
+        <Border Padding="5" CornerRadius="15" Background="#FF505050">
+            <Border CornerRadius="10" BorderThickness="3" Background="#FF505050">
+                <Border.BorderBrush>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="DarkSlateGray" Offset="1" />
+                        <GradientStop Color="Black" Offset="0" />
+                    </LinearGradientBrush>
+                </Border.BorderBrush>
+            </Border>
+        </Border>
+    </ControlTemplate>
     
     <Style x:Key="PiPvideo" TargetType="Border">
         <Setter Property="Margin" Value="10,10,10,10"/>
