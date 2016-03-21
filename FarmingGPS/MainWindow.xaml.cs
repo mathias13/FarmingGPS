@@ -267,9 +267,15 @@ namespace FarmingGPS
             if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
             {
                 _pto.Text = _fertilizer.PTO.ToString();
+                _spreadWidth.Text = _fertilizer.SpreadWidth.ToString();
             }
             else
                 Dispatcher.BeginInvoke(new FarmingGPSLib.Equipment.BogBalle.Calibrator.ValuesUpdatedDelegate(_fertilizer_ValuesUpdated), System.Windows.Threading.DispatcherPriority.Render, sender);
+        }
+
+        private void _btnSpreadWidth_Click(object sender, RoutedEventArgs e)
+        {
+            _fertilizer.SetWidth(float.Parse(_spreadWidthSetting.Text));
         }
 
         private void Image_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -300,5 +306,6 @@ namespace FarmingGPS
         }
 
         #endregion
+        
     }
 }

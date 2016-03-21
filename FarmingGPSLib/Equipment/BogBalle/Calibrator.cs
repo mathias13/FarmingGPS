@@ -102,7 +102,12 @@ namespace FarmingGPSLib.Equipment.BogBalle
         {
             return WriteValue(STOP_COMMAND, string.Empty);
         }
-            
+        
+        public bool SetWidth(float width)
+        {
+            return WriteValue(SPREAD_WIDTH_COMMAND, (width * 10).ToString("000"));
+        }
+
         #endregion
 
         #region Public Properties
@@ -161,13 +166,13 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
             value = ReadValue(SPREAD_WIDTH_READ);
             if (value != string.Empty)
-                _spreadWidth = float.Parse(value);
+                _spreadWidth = float.Parse(value) / 10;
             else
                 _spreadWidth = -1.0f;
 
             value = ReadValue(SPEED_READ);
             if (value != string.Empty)
-                _speed = float.Parse(value);
+                _speed = float.Parse(value) / 10;
             else
                 _speed = -1.0f;
 
