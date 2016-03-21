@@ -77,8 +77,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
             _serialPort.DataBits = 8;
             _serialPort.Parity = Parity.None;
             _serialPort.StopBits = StopBits.One;
-            _serialPort.Open();
-            _readTimer = new Timer(new TimerCallback(ReadValues), new object, 0, readInterval);
+            _readTimer = new Timer(new TimerCallback(ReadValues), new object(), 0, readInterval);
         }
 
         #endregion
@@ -177,6 +176,9 @@ namespace FarmingGPSLib.Equipment.BogBalle
                 _pto = int.Parse(value);
             else
                 _pto = -1;
+
+            if (ValuesUpdated != null)
+                ValuesUpdated.Invoke(this);
         }
 
         private bool ValidateMessage(ref string message)
@@ -223,7 +225,8 @@ namespace FarmingGPSLib.Equipment.BogBalle
             {
                 try
                 {
-                    if(!_serialPort.IsOpen)
+                    if (!_serialPort.IsOpen)
+                        _serialPort.Open();
 
                     _serialPort.Write(bytes, 0, bytes.Length);
 
@@ -273,6 +276,9 @@ namespace FarmingGPSLib.Equipment.BogBalle
             {
                 try
                 {
+                    if (!_serialPort.IsOpen)
+                        _serialPort.Open();
+
                     _serialPort.Write(bytes, 0, bytes.Length);
 
                     timeout = DateTime.Now.AddSeconds(1.0);

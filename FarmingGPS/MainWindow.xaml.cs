@@ -269,7 +269,7 @@ namespace FarmingGPS
                 _pto.Text = _fertilizer.PTO.ToString();
             }
             else
-                Dispatcher.BeginInvoke(new FarmingGPSLib.Equipment.BogBalle.Calibrator.ValuesUpdatedDelegate(_fertilizer_ValuesUpdated), System.Windows.Threading.DispatcherPriority.Render);
+                Dispatcher.BeginInvoke(new FarmingGPSLib.Equipment.BogBalle.Calibrator.ValuesUpdatedDelegate(_fertilizer_ValuesUpdated), System.Windows.Threading.DispatcherPriority.Render, sender);
         }
 
         private void Image_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
