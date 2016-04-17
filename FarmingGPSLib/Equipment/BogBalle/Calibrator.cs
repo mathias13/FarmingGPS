@@ -12,7 +12,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         private const string START_CHAR = "{";
 
-        private const string END_CHAR = "{";
+        private const string END_CHAR = "}";
 
         private const string COMMAND_INIT = "S";
 
@@ -72,12 +72,17 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         public Calibrator(string comPort, int readInterval)
         {
-            _serialPort = new SerialPort(comPort);
-            _serialPort.BaudRate = 9600;
-            _serialPort.DataBits = 8;
-            _serialPort.Parity = Parity.None;
-            _serialPort.StopBits = StopBits.One;
-            _readTimer = new Timer(new TimerCallback(ReadValues), new object(), 0, readInterval);
+            lock (_syncObject)
+            {
+                _serialPort = new SerialPort(comPort);
+                _serialPort.BaudRate = 9600;
+                _serialPort.DataBits = 8;
+                _serialPort.Parity = Parity.None;
+                _serialPort.StopBits = StopBits.One;
+                _serialPort.ReadTimeout = 100;
+                _serialPort.Handshake = Handshake.None;
+                _readTimer = new Timer(new TimerCallback(ReadValues), new object(), 0, readInterval);
+            }
         }
 
         #endregion
@@ -191,11 +196,11 @@ namespace FarmingGPSLib.Equipment.BogBalle
             if (!message.Contains(START_CHAR) || !message.Contains(END_CHAR))
                 return false;
 
-            message.Replace(START_CHAR, String.Empty);
-            message.Replace(END_CHAR, String.Empty);
+            message = message.Replace(START_CHAR, String.Empty);
+            message = message.Replace(END_CHAR, String.Empty);
             byte checksum = Encoding.ASCII.GetBytes(message.Substring(message.Length - 1))[0];
-            message.Remove(message.Length - 1);
-            return checksum == CalculateChecksum(message.Substring(0, message.Length - 1));                
+            message = message.Remove(message.Length - 1);
+            return checksum == CalculateChecksum(message);                
         }
 
         private byte CalculateChecksum(string message)
@@ -217,7 +222,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
             bytes.AddRange(Encoding.ASCII.GetBytes(messageContent));
             bytes.Add(checksum);
             bytes.AddRange(Encoding.ASCII.GetBytes(END_CHAR));
-            bytes.InsertRange(0, Encoding.ASCII.GetBytes(END_CHAR));
+            bytes.InsertRange(0, Encoding.ASCII.GetBytes(START_CHAR));
             return bytes.ToArray();
         }
         
@@ -238,11 +243,17 @@ namespace FarmingGPSLib.Equipment.BogBalle
                     timeout = DateTime.Now.AddSeconds(1.0);
                     while (!answer.Contains(END_CHAR))
                     {
-                        int buffer = _serialPort.ReadByte();
-                        if (buffer == -1)
+                        byte[] readBuffer = new byte[10];
+                        int bytesRead = _serialPort.Read(readBuffer, 0, 10);
+                        if (bytesRead < 1)
+                        {
+                            Thread.Sleep(1);
                             continue;
+                        }
                         else
-                            answer += Encoding.ASCII.GetString(new byte[] { (byte)buffer });
+                        {
+                            answer += Encoding.ASCII.GetString(readBuffer, 0, bytesRead);
+                        }
                         if (timeout < DateTime.Now)
                             break;
                     }
@@ -289,11 +300,15 @@ namespace FarmingGPSLib.Equipment.BogBalle
                     timeout = DateTime.Now.AddSeconds(1.0);
                     while (!answer.Contains(END_CHAR))
                     {
-                        int buffer = _serialPort.ReadByte();
-                        if (buffer == -1)
+                        byte[] readBuffer = new byte[10];
+                        int bytesRead = _serialPort.Read(readBuffer, 0, 10);
+                        if (bytesRead < 1)
+                        {
+                            Thread.Sleep(1);
                             continue;
+                        }
                         else
-                            answer += Encoding.ASCII.GetString(new byte[] { (byte)buffer });
+                            answer += Encoding.ASCII.GetString(readBuffer, 0, bytesRead);
                         if (timeout < DateTime.Now)
                             break;
                     }
