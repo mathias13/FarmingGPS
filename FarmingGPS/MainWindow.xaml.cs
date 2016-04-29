@@ -47,9 +47,7 @@ namespace FarmingGPS
         private SBPReceiverSender _sbpReceiverSender;
 
         private IReceiver _receiver;
-
-        private FarmingGPSLib.Equipment.BogBalle.Calibrator _fertilizer;
-
+        
         private AutoEventedDiscoveryServices<Service> _mdsServices;
 
         private Coordinate _actualCoordinate = new Coordinate(0.0, 0.0);
@@ -213,8 +211,6 @@ namespace FarmingGPS
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
             _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
             _speedBar.Unit = SpeedUnit.KilometersPerHour;
-            _fertilizer = new FarmingGPSLib.Equipment.BogBalle.Calibrator("COM1", 1000);
-            _fertilizer.ValuesUpdated += _fertilizer_ValuesUpdated;
 
             NTRIP.Settings.ClientSettings clientSettings = new NTRIP.Settings.ClientSettings();
             clientSettings.IPorHost = "nolgarden.net";
@@ -260,22 +256,6 @@ namespace FarmingGPS
             _receiver_FixQualityUpdate(this, FixQuality.FixedRealTimeKinematic);
             _visualization.UpdatePosition(field.GetPositionInField(new Position(new Longitude(13.8547112149059), new Latitude(58.5126434260099))), new Azimuth(90));
             _visualization.AddFieldTracker(_fieldTracker);
-        }
-
-        void _fertilizer_ValuesUpdated(object sender)
-        {
-            if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
-            {
-                _pto.Text = _fertilizer.PTO.ToString();
-                _spreadWidth.Text = _fertilizer.SpreadWidth.ToString();
-            }
-            else
-                Dispatcher.BeginInvoke(new FarmingGPSLib.Equipment.BogBalle.Calibrator.ValuesUpdatedDelegate(_fertilizer_ValuesUpdated), System.Windows.Threading.DispatcherPriority.Render, sender);
-        }
-
-        private void _btnSpreadWidth_Click(object sender, RoutedEventArgs e)
-        {
-            _fertilizer.SetWidth(float.Parse(_spreadWidthSetting.Text));
         }
 
         private void Image_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
