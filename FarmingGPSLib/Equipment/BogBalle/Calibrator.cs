@@ -64,7 +64,11 @@ namespace FarmingGPSLib.Equipment.BogBalle
             
         public delegate void ValuesUpdatedDelegate(object sender);
 
+        public delegate void IsConnectedChangedDelegate(object sender, bool connected);
+
         public event ValuesUpdatedDelegate ValuesUpdated;
+
+        public event IsConnectedChangedDelegate IsConnectedChanged;
 
         #endregion
 
@@ -157,6 +161,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         private void ReadValues(object state)
         {
+            bool isConnected = IsConnected;
             string value = ReadValue(ACT_VALUE_READ);
             if (value != string.Empty)
                 _actValue = int.Parse(value);
@@ -189,6 +194,10 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
             if (ValuesUpdated != null)
                 ValuesUpdated.Invoke(this);
+
+            if (isConnected != IsConnected)
+                if (IsConnectedChanged != null)
+                    IsConnectedChanged.Invoke(this, IsConnected);
         }
 
         private bool ValidateMessage(ref string message)
