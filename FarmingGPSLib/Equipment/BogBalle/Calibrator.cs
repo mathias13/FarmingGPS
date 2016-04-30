@@ -10,6 +10,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
     {
         #region Private Variables
 
+        //Message constants
         private const string START_CHAR = "{";
 
         private const string END_CHAR = "}";
@@ -26,19 +27,31 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         private const string STOP_COMMAND = "S";
 
+        //Commands
         private const string RATE_COMMAND = "D";
 
         private const string SPREAD_WIDTH_COMMAND = "B";
 
+        //Readout
         private const string SET_VALUE_READ = "D";
 
         private const string ACT_VALUE_READ = "A";
 
         private const string SPREAD_WIDTH_READ = "B";
 
+        private const string DISTANCE_READ = "L";
+
+        private const string HA_READ = "H";
+
+        private const string HOPPER_CONTENTS_READ = "I";
+
+        private const string TARA_READ = "T";
+
         private const string SPEED_READ = "V";
 
         private const string PTO_READ = "P";
+
+        private const string STATUS_READ = "S";
 
         private SerialPort _serialPort;
 
@@ -54,9 +67,21 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         private float _spreadWidth = -1.0f;
 
+        private int _distance = -1;
+
+        private float _ha = -1.0f;
+
+        private int _hopperContents = -1;
+
         private float _speed = -1.0f;
 
+        private int _tara = -1;
+
         private int _pto = -1;
+
+        private bool _started = false;
+
+        private int _activeField = -1;
 
         #endregion
 
@@ -145,14 +170,39 @@ namespace FarmingGPSLib.Equipment.BogBalle
             get { return _spreadWidth; }
         }
 
+        public int Distance
+        {
+            get { return _distance; }
+        }
+
+        public float HA
+        {
+            get { return _ha; }
+        }
+
+        public int HopperContents
+        {
+            get { return _hopperContents; }
+        }
+
         public float Speed
         {
             get { return _speed; }
         }
 
+        public int Tara
+        {
+            get { return _tara; }
+        }
+
         public int PTO
         {
             get { return _pto; }
+        }
+
+        public bool Started
+        {
+            get { return _started; }
         }
 
         #endregion
@@ -162,7 +212,20 @@ namespace FarmingGPSLib.Equipment.BogBalle
         private void ReadValues(object state)
         {
             bool isConnected = IsConnected;
-            string value = ReadValue(ACT_VALUE_READ);
+
+            string value = ReadValue(STATUS_READ);
+            if (value != string.Empty)
+            {
+                _started = value[2] == '1';
+                _activeField = int.Parse(value.Substring(3, 1));
+            }
+            else
+            {
+                _started = false;
+                _activeField = -1;
+            }
+
+            value = ReadValue(ACT_VALUE_READ);
             if (value != string.Empty)
                 _actValue = int.Parse(value);
             else
@@ -179,6 +242,21 @@ namespace FarmingGPSLib.Equipment.BogBalle
                 _spreadWidth = float.Parse(value) / 10;
             else
                 _spreadWidth = -1.0f;
+
+            if (_activeField > -1)
+            {
+                value = ReadValue(HA_READ + _activeField.ToString());
+                if (value != string.Empty)
+                    _ha = float.Parse(value) / 100;
+                else
+                    _ha = -1.0f;
+            }
+
+            value = ReadValue(TARA_READ);
+            if (value != string.Empty)
+                _tara = int.Parse(value);
+            else
+                _tara = -1;
 
             value = ReadValue(SPEED_READ);
             if (value != string.Empty)
