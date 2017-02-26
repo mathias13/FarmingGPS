@@ -38,7 +38,7 @@ namespace FarmingGPSLib.Equipment
 
         #region IEquipment Implementation
 
-        public Distance DistanceFromVechile
+        public Distance DistanceFromVechileToCenter
         {
             get { return _distanceFromVechile; }
         }
@@ -58,7 +58,7 @@ namespace FarmingGPSLib.Equipment
             get { return _overlap; }
         }
 
-        public Distance CenterOfWidth
+        public Distance CenterToTip
         {
             get
             {
@@ -66,7 +66,7 @@ namespace FarmingGPSLib.Equipment
             }
         }
 
-        public Distance CenterToCenter
+        public Distance WidthExclOverlap
         {
             get
             {
@@ -74,9 +74,9 @@ namespace FarmingGPSLib.Equipment
             }
         }
 
-        public Distance CenterOfWidthWithOverlap
+        public Distance CenterToTipWithOverlap
         {
-            get { return CenterOfWidth.Subtract(Overlap); }
+            get { return CenterToTip.Subtract(Overlap); }
         }
 
         #endregion

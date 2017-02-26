@@ -5,7 +5,7 @@ namespace FarmingGPSLib.Equipment
 {
     public interface IEquipment
     {
-        Distance DistanceFromVechile
+        Distance DistanceFromVechileToCenter
         {
             get;
         }
@@ -25,17 +25,17 @@ namespace FarmingGPSLib.Equipment
             get;
         }
 
-        Distance CenterOfWidth
+        Distance CenterToTip
         {
             get;
         }
 
-        Distance CenterToCenter
+        Distance WidthExclOverlap
         {
             get;
         }
 
-        Distance CenterOfWidthWithOverlap
+        Distance CenterToTipWithOverlap
         {
             get;
         }
