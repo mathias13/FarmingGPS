@@ -60,12 +60,12 @@ namespace FarmingGPSLib.FarmingModes
 
         protected void CalculateHeadLand()
         {
-            double distanceFromShell = _equipment.CenterOfWidth.ToMeters().Value;
+            double distanceFromShell = _equipment.CenterToTip.ToMeters().Value;
             List<LineString> trackingLines = new List<LineString>();
             for (int i = 0; i < _headlandTurns; i++)
             {
                 trackingLines.AddRange(GetHeadlandAround(distanceFromShell));
-                distanceFromShell += _equipment.CenterToCenter.ToMeters().Value;
+                distanceFromShell += _equipment.WidthExclOverlap.ToMeters().Value;
             }
             foreach (LineString line in trackingLines)
                 _trackingLinesHeadLand.Add(new TrackingLine(line));
@@ -96,10 +96,10 @@ namespace FarmingGPSLib.FarmingModes
 
         protected void FillFieldWithTrackingLines(ILineSegment baseLine)
         {
-            double distanceFromShell = _equipment.CenterOfWidth.ToMeters().Value;
+            double distanceFromShell = _equipment.CenterToTip.ToMeters().Value;
             for (int i = 1; i < _headlandTurns; i++)
-                distanceFromShell += _equipment.CenterToCenter.ToMeters().Value;
-            distanceFromShell += _equipment.CenterOfWidth.ToMeters().Value + 0.02; //add 2cm to make sure we dont get trackingline over headline
+                distanceFromShell += _equipment.WidthExclOverlap.ToMeters().Value;
+            distanceFromShell += _equipment.CenterToTip.ToMeters().Value + 0.02; //add 2cm to make sure we dont get trackingline over headline
             IList<Coordinate> headLandCoordinates = GetHeadlandAroundPoints(distanceFromShell);
             IList<LineSegment> headLandLines = HelperClassLines.CreateLines(headLandCoordinates);
 
@@ -112,21 +112,21 @@ namespace FarmingGPSLib.FarmingModes
 
             List<ILineSegment> linesExtended = new List<ILineSegment>();
             linesExtended.Add(baseLineExtended);
-            ILineSegment extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.CenterToCenter.ToMeters().Value);
+            ILineSegment extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.WidthExclOverlap.ToMeters().Value);
             int lineIteriator = 1;
             while (fieldEnvelope.Intersects(extendedLine))
             {
                 linesExtended.Add(extendedLine);
-                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.CenterToCenter.ToMeters().Value * lineIteriator);
+                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.WidthExclOverlap.ToMeters().Value * lineIteriator);
                 lineIteriator++;
             }
 
-            extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.CenterToCenter.ToMeters().Value);
+            extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.WidthExclOverlap.ToMeters().Value);
             lineIteriator = 1;
             while (fieldEnvelope.Intersects(extendedLine))
             {
                 linesExtended.Add(extendedLine);
-                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.CenterToCenter.ToMeters().Value * lineIteriator);
+                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.WidthExclOverlap.ToMeters().Value * lineIteriator);
                 lineIteriator++;
             }
 
