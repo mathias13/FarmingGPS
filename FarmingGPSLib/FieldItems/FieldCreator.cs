@@ -20,6 +20,8 @@ namespace FarmingGPSLib.FieldItems
 
         public event EventHandler<FieldBoundaryUpdatedEventArgs> FieldBoundaryUpdated;
 
+        public event EventHandler<FieldCreatedEventArgs> FieldCreated;
+
         #endregion
 
         #region Private Variables
@@ -31,6 +33,8 @@ namespace FarmingGPSLib.FieldItems
         protected const double MINIMUM_CHANGE_DIRECTION = 3.0;
 
         protected const double MAXIMUM_CHANGE_DIRECTION = 10.0;
+
+        protected const double DISTANCE_TO_START_FIELD_FINISHED = 5.0;
 
         private Orientation _orientation;
 
@@ -47,6 +51,8 @@ namespace FarmingGPSLib.FieldItems
         private Azimuth _previousHeading;
 
         private Position _previousPosition;
+
+        private bool _waitForFinish = false;
 
         #endregion
 
@@ -66,6 +72,7 @@ namespace FarmingGPSLib.FieldItems
             _previousPosition = receiver.CurrentPosition;
             _fieldTracker = new FieldTracker();
             _field = new Field(fieldPoints, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
+            AddPoint(receiver.CurrentPosition, receiver.CurrentBearing);
             receiver.PositionUpdate += Receiver_PositionUpdate;
         }
         
@@ -98,6 +105,19 @@ namespace FarmingGPSLib.FieldItems
                 _fieldTracker.InitTrack(_field.GetPositionInField(leftTip), _field.GetPositionInField(rightTip));
             }
 
+        }
+
+        private void CheckFinishedField(Position actualPosition)
+        {
+            if (!_waitForFinish)
+                _waitForFinish = _track[0].DistanceTo(actualPosition) > Distance.FromMeters(DISTANCE_TO_START_FIELD_FINISHED + 1.0);
+            else
+            {
+                if(_track[0].DistanceTo(actualPosition) < Distance.FromMeters(DISTANCE_TO_START_FIELD_FINISHED))
+                {
+                    _field = new Field(_track, _field.Projection);
+                }
+            }
         }
 
         private bool CheckDistanceFromPreviousPoint(Position position, Azimuth heading)
@@ -135,6 +155,13 @@ namespace FarmingGPSLib.FieldItems
             if (FieldBoundaryUpdated != null)
                 FieldBoundaryUpdated.Invoke(this, new FieldBoundaryUpdatedEventArgs(fieldBoundary));
         }
+
+        protected void OnFieldCreated(List<Position> fieldBoundary)
+        {
+            if (FieldCreated != null)
+                FieldCreated.Invoke(this, new FieldCreatedEventArgs(_field, _fieldTracker));
+        }
+
         #endregion
 
     }
