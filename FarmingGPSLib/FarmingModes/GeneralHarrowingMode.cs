@@ -6,36 +6,13 @@ using FarmingGPSLib.Equipment;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
 using FarmingGPSLib.HelperClasses;
+using DotSpatial.Positioning;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace FarmingGPSLib.FarmingModes
 {
-    //TODO put this in some base class or interface
-    public struct EquipmentTips
-    {
-        private Coordinate _leftTip;
-
-        private Coordinate _rightTip;
-
-        public EquipmentTips(Coordinate leftTip, Coordinate rightTip)
-        {
-            _leftTip = leftTip;
-            _rightTip = rightTip;
-        }
-
-        public Coordinate LeftTip
-        {
-            get { return _leftTip; }
-        }
-
-        public Coordinate RightTip
-        {
-            get { return _rightTip; }
-        }
-    }
-
     public class GeneralHarrowingMode : FarmingModeBase, ITrackingLineModes
     {
         protected IEquipment _equipment;
@@ -45,7 +22,7 @@ namespace FarmingGPSLib.FarmingModes
         public GeneralHarrowingMode(IField field)
             : base(field)
         {
-            _equipment = new Harrow(Distance.FromMeters(6), Distance.FromMeters(1), new DotSpatial.Positioning.Angle(0));
+            _equipment = new Harrow(Distance.FromMeters(6), Distance.FromMeters(1), new Azimuth(180.0));
             _headlandTurns = 1;
             CalculateHeadLand();
         }
@@ -186,13 +163,5 @@ namespace FarmingGPSLib.FarmingModes
                 _trackingLines.Add(new TrackingLine(line));
         }
     
-        public EquipmentTips GetEquipmentTips(Coordinate point, DotSpatial.Positioning.Azimuth direction)
-        {
-            Azimuth directionLeft = direction.Subtract(180.0).Normalize();
-            Azimuth directionRight = direction;
-            Coordinate leftPoint = HelperClassCoordinate.ComputePoint(point, directionLeft.ToRadians().Value, _equipment.Width.ToMeters().Value / 2);
-            Coordinate rightPoint = HelperClassCoordinate.ComputePoint(point, directionRight.ToRadians().Value, _equipment.Width.ToMeters().Value / 2);
-            return new EquipmentTips(leftPoint, rightPoint);
-        }
     }
 }

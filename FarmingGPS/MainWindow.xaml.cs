@@ -50,10 +50,6 @@ namespace FarmingGPS
         
         private AutoEventedDiscoveryServices<Service> _mdsServices;
 
-        private Coordinate _actualCoordinate = new Coordinate(0.0, 0.0);
-
-        private Azimuth _actAngle = Azimuth.North;
-
         private DateTime _trackingLineEvaluationTimeout = DateTime.MinValue;
 
         private TrackingLine _activeTrackingLine = null;
@@ -65,6 +61,8 @@ namespace FarmingGPS
         private FieldCreator _fieldCreator;
 
         private FarmingGPSLib.FarmingModes.GeneralHarrowingMode _farmingMode;
+
+        private FarmingGPSLib.Equipment.IEquipment _equipment;
 
         public MainWindow()
         {
@@ -145,23 +143,25 @@ namespace FarmingGPS
 
         void _receiver_PositionUpdate(object sender, Position actualPosition)
         {
-            //_actualCoordinate = field.GetPositionInField(actualPosition);
-            _actualCoordinate = _fieldCreator.GetField().GetPositionInField(actualPosition);
-            _visualization.UpdatePosition(_actualCoordinate, _actAngle);
+            IReceiver receiver = sender as IReceiver;
+            Coordinate actualCoordinate = field.GetPositionInField(_equipment.GetCenter(actualPosition, receiver.CurrentBearing));
+            _visualization.UpdatePosition(actualCoordinate, receiver.CurrentBearing);
             
             //TODO Fix the distance needed before we draw a new track.
-            //if (!_fieldTracker.IsTracking)
-            //{
-            //    FarmingGPSLib.FarmingModes.EquipmentTips equipment = _farmingMode.GetEquipmentTips(_actualCoordinate, _actAngle);
-            //    _fieldTracker.InitTrack(equipment.LeftTip, equipment.RightTip);
-            //    _prevTrackCoordinate = _actualCoordinate;
-            //}
-            //else if (_actualCoordinate.Distance(_prevTrackCoordinate) > 0.5)
-            //{
-            //    FarmingGPSLib.FarmingModes.EquipmentTips equipment = _farmingMode.GetEquipmentTips(_actualCoordinate, _actAngle);
-            //    _fieldTracker.AddTrackPoint(equipment.LeftTip, equipment.RightTip);
-            //    _prevTrackCoordinate = _actualCoordinate;
-            //} 
+            if (!_fieldTracker.IsTracking)
+            {
+                Coordinate leftTip = field.GetPositionInField(_equipment.GetLeftTip(actualPosition, receiver.CurrentBearing));
+                Coordinate rightTip = field.GetPositionInField(_equipment.GetRightTip(actualPosition, receiver.CurrentBearing));
+                _fieldTracker.InitTrack(leftTip, rightTip);
+                _prevTrackCoordinate = actualCoordinate;
+            }
+            else if (actualCoordinate.Distance(_prevTrackCoordinate) > 0.5)
+            {
+                Coordinate leftTip = field.GetPositionInField(_equipment.GetLeftTip(actualPosition, receiver.CurrentBearing));
+                Coordinate rightTip = field.GetPositionInField(_equipment.GetRightTip(actualPosition, receiver.CurrentBearing));
+                _fieldTracker.AddTrackPoint(leftTip, rightTip);
+                _prevTrackCoordinate = actualCoordinate;
+            } 
 
             //if(DateTime.Now > _trackingLineEvaluationTimeout)
             //{
@@ -196,8 +196,6 @@ namespace FarmingGPS
 
         void _receiver_BearingUpdate(object sender, Azimuth actualBearing)
         {
-            _actAngle = actualBearing;
-            _visualization.UpdatePosition(_actualCoordinate, _actAngle);
         }
 
         void _receiver_SpeedUpdate(object sender, Speed actualSpeed)
@@ -237,9 +235,10 @@ namespace FarmingGPS
             positions.Add(new Position(new Longitude(13.855927), new Latitude(58.515144)));
             positions.Add(new Position(new Longitude(13.855224), new Latitude(58.512617)));
 
-            //field = new Field(positions, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
-            FarmingGPSLib.Equipment.Harrow harrow = new FarmingGPSLib.Equipment.Harrow(Distance.FromMeters(6), Distance.FromMeters(1.5), new DotSpatial.Positioning.Angle(180), Distance.FromCentimeters(20));
-            //_farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(field, harrow, 1);
+            field = new Field(positions, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
+            FarmingGPSLib.Equipment.Harrow harrow = new FarmingGPSLib.Equipment.Harrow(Distance.FromMeters(6), Distance.FromMeters(1.5), new Azimuth(180), Distance.FromCentimeters(20));
+            _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(field, harrow, 1);
+            _equipment = harrow;
 
             //_visualization.AddField(field);
             //foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)

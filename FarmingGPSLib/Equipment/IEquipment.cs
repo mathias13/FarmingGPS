@@ -10,7 +10,7 @@ namespace FarmingGPSLib.Equipment
             get;
         }
 
-        Angle FromDirectionOfTravel
+        Azimuth FromDirectionOfTravel
         {
             get;
         }
@@ -39,5 +39,11 @@ namespace FarmingGPSLib.Equipment
         {
             get;
         }
+
+        Position GetLeftTip(Position attachedPosition, Azimuth directionOfTravel);
+
+        Position GetRightTip(Position attachedPosition, Azimuth directionOfTravel);
+
+        Position GetCenter(Position attachedPosition, Azimuth directionOfTravel);
     }
 }
