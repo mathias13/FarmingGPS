@@ -55,9 +55,6 @@ namespace FarmingGPSLib.FieldItems
             _orientation = orientation;
             _projectionInfo = projectionInfo;
             _equipment = equipment;
-            //TODO fix this with general function to calculate tip position and check orientation
-            _track.Add(receiver.CurrentPosition.TranslateTo(receiver.CurrentBearing.Subtract(equipment.FromDirectionOfTravel.DecimalDegrees - 90.0), equipment.CenterToTip));
-            _track.Add(_track[0]);
             
             List<Position> fieldPoints = new List<Position>();
             fieldPoints.Add(receiver.CurrentPosition.TranslateTo(Azimuth.Northwest, Distance.FromMeters(1.0)));
@@ -71,18 +68,36 @@ namespace FarmingGPSLib.FieldItems
             _field = new Field(fieldPoints, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
             receiver.PositionUpdate += Receiver_PositionUpdate;
         }
-
+        
         private void Receiver_PositionUpdate(object sender, Position actualPosition)
         {
             IReceiver receiver = sender as IReceiver;
-            //TODO fix this with general function to calculate tip position and check orientation
-            if (CheckDistanceFromPreviousPoint(actualPosition, receiver.CurrentBearing))
+            Position correctPosition = _equipment.GetCenter(actualPosition, receiver.CurrentBearing);
+            if (CheckDistanceFromPreviousPoint(correctPosition, receiver.CurrentBearing))
             {
-                _track.Insert(_track.Count - 2, actualPosition);
-                //_track.Insert(_track.Count - 1, receiver.CurrentPosition.TranslateTo(receiver.CurrentBearing.Subtract(_equipment.FromDirectionOfTravel.DecimalDegrees - 90.0), _equipment.CenterToTip));
+                AddPoint(correctPosition, receiver.CurrentBearing);
                 if (_track.Count > 3)
                     OnFieldBoundaryUpdated(_track);
             }
+        }
+
+        private void AddPoint(Position actualPosition, Azimuth heading)
+        {
+            Position leftTip = _equipment.GetLeftTip(actualPosition, heading);
+            Position rightTip = _equipment.GetLeftTip(actualPosition, heading);
+            
+            if(_fieldTracker.IsTracking)
+            {
+                _track.Insert(_track.Count - 2, _orientation == Orientation.Lefthand ? rightTip : leftTip);
+                _fieldTracker.AddTrackPoint(_field.GetPositionInField(leftTip), _field.GetPositionInField(rightTip));
+            }
+            else
+            {
+                _track.Add(_orientation == Orientation.Lefthand ? rightTip : leftTip);
+                _track.Add(_track[0]);
+                _fieldTracker.InitTrack(_field.GetPositionInField(leftTip), _field.GetPositionInField(rightTip));
+            }
+
         }
 
         private bool CheckDistanceFromPreviousPoint(Position position, Azimuth heading)
