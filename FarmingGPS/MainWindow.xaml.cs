@@ -148,20 +148,20 @@ namespace FarmingGPS
             _visualization.UpdatePosition(actualCoordinate, receiver.CurrentBearing);
             
             //TODO Fix the distance needed before we draw a new track.
-            if (!_fieldTracker.IsTracking)
-            {
-                Coordinate leftTip = field.GetPositionInField(_equipment.GetLeftTip(actualPosition, receiver.CurrentBearing));
-                Coordinate rightTip = field.GetPositionInField(_equipment.GetRightTip(actualPosition, receiver.CurrentBearing));
-                _fieldTracker.InitTrack(leftTip, rightTip);
-                _prevTrackCoordinate = actualCoordinate;
-            }
-            else if (actualCoordinate.Distance(_prevTrackCoordinate) > 0.5)
-            {
-                Coordinate leftTip = field.GetPositionInField(_equipment.GetLeftTip(actualPosition, receiver.CurrentBearing));
-                Coordinate rightTip = field.GetPositionInField(_equipment.GetRightTip(actualPosition, receiver.CurrentBearing));
-                _fieldTracker.AddTrackPoint(leftTip, rightTip);
-                _prevTrackCoordinate = actualCoordinate;
-            } 
+            //if (!_fieldTracker.IsTracking)
+            //{
+            //    Coordinate leftTip = field.GetPositionInField(_equipment.GetLeftTip(actualPosition, receiver.CurrentBearing));
+            //    Coordinate rightTip = field.GetPositionInField(_equipment.GetRightTip(actualPosition, receiver.CurrentBearing));
+            //    _fieldTracker.InitTrack(leftTip, rightTip);
+            //    _prevTrackCoordinate = actualCoordinate;
+            //}
+            //else if (actualCoordinate.Distance(_prevTrackCoordinate) > 0.5)
+            //{
+            //    Coordinate leftTip = field.GetPositionInField(_equipment.GetLeftTip(actualPosition, receiver.CurrentBearing));
+            //    Coordinate rightTip = field.GetPositionInField(_equipment.GetRightTip(actualPosition, receiver.CurrentBearing));
+            //    _fieldTracker.AddTrackPoint(leftTip, rightTip);
+            //    _prevTrackCoordinate = actualCoordinate;
+            //} 
 
             //if(DateTime.Now > _trackingLineEvaluationTimeout)
             //{
