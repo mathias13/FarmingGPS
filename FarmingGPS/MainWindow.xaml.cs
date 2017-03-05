@@ -36,7 +36,7 @@ namespace FarmingGPS
     /// </summary>
     public partial class MainWindow : Window
     {
-        private FarmingGPSLib.FieldItems.Field field;
+        private FarmingGPSLib.FieldItems.Field _field;
         
         private string _cameraIp = String.Empty;
 
@@ -144,54 +144,57 @@ namespace FarmingGPS
         void _receiver_PositionUpdate(object sender, Position actualPosition)
         {
             IReceiver receiver = sender as IReceiver;
-            Coordinate actualCoordinate = field.GetPositionInField(_equipment.GetCenter(actualPosition, receiver.CurrentBearing));
+            Coordinate actualCoordinate = _fieldCreator.GetField().GetPositionInField(_equipment.GetCenter(actualPosition, receiver.CurrentBearing));
             _visualization.UpdatePosition(actualCoordinate, receiver.CurrentBearing);
-            
+
             //TODO Fix the distance needed before we draw a new track.
-            //if (!_fieldTracker.IsTracking)
-            //{
-            //    Coordinate leftTip = field.GetPositionInField(_equipment.GetLeftTip(actualPosition, receiver.CurrentBearing));
-            //    Coordinate rightTip = field.GetPositionInField(_equipment.GetRightTip(actualPosition, receiver.CurrentBearing));
-            //    _fieldTracker.InitTrack(leftTip, rightTip);
-            //    _prevTrackCoordinate = actualCoordinate;
-            //}
-            //else if (actualCoordinate.Distance(_prevTrackCoordinate) > 0.5)
-            //{
-            //    Coordinate leftTip = field.GetPositionInField(_equipment.GetLeftTip(actualPosition, receiver.CurrentBearing));
-            //    Coordinate rightTip = field.GetPositionInField(_equipment.GetRightTip(actualPosition, receiver.CurrentBearing));
-            //    _fieldTracker.AddTrackPoint(leftTip, rightTip);
-            //    _prevTrackCoordinate = actualCoordinate;
-            //} 
+            if (!_fieldTracker.IsTracking)
+            {
+                Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(actualPosition, receiver.CurrentBearing));
+                Coordinate rightTip = _field.GetPositionInField(_equipment.GetRightTip(actualPosition, receiver.CurrentBearing));
+                _fieldTracker.InitTrack(leftTip, rightTip);
+                _prevTrackCoordinate = actualCoordinate;
+            }
+            else if (actualCoordinate.Distance(_prevTrackCoordinate) > 0.5)
+            {
+                Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(actualPosition, receiver.CurrentBearing));
+                Coordinate rightTip = _field.GetPositionInField(_equipment.GetRightTip(actualPosition, receiver.CurrentBearing));
+                _fieldTracker.AddTrackPoint(leftTip, rightTip);
+                _prevTrackCoordinate = actualCoordinate;
+            }
 
-            //if(DateTime.Now > _trackingLineEvaluationTimeout)
-            //{
-            //    TrackingLine newTrackingLine = _farmingMode.GetClosestLine(_actualCoordinate);
-            //    if (_activeTrackingLine == null)
-            //        _activeTrackingLine = newTrackingLine;
-            //    else if(!_activeTrackingLine.Equals(newTrackingLine))
-            //    {
-            //        //TODO change depleted limit to a setting
-            //        if (_fieldTracker.GetTrackingLineCoverage(_activeTrackingLine) > 0.9)
-            //            _activeTrackingLine.Depleted = true;
+            if (DateTime.Now > _trackingLineEvaluationTimeout)
+            {
+                if (_farmingMode != null)
+                {
+                    TrackingLine newTrackingLine = _farmingMode.GetClosestLine(actualCoordinate);
+                    if (_activeTrackingLine == null)
+                        _activeTrackingLine = newTrackingLine;
+                    else if (!_activeTrackingLine.Equals(newTrackingLine))
+                    {
+                        //TODO change depleted limit to a setting
+                        if (_fieldTracker.GetTrackingLineCoverage(_activeTrackingLine) > 0.9)
+                            _activeTrackingLine.Depleted = true;
 
-            //        _activeTrackingLine.Active = false;
-            //        _activeTrackingLine = newTrackingLine;
-            //    }
-                
-            //    //TODO Make this a setting instead 
-            //    _trackingLineEvaluationTimeout = DateTime.Now.AddSeconds(5.0);
-            //}
+                        _activeTrackingLine.Active = false;
+                        _activeTrackingLine = newTrackingLine;
+                    }
+                }
 
-            //if(_activeTrackingLine != null)
-            //{
-            //    _activeTrackingLine.Active = true;
-            //    OrientationToLine orientationToLine = _activeTrackingLine.GetOrientationToLine(_actualCoordinate, _actAngle);
-            //    LightBar.Direction lightBarDirection = LightBar.Direction.Left;
-            //    if (orientationToLine.SideOfLine == OrientationToLine.Side.Left)
-            //        lightBarDirection = LightBar.Direction.Right;
+                //TODO Make this a setting instead 
+                _trackingLineEvaluationTimeout = DateTime.Now.AddSeconds(5.0);
+            }
 
-            //    _lightBar.SetDistance(Distance.FromMeters(orientationToLine.DistanceTo), lightBarDirection);
-            //}
+            if (_activeTrackingLine != null)
+            {
+                _activeTrackingLine.Active = true;
+                OrientationToLine orientationToLine = _activeTrackingLine.GetOrientationToLine(actualCoordinate, receiver.CurrentBearing);
+                LightBar.Direction lightBarDirection = LightBar.Direction.Left;
+                if (orientationToLine.SideOfLine == OrientationToLine.Side.Left)
+                    lightBarDirection = LightBar.Direction.Right;
+
+                _lightBar.SetDistance(Distance.FromMeters(orientationToLine.DistanceTo), lightBarDirection);
+            }
         }
 
         void _receiver_BearingUpdate(object sender, Azimuth actualBearing)
@@ -223,21 +226,20 @@ namespace FarmingGPS
             _ntripClient.Connect();
 
             System.Threading.Thread.Sleep(1000);
-            List<Position> positions = new List<Position>();
-            positions.Add(new Position(new Longitude(13.855224), new Latitude(58.512617)));
-            positions.Add(new Position(new Longitude(13.855385), new Latitude(58.512526)));
-            positions.Add(new Position(new Longitude(13.854799), new Latitude(58.511009)));
-            positions.Add(new Position(new Longitude(13.855010), new Latitude(58.510682)));
-            positions.Add(new Position(new Longitude(13.862226), new Latitude(58.509660)));
-            positions.Add(new Position(new Longitude(13.864235), new Latitude(58.513386)));
-            positions.Add(new Position(new Longitude(13.859803), new Latitude(58.514010)));
-            positions.Add(new Position(new Longitude(13.859956), new Latitude(58.514921)));
-            positions.Add(new Position(new Longitude(13.855927), new Latitude(58.515144)));
-            positions.Add(new Position(new Longitude(13.855224), new Latitude(58.512617)));
+            //List<Position> positions = new List<Position>();
+            //positions.Add(new Position(new Longitude(13.855224), new Latitude(58.512617)));
+            //positions.Add(new Position(new Longitude(13.855385), new Latitude(58.512526)));
+            //positions.Add(new Position(new Longitude(13.854799), new Latitude(58.511009)));
+            //positions.Add(new Position(new Longitude(13.855010), new Latitude(58.510682)));
+            //positions.Add(new Position(new Longitude(13.862226), new Latitude(58.509660)));
+            //positions.Add(new Position(new Longitude(13.864235), new Latitude(58.513386)));
+            //positions.Add(new Position(new Longitude(13.859803), new Latitude(58.514010)));
+            //positions.Add(new Position(new Longitude(13.859956), new Latitude(58.514921)));
+            //positions.Add(new Position(new Longitude(13.855927), new Latitude(58.515144)));
+            //positions.Add(new Position(new Longitude(13.855224), new Latitude(58.512617)));
 
-            field = new Field(positions, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
+            //_field = new Field(positions, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
             FarmingGPSLib.Equipment.Harrow harrow = new FarmingGPSLib.Equipment.Harrow(Distance.FromMeters(6), Distance.FromMeters(1.5), new Azimuth(180), Distance.FromCentimeters(20));
-            _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(field, harrow, 1);
             _equipment = harrow;
 
             //_visualization.AddField(field);
@@ -252,6 +254,8 @@ namespace FarmingGPS
             //    _visualization.AddLine(line);
 
             _fieldCreator = new FieldCreator(DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N, FieldCreator.Orientation.Lefthand, _receiver, harrow);
+            _fieldCreator.FieldCreated += _fieldCreator_FieldCreated;
+            _field = _fieldCreator.GetField();
             _visualization.AddFieldCreator(_fieldCreator);
             _visualization.SetEquipmentWidth(harrow.Width);
 
@@ -261,6 +265,27 @@ namespace FarmingGPS
             //_visualization.UpdatePosition(field.GetPositionInField(new Position(new Longitude(13.8547112149059), new Latitude(58.5126434260099))), new Azimuth(90));
             _visualization.UpdatePosition(_fieldCreator.GetField().GetPositionInField(new Position(new Longitude(13.8547112149059), new Latitude(58.5126434260099))), new Azimuth(90));
             _visualization.AddFieldTracker(_fieldTracker);
+        }
+
+        private void _fieldCreator_FieldCreated(object sender, FieldCreatedEventArgs e)
+        {
+            _field = e.Field;
+            _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, 1);
+            DotSpatial.Topology.Angle angle = new DotSpatial.Topology.Angle(0);
+            angle.DegreesPos = 99;
+            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
+            {
+                _visualization.AddLine(line);
+                if (_fieldTracker.GetTrackingLineCoverage(line) > 0.9)
+                    line.Depleted = true;
+            }
+            _farmingMode.CreateTrackingLines(_field.GetPositionInField(new Position(new Longitude(13.855224), new Latitude(58.512617))), angle);
+            foreach (TrackingLine line in _farmingMode.TrackingLines)
+            {
+                _visualization.AddLine(line);
+                if (_fieldTracker.GetTrackingLineCoverage(line) > 0.9)
+                    line.Depleted = true;
+            }
         }
 
         private void Image_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
