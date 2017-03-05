@@ -46,8 +46,6 @@ namespace FarmingGPSLib.FieldItems
 
         private Field _field;
 
-        private FieldTracker _fieldTracker;
-
         private Azimuth _previousHeading;
 
         private Position _previousPosition;
@@ -70,7 +68,6 @@ namespace FarmingGPSLib.FieldItems
             fieldPoints.Add(receiver.CurrentPosition.TranslateTo(Azimuth.Northwest, Distance.FromMeters(1.0)));
             _previousHeading = receiver.CurrentBearing;
             _previousPosition = receiver.CurrentPosition;
-            _fieldTracker = new FieldTracker();
             _field = new Field(fieldPoints, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
             AddPoint(receiver.CurrentPosition, receiver.CurrentBearing);
             receiver.PositionUpdate += Receiver_PositionUpdate;
@@ -92,17 +89,13 @@ namespace FarmingGPSLib.FieldItems
         {
             Position leftTip = _equipment.GetLeftTip(actualPosition, heading);
             Position rightTip = _equipment.GetRightTip(actualPosition, heading);
-            
-            if(_fieldTracker.IsTracking)
-            {
+
+            if (_track.Count > 0)
                 _track.Insert(_track.Count - 2, _orientation == Orientation.Lefthand ? rightTip : leftTip);
-                _fieldTracker.AddTrackPoint(_field.GetPositionInField(leftTip), _field.GetPositionInField(rightTip));
-            }
             else
             {
                 _track.Add(_orientation == Orientation.Lefthand ? rightTip : leftTip);
                 _track.Add(_track[0]);
-                _fieldTracker.InitTrack(_field.GetPositionInField(leftTip), _field.GetPositionInField(rightTip));
             }
 
         }
@@ -140,12 +133,7 @@ namespace FarmingGPSLib.FieldItems
         {
             return _field;
         }
-
-        public FieldTracker GetFieldTracker()
-        {
-            return _fieldTracker;
-        }
-
+        
         #endregion
 
         #region Protected Methods
@@ -159,7 +147,7 @@ namespace FarmingGPSLib.FieldItems
         protected void OnFieldCreated(List<Position> fieldBoundary)
         {
             if (FieldCreated != null)
-                FieldCreated.Invoke(this, new FieldCreatedEventArgs(_field, _fieldTracker));
+                FieldCreated.Invoke(this, new FieldCreatedEventArgs(_field));
         }
 
         #endregion
