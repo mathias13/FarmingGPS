@@ -115,6 +115,8 @@ namespace FarmingGPS.Visualization
 
         private IDictionary<int, IList<MeshVisual3D>> _trackMeshHoles = new Dictionary<int, IList<MeshVisual3D>>();
 
+        private ModelVisual3D _outlineModel = new ModelVisual3D();
+
         private bool _viewTopActive = false;
 
         private double _viewTopZoomLevel = 0.0;
@@ -277,43 +279,8 @@ namespace FarmingGPS.Visualization
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
             {
                 _minPoint = field.Polygon.Envelope.Minimum;
-                Polygon3D polygon = new Polygon3D();
-                Polygon polygon2D = new Polygon();
-
-                LineGeometryBuilder builder = new LineGeometryBuilder(_viewPort.Children[0]);
-                List<Point3D> outlinePoints = new List<Point3D>();
-
-                Point3DCollection polygonPoints = new Point3DCollection();
-                for (int i = 0; i < field.Polygon.Coordinates.Count - 1; i++)
-                {
-                    polygon.Points.Add(new Point3D(field.Polygon.Coordinates[i].X - _minPoint.X, field.Polygon.Coordinates[i].Y - _minPoint.Y, FIELD_Z_INDEX));
-                    polygon2D.Points.Add(new Point(field.Polygon.Coordinates[i].X - _minPoint.X, field.Polygon.Coordinates[i].Y - _minPoint.Y));
-                    outlinePoints.Add(new Point3D(field.Polygon.Coordinates[i].X - _minPoint.X, field.Polygon.Coordinates[i].Y - _minPoint.Y, LINE_Z_INDEX));
-                }
-                outlinePoints.Add(outlinePoints[0]);
-
-                Mesh3D mesh3D = new Mesh3D(polygon.Points, polygon2D.Triangulate());
-                MeshVisual3D mesh = new MeshVisual3D();
-                DiffuseMaterial material = new DiffuseMaterial(new SolidColorBrush(_fieldFillColor));
-                material.Freeze();
-                mesh.FaceMaterial = material;
-                mesh.EdgeDiameter = 0;
-                mesh.VertexRadius = 0;
-                mesh.Mesh = mesh3D;
-
-                Point3DCollection points = builder.CreatePositions(outlinePoints, LINE_THICKNESS, 0.0, null);
-                Int32Collection indices = builder.CreateIndices(outlinePoints.Count);
-
-                Mesh3D outlienMesh3D = new Mesh3D(points, indices);
-                DiffuseMaterial outlineMaterial = new DiffuseMaterial(new SolidColorBrush(_fieldOutlineColor));
-                outlineMaterial.Freeze();
-                GeometryModel3D outlineModel3D = new GeometryModel3D(outlienMesh3D.ToMeshGeometry3D(), outlineMaterial);
-                outlineModel3D.BackMaterial = outlineMaterial;
-                ModelVisual3D modelVisual = new ModelVisual3D();
-                modelVisual.Content = outlineModel3D;
-                
-                _viewPort.Children.Add(mesh);
-                _viewPort.Children.Add(modelVisual);
+                DrawOutline(field.Polygon.Coordinates);
+                DrawFieldMesh(field.Polygon.Coordinates);
             }
             else
                 Dispatcher.Invoke(new AddFieldDelegate(AddField), System.Windows.Threading.DispatcherPriority.Render, field);
@@ -322,6 +289,11 @@ namespace FarmingGPS.Visualization
         public void AddFieldTracker(FieldTracker fieldTracker)
         {
             fieldTracker.PolygonUpdated += fieldTracker_PolygonUpdated;
+        }
+
+        public void AddFieldCreator(FieldCreator fieldCreator)
+        {
+            fieldCreator.FieldBoundaryUpdated += FieldCreator_FieldBoundaryUpdated;
         }
 
         public void ZoomOut()
@@ -533,7 +505,16 @@ namespace FarmingGPS.Visualization
                 Dispatcher.Invoke(new TrackPolygonUpdatedDelegate(fieldTracker_PolygonUpdated), System.Windows.Threading.DispatcherPriority.Render, sender, e);
 
         }
-        
+
+        #endregion
+
+        #region FieldCreatorEvents
+    
+        private void FieldCreator_FieldBoundaryUpdated(object sender, FieldBoundaryUpdatedEventArgs e)
+        {
+
+        }
+
         #endregion
 
         #region Private Methods
@@ -595,6 +576,58 @@ namespace FarmingGPS.Visualization
                 SetValue(CameraPositionProperty, VIEW_BEHIND_POSTION + (VIEW_BEHIND_ZOOM_VECTOR * _viewBehindZoomLevel));
                 SetValue(CameraLookDirectionProperty, VIEW_BEHIND_LOOK_DIRECTION);
             }
+        }
+
+        private void DrawOutline(IList<DotSpatial.Topology.Coordinate> coordinates)
+        {
+            _viewPort.Children.Remove(_outlineModel);
+            LineGeometryBuilder builder = new LineGeometryBuilder(_viewPort.Children[0]);
+            List<Point3D> outlinePoints = new List<Point3D>();
+
+            Point3DCollection polygonPoints = new Point3DCollection();
+            for (int i = 0; i < coordinates.Count - 1; i++)
+                outlinePoints.Add(new Point3D(coordinates[i].X - _minPoint.X, coordinates[i].Y - _minPoint.Y, LINE_Z_INDEX));
+
+            outlinePoints.Add(outlinePoints[0]);
+            
+            Point3DCollection points = builder.CreatePositions(outlinePoints, LINE_THICKNESS, 0.0, null);
+            Int32Collection indices = builder.CreateIndices(outlinePoints.Count);
+
+            Mesh3D outlienMesh3D = new Mesh3D(points, indices);
+            DiffuseMaterial outlineMaterial = new DiffuseMaterial(new SolidColorBrush(_fieldOutlineColor));
+            outlineMaterial.Freeze();
+            GeometryModel3D outlineModel3D = new GeometryModel3D(outlienMesh3D.ToMeshGeometry3D(), outlineMaterial);
+            outlineModel3D.BackMaterial = outlineMaterial;
+            _outlineModel = new ModelVisual3D();
+            _outlineModel.Content = outlineModel3D;
+            
+            _viewPort.Children.Add(_outlineModel);
+        }
+
+        private void DrawFieldMesh(IList<DotSpatial.Topology.Coordinate> coordinates)
+        {
+            Polygon3D polygon = new Polygon3D();
+            Polygon polygon2D = new Polygon();
+
+            LineGeometryBuilder builder = new LineGeometryBuilder(_viewPort.Children[0]);
+
+            Point3DCollection polygonPoints = new Point3DCollection();
+            for (int i = 0; i < coordinates.Count - 1; i++)
+            {
+                polygon.Points.Add(new Point3D(coordinates[i].X - _minPoint.X, coordinates[i].Y - _minPoint.Y, FIELD_Z_INDEX));
+                polygon2D.Points.Add(new Point(coordinates[i].X - _minPoint.X, coordinates[i].Y - _minPoint.Y));
+            }
+
+            Mesh3D mesh3D = new Mesh3D(polygon.Points, polygon2D.Triangulate());
+            MeshVisual3D mesh = new MeshVisual3D();
+            DiffuseMaterial material = new DiffuseMaterial(new SolidColorBrush(_fieldFillColor));
+            material.Freeze();
+            mesh.FaceMaterial = material;
+            mesh.EdgeDiameter = 0;
+            mesh.VertexRadius = 0;
+            mesh.Mesh = mesh3D;            
+
+            _viewPort.Children.Add(mesh);
         }
 
         #endregion
