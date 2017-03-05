@@ -280,7 +280,8 @@ namespace FarmingGPS.Visualization
         {
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
             {
-                _minPoint = field.Polygon.Envelope.Minimum;
+                if(_minPoint == null)
+                    _minPoint = field.Polygon.Envelope.Minimum;
                 DrawOutline(field.Polygon.Coordinates);
                 DrawFieldMesh(field.Polygon.Coordinates);
             }
@@ -296,6 +297,7 @@ namespace FarmingGPS.Visualization
         public void AddFieldCreator(FieldCreator fieldCreator)
         {
             fieldCreator.FieldBoundaryUpdated += FieldCreator_FieldBoundaryUpdated;
+            fieldCreator.FieldCreated += FieldCreator_FieldCreated;
             _minPoint = fieldCreator.GetField().Polygon.Envelope.Minimum;
         }
 
@@ -527,6 +529,13 @@ namespace FarmingGPS.Visualization
             }
             else
                 Dispatcher.Invoke(new FieldBoundaryUpdatedDelegate(FieldCreator_FieldBoundaryUpdated), System.Windows.Threading.DispatcherPriority.Render, sender, e);
+        }
+
+        private void FieldCreator_FieldCreated(object sender, FieldCreatedEventArgs e)
+        {
+            FieldCreator fieldCreator = sender as FieldCreator;
+            fieldCreator.FieldBoundaryUpdated -= FieldCreator_FieldBoundaryUpdated;
+            fieldCreator.FieldCreated -= FieldCreator_FieldCreated;
         }
 
         #endregion
