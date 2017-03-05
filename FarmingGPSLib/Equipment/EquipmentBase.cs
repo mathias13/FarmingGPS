@@ -33,8 +33,8 @@ namespace FarmingGPSLib.Equipment
             _overlap = Distance.FromMeters(0);
             Position attachedPoint = new Position(new Latitude(0.0), new Longitude(0.0));
             Position centerOfEquipment = attachedPoint.TranslateTo(fromDirectionOfTravel, distanceFromVechile);
-            Position leftTip = centerOfEquipment.TranslateTo(fromDirectionOfTravel.Add(180.0).Normalize().Add(-90.0), CenterOfWidth);
-            Position rightTip = centerOfEquipment.TranslateTo(fromDirectionOfTravel.Add(180.0).Normalize().Add(90.0), CenterOfWidth);
+            Position leftTip = centerOfEquipment.TranslateTo(fromDirectionOfTravel.Add(180.0).Normalize().Add(-90.0), CenterToTip);
+            Position rightTip = centerOfEquipment.TranslateTo(fromDirectionOfTravel.Add(180.0).Normalize().Add(90.0), CenterToTip);
             _bearingToLeftTip = attachedPoint.BearingTo(leftTip);
             _bearingToRightTip = attachedPoint.BearingTo(rightTip);
             _distanceToLeftTip = attachedPoint.DistanceTo(leftTip);
@@ -105,7 +105,7 @@ namespace FarmingGPSLib.Equipment
 
         public Position GetCenter(Position attachedPosition, Azimuth directionOfTravel)
         {
-            return attachedPosition.TranslateTo(directionOfTravel.Add(FromDirectionOfTravel), DistanceFromVechile);
+            return attachedPosition.TranslateTo(directionOfTravel.Add(FromDirectionOfTravel), DistanceFromVechileToCenter);
         }
 
         #endregion
