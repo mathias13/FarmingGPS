@@ -8,22 +8,14 @@ namespace FarmingGPSLib.FieldItems
     {
         private Field _field;
 
-        private FieldTracker _fieldTracker;
-
-        public FieldCreatedEventArgs(Field field, FieldTracker fieldTracker)
+        public FieldCreatedEventArgs(Field field)
         {
             _field = field;
-            _fieldTracker = fieldTracker;
         }
 
         public Field Field
         {
             get { return _field; }
-        }
-
-        public FieldTracker FieldTracker
-        {
-            get { return _fieldTracker; }
         }
     }
 }
