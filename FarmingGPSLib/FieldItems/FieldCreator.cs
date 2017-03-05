@@ -69,7 +69,9 @@ namespace FarmingGPSLib.FieldItems
             _previousHeading = receiver.CurrentBearing;
             _previousPosition = receiver.CurrentPosition;
             _field = new Field(fieldPoints, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
-            AddPoint(receiver.CurrentPosition, receiver.CurrentBearing);
+            Position leftTip = _equipment.GetLeftTip(receiver.CurrentPosition, receiver.CurrentBearing);
+            Position rightTip = _equipment.GetRightTip(receiver.CurrentPosition, receiver.CurrentBearing);
+            AddPoint(_orientation == Orientation.Lefthand ? rightTip : leftTip);
             receiver.PositionUpdate += Receiver_PositionUpdate;
         }
         
@@ -77,40 +79,49 @@ namespace FarmingGPSLib.FieldItems
         {
             IReceiver receiver = sender as IReceiver;
             Position correctPosition = _equipment.GetCenter(actualPosition, receiver.CurrentBearing);
-            if (CheckDistanceFromPreviousPoint(correctPosition, receiver.CurrentBearing))
+            Position leftTip = _equipment.GetLeftTip(actualPosition, receiver.CurrentBearing);
+            Position rightTip = _equipment.GetRightTip(actualPosition, receiver.CurrentBearing);
+            if (CheckFinishedField(_orientation == Orientation.Lefthand ? rightTip : leftTip))
+                receiver.PositionUpdate -= Receiver_PositionUpdate;
+            else
             {
-                AddPoint(correctPosition, receiver.CurrentBearing);
-                if (_track.Count > 3)
-                    OnFieldBoundaryUpdated(_track);
+                if (CheckDistanceFromPreviousPoint(correctPosition, receiver.CurrentBearing))
+                {
+                    AddPoint(_orientation == Orientation.Lefthand ? rightTip : leftTip);
+                    if (_track.Count > 3)
+                        OnFieldBoundaryUpdated(_track);
+                }
             }
         }
 
-        private void AddPoint(Position actualPosition, Azimuth heading)
+        private void AddPoint(Position actualPosition)
         {
-            Position leftTip = _equipment.GetLeftTip(actualPosition, heading);
-            Position rightTip = _equipment.GetRightTip(actualPosition, heading);
 
             if (_track.Count > 0)
-                _track.Insert(_track.Count - 2, _orientation == Orientation.Lefthand ? rightTip : leftTip);
+                _track.Insert(_track.Count - 1, actualPosition);
             else
             {
-                _track.Add(_orientation == Orientation.Lefthand ? rightTip : leftTip);
+                _track.Add(actualPosition);
                 _track.Add(_track[0]);
             }
 
         }
 
-        private void CheckFinishedField(Position actualPosition)
+        private bool CheckFinishedField(Position actualPosition)
         {
             if (!_waitForFinish)
                 _waitForFinish = _track[0].DistanceTo(actualPosition) > Distance.FromMeters(DISTANCE_TO_START_FIELD_FINISHED + 1.0);
             else
             {
-                if(_track[0].DistanceTo(actualPosition) < Distance.FromMeters(DISTANCE_TO_START_FIELD_FINISHED))
+                Distance distance = _track[0].DistanceTo(actualPosition);
+                if (distance < Distance.FromMeters(DISTANCE_TO_START_FIELD_FINISHED))
                 {
-                    _field = new Field(_track, _field.Projection);
+                    _field = new Field(_track, _field.Projection);                    
+                    OnFieldCreated(_field);
+                    return true;
                 }
             }
+            return false;
         }
 
         private bool CheckDistanceFromPreviousPoint(Position position, Azimuth heading)
@@ -144,10 +155,10 @@ namespace FarmingGPSLib.FieldItems
                 FieldBoundaryUpdated.Invoke(this, new FieldBoundaryUpdatedEventArgs(fieldBoundary));
         }
 
-        protected void OnFieldCreated(List<Position> fieldBoundary)
+        protected void OnFieldCreated(Field field)
         {
             if (FieldCreated != null)
-                FieldCreated.Invoke(this, new FieldCreatedEventArgs(_field));
+                FieldCreated.Invoke(this, new FieldCreatedEventArgs(field));
         }
 
         #endregion
