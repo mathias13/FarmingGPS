@@ -103,6 +103,11 @@ namespace FarmingGPSLib.Equipment
             return attachedPosition.TranslateTo(directionOfTravel.Add(_bearingToRightTip), _distanceToRightTip);
         }
 
+        public Position GetCenter(Position attachedPosition, Azimuth directionOfTravel)
+        {
+            return attachedPosition.TranslateTo(directionOfTravel.Add(FromDirectionOfTravel), DistanceFromVechile);
+        }
+
         #endregion
     }
 }

@@ -43,5 +43,7 @@ namespace FarmingGPSLib.Equipment
         Position GetLeftTip(Position attachedPosition, Azimuth directionOfTravel);
 
         Position GetRightTip(Position attachedPosition, Azimuth directionOfTravel);
+
+        Position GetCenter(Position attachedPosition, Azimuth directionOfTravel);
     }
 }
