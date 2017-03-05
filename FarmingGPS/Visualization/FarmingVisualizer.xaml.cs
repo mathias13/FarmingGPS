@@ -47,6 +47,8 @@ namespace FarmingGPS.Visualization
 
         protected delegate void TrackPolygonUpdatedDelegate(object sender, PolygonUpdatedEventArgs e);
 
+        protected delegate void FieldBoundaryUpdatedDelegate(object sender, FieldBoundaryUpdatedEventArgs e);
+
         #region Consts
 
         private const double LINE_THICKNESS = 0.05;
@@ -512,7 +514,18 @@ namespace FarmingGPS.Visualization
     
         private void FieldCreator_FieldBoundaryUpdated(object sender, FieldBoundaryUpdatedEventArgs e)
         {
+            if (Dispatcher.Thread.Equals(Thread.CurrentThread))
+            {
+                FieldCreator fieldCreator = sender as FieldCreator;
+                _minPoint = fieldCreator.GetField().Polygon.Envelope.Minimum;
+                IList<DotSpatial.Topology.Coordinate> coordinates = new List<DotSpatial.Topology.Coordinate>();
+                foreach (Position position in e.Boundary)
+                    coordinates.Add(fieldCreator.GetField().GetPositionInField(position));
 
+                DrawOutline(coordinates);
+            }
+            else
+                Dispatcher.Invoke(new FieldBoundaryUpdatedDelegate(FieldCreator_FieldBoundaryUpdated), System.Windows.Threading.DispatcherPriority.Render, sender, e);
         }
 
         #endregion
@@ -586,10 +599,13 @@ namespace FarmingGPS.Visualization
 
             Point3DCollection polygonPoints = new Point3DCollection();
             for (int i = 0; i < coordinates.Count - 1; i++)
+            {
                 outlinePoints.Add(new Point3D(coordinates[i].X - _minPoint.X, coordinates[i].Y - _minPoint.Y, LINE_Z_INDEX));
-
+                outlinePoints.Add(new Point3D(coordinates[i + 1].X - _minPoint.X, coordinates[i + 1].Y - _minPoint.Y, LINE_Z_INDEX));
+            }
+            outlinePoints.Add(outlinePoints[outlinePoints.Count - 1]);
             outlinePoints.Add(outlinePoints[0]);
-            
+
             Point3DCollection points = builder.CreatePositions(outlinePoints, LINE_THICKNESS, 0.0, null);
             Int32Collection indices = builder.CreateIndices(outlinePoints.Count);
 
