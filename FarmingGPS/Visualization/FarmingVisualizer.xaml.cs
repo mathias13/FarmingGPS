@@ -296,6 +296,7 @@ namespace FarmingGPS.Visualization
         public void AddFieldCreator(FieldCreator fieldCreator)
         {
             fieldCreator.FieldBoundaryUpdated += FieldCreator_FieldBoundaryUpdated;
+            _minPoint = fieldCreator.GetField().Polygon.Envelope.Minimum;
         }
 
         public void ZoomOut()

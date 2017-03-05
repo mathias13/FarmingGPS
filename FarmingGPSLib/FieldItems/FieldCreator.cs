@@ -84,7 +84,7 @@ namespace FarmingGPSLib.FieldItems
         private void AddPoint(Position actualPosition, Azimuth heading)
         {
             Position leftTip = _equipment.GetLeftTip(actualPosition, heading);
-            Position rightTip = _equipment.GetLeftTip(actualPosition, heading);
+            Position rightTip = _equipment.GetRightTip(actualPosition, heading);
             
             if(_fieldTracker.IsTracking)
             {
@@ -123,7 +123,7 @@ namespace FarmingGPSLib.FieldItems
 
         public FieldTracker GetFieldTracker()
         {
-            return null;
+            return _fieldTracker;
         }
 
         #endregion
