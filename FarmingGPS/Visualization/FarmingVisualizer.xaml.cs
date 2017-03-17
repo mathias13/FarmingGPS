@@ -57,7 +57,7 @@ namespace FarmingGPS.Visualization
 
         private const double FIELD_TRACK_Z_INDEX = -0.008;
 
-        private const double FIELD_Z_INDEX = -0.012;
+        private const double FIELD_Z_INDEX = -0.2;
 
         private readonly Point3D VIEW_TOP_POSTION = new Point3D(2.0, 0.0, 30.0);
 
@@ -311,7 +311,7 @@ namespace FarmingGPS.Visualization
                 outlineModel3D.BackMaterial = outlineMaterial;
                 ModelVisual3D modelVisual = new ModelVisual3D();
                 modelVisual.Content = outlineModel3D;
-                
+
                 _viewPort.Children.Add(mesh);
                 _viewPort.Children.Add(modelVisual);
             }
