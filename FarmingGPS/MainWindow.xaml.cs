@@ -47,7 +47,7 @@ namespace FarmingGPS
         private SBPReceiverSender _sbpReceiverSender;
 
         private IReceiver _receiver;
-
+        
         private AutoEventedDiscoveryServices<Service> _mdsServices;
 
         private Coordinate _actualCoordinate = new Coordinate(0.0, 0.0);
@@ -286,5 +286,6 @@ namespace FarmingGPS
         }
 
         #endregion
+        
     }
 }
