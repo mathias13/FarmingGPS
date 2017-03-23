@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using DotSpatial.Topology;
+﻿using DotSpatial.Topology;
 using DotSpatial.Topology.Algorithm;
-using DotSpatial.Topology.Precision;
-using FarmingGPSLib.HelperClasses;
 using FarmingGPSLib.FarmingModes.Tools;
+using FarmingGPSLib.HelperClasses;
+using System;
+using System.Collections.Generic;
 
 namespace FarmingGPSLib.FieldItems
 {

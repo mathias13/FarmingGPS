@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using DotSpatial.Positioning;
 using DotSpatial.Topology;
+using DotSpatial.Projections;
 
 namespace FarmingGPSLib.FieldItems
 {
@@ -22,6 +23,11 @@ namespace FarmingGPSLib.FieldItems
         }
 
         Polygon Polygon
+        {
+            get;
+        }
+
+        ProjectionInfo Projection
         {
             get;
         }

@@ -95,11 +95,14 @@
     <Compile Include="FarmingModes\Tools\TrackingLine.cs" />
     <Compile Include="FieldItems\Field.cs" />
     <Compile Include="FieldItems\FieldBase.cs" />
+    <Compile Include="FieldItems\FieldCreatedEventArgs.cs" />
+    <Compile Include="FieldItems\FieldCreator.cs" />
     <Compile Include="FieldItems\FieldCut.cs" />
     <Compile Include="FieldItems\FieldTracker.cs" />
     <Compile Include="FieldItems\HelperClass.cs" />
     <Compile Include="FieldItems\IField.cs" />
     <Compile Include="FieldItems\PolygonDeletedEventArgs.cs" />
+    <Compile Include="FieldItems\FieldBoundaryUpdatedEventArgs.cs" />
     <Compile Include="FieldItems\PolygonUpdatedEventArgs.cs" />
     <Compile Include="FieldItems\SubField.cs" />
     <Compile Include="HelperClasses\HelperClassCoordinate.cs" />
@@ -115,6 +118,12 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\GpsCorrectionService\GpsUtilities\GpsUtilities.csproj">
+      <Project>{a3488bc4-4d1c-43dc-bcc3-2f39d58f2efb}</Project>
+      <Name>GpsUtilities</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
