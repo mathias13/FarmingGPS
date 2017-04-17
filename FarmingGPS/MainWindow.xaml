@@ -25,6 +25,7 @@
             <Button x:Name="BTN_ZOOM_IN" Style="{StaticResource BUTTON_ZOOM_IN}" Width="60" Height="60" Margin="10,10,10,10" Click="BTN_ZOOM_IN_Click"/>
             <Button x:Name="BTN_ZOOM_OUT" Style="{StaticResource BUTTON_ZOOM_OUT}" Width="60" Height="60" Margin="10,10,10,10" Click="BTN_ZOOM_OUT_Click"/>
             <Button x:Name="BTN_VIEW_CHANGE" Style="{StaticResource BUTTON_CAMERA}" Width="60" Height="60" Margin="10,10,10,10" Click="BTN_VIEW_CHANGE_Click"/>
+            <Button x:Name="BTN_START_FIELD" Style="{StaticResource BUTTON_CAMERA}" Width="60" Height="60" Margin="10,10,10,10" Click="BTN_START_FIELD_Click"/>
         </StackPanel>
         <visualization:SpeedBar Grid.Row="1" Width="Auto" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" x:FieldModifier="private" x:Name="_speedBar"/>
         <TextBlock x:FieldModifier="private" x:Name="_fixMode" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Background="White"/>

@@ -87,7 +87,8 @@ namespace FarmingGPSLib.FieldItems
             {
                 if (CheckDistanceFromPreviousPoint(correctPosition, receiver.CurrentBearing))
                 {
-                    AddPoint(_orientation == Orientation.Lefthand ? rightTip : leftTip);
+                    AddPoint(correctPosition);
+                    //AddPoint(_orientation == Orientation.Lefthand ? rightTip : leftTip);
                     if (_track.Count > 3)
                         OnFieldBoundaryUpdated(_track);
                 }
