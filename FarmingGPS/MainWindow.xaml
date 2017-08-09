@@ -28,7 +28,10 @@
             <Button x:Name="BTN_START_FIELD" Style="{StaticResource BUTTON_CAMERA}" Width="60" Height="60" Margin="10,10,10,10" Click="BTN_START_FIELD_Click"/>
         </StackPanel>
         <visualization:SpeedBar Grid.Row="1" Width="Auto" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" x:FieldModifier="private" x:Name="_speedBar"/>
-        <TextBlock x:FieldModifier="private" x:Name="_fixMode" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Background="White"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1">
+            <TextBlock x:FieldModifier="private" x:Name="_fixMode" Background="White" Padding="0,5,0,5">Fix</TextBlock>
+            <TextBlock x:FieldModifier="private" x:Name="_NTRIPState" Background="White" Padding="0,5,0,5">NTRIP</TextBlock>
+        </StackPanel>
         <Border Background="White" BorderThickness="2" CornerRadius="5" Grid.Row="1" Style="{Binding Path=CameraSize, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" >
             <Image Source="{Binding Path=CameraImage, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" MouseLeftButtonUp="Image_MouseLeftButtonUp"/>
         </Border>

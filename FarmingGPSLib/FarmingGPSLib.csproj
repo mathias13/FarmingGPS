@@ -55,8 +55,9 @@
       <HintPath>..\packages\DotSpatial.Positioning.1.9\lib\net40-Client\DotSpatial.Positioning.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="DotSpatial.Projections">
-      <HintPath>..\DotSpatial.Projections.dll</HintPath>
+    <Reference Include="DotSpatial.Projections, Version=1.9.0.0, Culture=neutral, PublicKeyToken=272632bddd08a38b, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotSpatial.Projections.1.9\lib\net40-Client\DotSpatial.Projections.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="DotSpatial.Serialization, Version=1.9.0.0, Culture=neutral, PublicKeyToken=441f200f827611e7, processorArchitecture=MSIL">
       <HintPath>..\packages\DotSpatial.Serialization.1.9\lib\net40-Client\DotSpatial.Serialization.dll</HintPath>
@@ -77,6 +78,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DatabaseHelper\DatabaseHelperClass.cs" />
     <Compile Include="Equipment\BogBalle\Calibrator.cs" />
     <Compile Include="Equipment\EquipmentBase.cs" />
     <Compile Include="Equipment\Harrow.cs" />
@@ -120,9 +122,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\GpsCorrectionService\GpsUtilities\GpsUtilities.csproj">
+    <ProjectReference Include="..\..\GPSUtilities\GpsUtilities\GpsUtilities.csproj">
       <Project>{a3488bc4-4d1c-43dc-bcc3-2f39d58f2efb}</Project>
       <Name>GpsUtilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Database\FarmingGPS.Database.csproj">
+      <Project>{d73db0c0-d9d1-489e-b6bc-7ef3203afdc0}</Project>
+      <Name>FarmingGPS.Database</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

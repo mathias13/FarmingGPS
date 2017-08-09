@@ -55,7 +55,7 @@ namespace FarmingGPS
         private TrackingLine _activeTrackingLine = null;
 
         private Coordinate _prevTrackCoordinate = new Coordinate(0.0, 0.0);
-
+        
         private FieldTracker _fieldTracker = new FieldTracker();
 
         private FieldCreator _fieldCreator;
@@ -64,7 +64,7 @@ namespace FarmingGPS
 
         private FarmingGPSLib.Equipment.IEquipment _equipment;
 
-        private GpsUtilities.Filter.VechileFilter _filter;
+        private bool _ntripConnected = false;
 
         public MainWindow()
         {
@@ -117,7 +117,8 @@ namespace FarmingGPS
         {
             _ntripClient.Dispose();
             _receiver.Dispose();
-            _sbpReceiverSender.Dispose();
+            if(_sbpReceiverSender != null)
+                _sbpReceiverSender.Dispose();
             _mdsServices.Dispose();
         }
 
@@ -128,7 +129,13 @@ namespace FarmingGPS
         
         void _ntripClient_StreamDataReceivedEvent(object sender, NTRIP.Eventarguments.StreamReceivedArgs e)
         {
-            _sbpReceiverSender.SendMessage(e.DataStream);
+            if(_sbpReceiverSender != null)
+                _sbpReceiverSender.SendMessage(e.DataStream);
+            if(!_ntripConnected)
+            {
+                _ntripConnected = true;
+                ChangeNTRIPState();
+            }
         }
 
         public delegate void FixUpdate(object sender, FixQuality fixQuality);
@@ -138,6 +145,10 @@ namespace FarmingGPS
             if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
             {
                 _fixMode.Text = fixQuality.ToString();
+                if (fixQuality == FixQuality.FixedRealTimeKinematic)
+                    _fixMode.Background = Brushes.Green;
+                else
+                    _fixMode.Background = Brushes.Red;
             }
             else
                 Dispatcher.Invoke(new FixUpdate(_receiver_FixQualityUpdate), System.Windows.Threading.DispatcherPriority.Render, this, fixQuality);
@@ -146,30 +157,22 @@ namespace FarmingGPS
         void _receiver_PositionUpdate(object sender, Position actualPosition)
         {
             IReceiver receiver = sender as IReceiver;
-            if (_filter == null)
-                _filter = new GpsUtilities.Filter.VechileFilter(actualPosition, receiver.CurrentBearing, 40.0);
-            else
-                _filter.UpdateFilter(actualPosition, receiver.CurrentBearing, receiver.CurrentSpeed);
-            if (_fieldCreator == null)
-                return;
-            Coordinate actualCoordinate = _fieldCreator.GetField().GetPositionInField(_equipment.GetCenter(_filter.CurrentPosition, _filter.CurrentHeading));
-            Azimuth actualHeading = _filter.CurrentHeading;
-            //Coordinate actualCoordinate = _fieldCreator.GetField().GetPositionInField(_equipment.GetCenter(actualPosition, receiver.CurrentBearing));
-            //Azimuth actualHeading = receiver.CurrentBearing;
+            Coordinate actualCoordinate = _field.GetPositionInField(_equipment.GetCenter(actualPosition, receiver.CurrentBearing));
+            Azimuth actualHeading = receiver.CurrentBearing;
             _visualization.UpdatePosition(actualCoordinate, actualHeading);
 
             //TODO Fix the distance needed before we draw a new track.
             if (!_fieldTracker.IsTracking)
             {
-                Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(_filter.CurrentPosition, actualHeading));
-                Coordinate rightTip = _field.GetPositionInField(_equipment.GetRightTip(_filter.CurrentPosition, actualHeading));
+                Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(actualPosition, actualHeading));
+                Coordinate rightTip = _field.GetPositionInField(_equipment.GetRightTip(actualPosition, actualHeading));
                 _fieldTracker.InitTrack(leftTip, rightTip);
                 _prevTrackCoordinate = actualCoordinate;
             }
             else if (actualCoordinate.Distance(_prevTrackCoordinate) > 0.5)
             {
-                Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(_filter.CurrentPosition, actualHeading));
-                Coordinate rightTip = _field.GetPositionInField(_equipment.GetRightTip(_filter.CurrentPosition, actualHeading));
+                Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(actualPosition, actualHeading));
+                Coordinate rightTip = _field.GetPositionInField(_equipment.GetRightTip(actualPosition, actualHeading));
                 _fieldTracker.AddTrackPoint(leftTip, rightTip);
                 _prevTrackCoordinate = actualCoordinate;
             }
@@ -219,10 +222,45 @@ namespace FarmingGPS
 
         void delayedActions()
         {
+            System.Threading.Thread.Sleep(1000);
+            List<Position> positions = new List<Position>();
+            positions.Add(new Position(new Longitude(13.85490324303376), new Latitude(58.51282887426869)));
+            positions.Add(new Position(new Longitude(13.85490181035013), new Latitude(58.51339680335879)));
+            positions.Add(new Position(new Longitude(13.85428253752469), new Latitude(58.51339613650494)));
+            positions.Add(new Position(new Longitude(13.85428227919927), new Latitude(58.51282947517689)));
+            positions.Add(new Position(new Longitude(13.85490324303376), new Latitude(58.51282887426869)));
+
+            _field = new Field(positions, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
+            FarmingGPSLib.Equipment.Harrow harrow = new FarmingGPSLib.Equipment.Harrow(Distance.FromMeters(5.0), Distance.FromMeters(0.0), new Azimuth(180), Distance.FromCentimeters(0));
+            _equipment = harrow;
+
+            _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, harrow, 1);
+            _visualization.AddField(_field);
+            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
+                _visualization.AddLine(line);
+
+            //DotSpatial.Topology.Angle angle = new DotSpatial.Topology.Angle(0);
+            //angle.DegreesPos = 99;
+            //_farmingMode.CreateTrackingLines(field.GetPositionInField(new Position(new Longitude(13.855224), new Latitude(58.512617))), angle);
+            _farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadLand[0]);
+
+            foreach (TrackingLine line in _farmingMode.TrackingLines)
+                _visualization.AddLine(line);
+
+            _visualization.SetEquipmentWidth(harrow.Width);
+
+            _speedBar.Unit = SpeedUnit.KilometersPerHour;
+            _speedBar.SetSpeed(Speed.FromKilometersPerHour(2.4));
+            _receiver_FixQualityUpdate(this, FixQuality.FixedRealTimeKinematic);
+            //_visualization.UpdatePosition(_field.GetPositionInField(new Position(new Longitude(13.85490324303376), new Latitude(58.51282887426869))), Azimuth.North);
+            //_visualization.UpdatePosition(_fieldCreator.GetField().GetPositionInField(new Position(new Longitude(13.8547112149059), new Latitude(58.5126434260099))), new Azimuth(90));
+            _visualization.AddFieldTracker(_fieldTracker);
+
             //_sbpReceiverSender = new SBPReceiverSender(System.Net.IPAddress.Parse("192.168.0.222"), 55555);
-            //_receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(500);
-            //_receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(2.0);
-            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8547112149059), new Latitude(58.5126434260099)), true);
+            _sbpReceiverSender = new SBPReceiverSender("COM4", 115200, false);
+            _receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(1000));
+            _receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0);
+            //_receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8547112149059), new Latitude(58.5126434260099)), false);
             _receiver.BearingUpdate += _receiver_BearingUpdate;
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
@@ -232,48 +270,35 @@ namespace FarmingGPS
             NTRIP.Settings.ClientSettings clientSettings = new NTRIP.Settings.ClientSettings();
             clientSettings.IPorHost = "nolgarden.net";
             clientSettings.PortNumber = 5000;
-            clientSettings.NTRIPMountPoint = "ExampleName";
-            clientSettings.NTRIPUser = new NTRIP.Settings.NTRIPUser("ExAmPlEuSeR", "ExAmPlEpAsSwOrD");
+            clientSettings.NTRIPMountPoint = "NolgardenSBP";
+            clientSettings.NTRIPUser = new NTRIP.Settings.NTRIPUser("Mathias", "vetinte");
             _ntripClient = new NTRIP.ClientService(clientSettings);
             _ntripClient.StreamDataReceivedEvent += _ntripClient_StreamDataReceivedEvent;
+            _ntripClient.ConnectionExceptionEvent += _ntripClient_ConnectionExceptionEvent;
             _ntripClient.Connect();
+        }
 
-            System.Threading.Thread.Sleep(1000);
-            //List<Position> positions = new List<Position>();
-            //positions.Add(new Position(new Longitude(13.855224), new Latitude(58.512617)));
-            //positions.Add(new Position(new Longitude(13.855385), new Latitude(58.512526)));
-            //positions.Add(new Position(new Longitude(13.854799), new Latitude(58.511009)));
-            //positions.Add(new Position(new Longitude(13.855010), new Latitude(58.510682)));
-            //positions.Add(new Position(new Longitude(13.862226), new Latitude(58.509660)));
-            //positions.Add(new Position(new Longitude(13.864235), new Latitude(58.513386)));
-            //positions.Add(new Position(new Longitude(13.859803), new Latitude(58.514010)));
-            //positions.Add(new Position(new Longitude(13.859956), new Latitude(58.514921)));
-            //positions.Add(new Position(new Longitude(13.855927), new Latitude(58.515144)));
-            //positions.Add(new Position(new Longitude(13.855224), new Latitude(58.512617)));
+        private void _ntripClient_ConnectionExceptionEvent(object sender, NTRIP.Eventarguments.ConnectionExceptionArgs e)
+        {
+            if(_ntripConnected)
+            {
+                _ntripConnected = false;
+                ChangeNTRIPState();
+            }
+            _ntripClient.Connect();
+        }
 
-            //_field = new Field(positions, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
-            FarmingGPSLib.Equipment.Harrow harrow = new FarmingGPSLib.Equipment.Harrow(Distance.FromMeters(5.0), Distance.FromMeters(1.5), new Azimuth(180), Distance.FromCentimeters(20));
-            _equipment = harrow;
-
-            //_visualization.AddField(field);
-            //foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
-            //_visualization.AddLine(line);
-
-            //DotSpatial.Topology.Angle angle = new DotSpatial.Topology.Angle(0);
-            //angle.DegreesPos = 99;
-            //_farmingMode.CreateTrackingLines(field.GetPositionInField(new Position(new Longitude(13.855224), new Latitude(58.512617))), angle);
-
-            //foreach (TrackingLine line in _farmingMode.TrackingLines)
-            //    _visualization.AddLine(line);
-
-            _visualization.SetEquipmentWidth(harrow.Width);
-
-            _speedBar.Unit = SpeedUnit.KilometersPerHour;
-            _speedBar.SetSpeed(Speed.FromKilometersPerHour(2.4));
-            _receiver_FixQualityUpdate(this, FixQuality.FixedRealTimeKinematic);
-            //_visualization.UpdatePosition(field.GetPositionInField(new Position(new Longitude(13.8547112149059), new Latitude(58.5126434260099))), new Azimuth(90));
-            //_visualization.UpdatePosition(_fieldCreator.GetField().GetPositionInField(new Position(new Longitude(13.8547112149059), new Latitude(58.5126434260099))), new Azimuth(90));
-            _visualization.AddFieldTracker(_fieldTracker);
+        private void ChangeNTRIPState()
+        {
+            if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
+            {
+                if (_ntripConnected)
+                    _NTRIPState.Background = Brushes.Green;
+                else
+                    _NTRIPState.Background = Brushes.Red;
+            }
+            else
+                Dispatcher.Invoke(new Action(ChangeNTRIPState), System.Windows.Threading.DispatcherPriority.Render);
         }
 
         private void _fieldCreator_FieldCreated(object sender, FieldCreatedEventArgs e)
@@ -325,17 +350,18 @@ namespace FarmingGPS
             _visualization.ChangeView();
         }
 
-        #endregion
-        
         private void BTN_START_FIELD_Click(object sender, RoutedEventArgs e)
         {
-            if (_fieldCreator == null)
-            {
-                _fieldCreator = new FieldCreator(DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N, FieldCreator.Orientation.Lefthand, _receiver, _equipment);
-                _fieldCreator.FieldCreated += _fieldCreator_FieldCreated;
-                _field = _fieldCreator.GetField();
-                _visualization.AddFieldCreator(_fieldCreator);
-            }
+            //if (_fieldCreator == null)
+            //{
+            //    _fieldCreator = new FieldCreator(DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N, FieldCreator.Orientation.Lefthand, _receiver, _equipment);
+            //    _fieldCreator.FieldCreated += _fieldCreator_FieldCreated;
+            //    _field = _fieldCreator.GetField();
+            //    _visualization.AddFieldCreator(_fieldCreator);
+            //}
         }
+
+        #endregion
+
     }
 }

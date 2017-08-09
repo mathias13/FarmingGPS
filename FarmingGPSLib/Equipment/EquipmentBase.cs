@@ -31,7 +31,7 @@ namespace FarmingGPSLib.Equipment
             _distanceFromVechile = distanceFromVechile;
             _fromDirectionOfTravel = fromDirectionOfTravel;
             _overlap = Distance.FromMeters(0);
-            Position attachedPoint = new Position(new Latitude(0.0), new Longitude(0.0));
+            Position attachedPoint = new Position(new Latitude(1.0), new Longitude(1.0));
             Position centerOfEquipment = attachedPoint.TranslateTo(fromDirectionOfTravel, distanceFromVechile);
             Position leftTip = centerOfEquipment.TranslateTo(fromDirectionOfTravel.Add(180.0).Normalize().Add(-90.0), CenterToTip);
             Position rightTip = centerOfEquipment.TranslateTo(fromDirectionOfTravel.Add(180.0).Normalize().Add(90.0), CenterToTip);

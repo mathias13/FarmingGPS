@@ -59,7 +59,7 @@ namespace FarmingGPS.Visualization
 
         private const double FIELD_TRACK_Z_INDEX = -0.008;
 
-        private const double FIELD_Z_INDEX = -0.2;
+        private const double FIELD_Z_INDEX = -0.12;
 
         private readonly Point3D VIEW_TOP_POSTION = new Point3D(2.0, 0.0, 30.0);
 

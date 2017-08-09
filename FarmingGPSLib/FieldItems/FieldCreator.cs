@@ -79,16 +79,18 @@ namespace FarmingGPSLib.FieldItems
         {
             IReceiver receiver = sender as IReceiver;
             Position correctPosition = _equipment.GetCenter(actualPosition, receiver.CurrentBearing);
-            Position leftTip = _equipment.GetLeftTip(actualPosition, receiver.CurrentBearing);
-            Position rightTip = _equipment.GetRightTip(actualPosition, receiver.CurrentBearing);
-            if (CheckFinishedField(_orientation == Orientation.Lefthand ? rightTip : leftTip))
+            if(_orientation == Orientation.Lefthand)
+                correctPosition = _equipment.GetRightTip(actualPosition, receiver.CurrentBearing);
+            else
+                correctPosition = _equipment.GetLeftTip(actualPosition, receiver.CurrentBearing);
+
+            if (CheckFinishedField(correctPosition))
                 receiver.PositionUpdate -= Receiver_PositionUpdate;
             else
             {
                 if (CheckDistanceFromPreviousPoint(correctPosition, receiver.CurrentBearing))
                 {
                     AddPoint(correctPosition);
-                    //AddPoint(_orientation == Orientation.Lefthand ? rightTip : leftTip);
                     if (_track.Count > 3)
                         OnFieldBoundaryUpdated(_track);
                 }
