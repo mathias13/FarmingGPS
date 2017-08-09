@@ -1,5 +1,6 @@
 ﻿using System;
 using DotSpatial.Topology;
+using System.Collections.Generic;
 
 namespace FarmingGPSLib.HelperClasses
 {
@@ -21,6 +22,25 @@ namespace FarmingGPSLib.HelperClasses
             double leftX = coord.X + Math.Cos(angle) * distance;
             double leftY = coord.Y + Math.Sin(angle) * distance;
             return new Coordinate(leftX, leftY);
+        }
+
+    }
+
+    public class CSVCoordinates
+    {
+        private IEnumerable<Coordinate> _coords;
+
+        public CSVCoordinates(IEnumerable<Coordinate> coords)
+        {
+            _coords = coords;
+        }
+
+        public override string ToString()
+        {
+            string csvString = String.Empty;
+            foreach (Coordinate coord in _coords)
+                csvString += coord.X.ToString() + ";" + coord.Y.ToString() + Environment.NewLine;
+            return csvString;
         }
     }
 }

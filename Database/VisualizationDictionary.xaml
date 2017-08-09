@@ -1,0 +1,79 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:helix="clr-namespace:HelixToolkit.Wpf;assembly=HelixToolkit.Wpf">
+
+    <Style x:Key="PiPvideo" TargetType="Border">
+        <Setter Property="Margin" Value="10,10,10,10"/>
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+        <Setter Property="Width" Value="Auto"/>
+        <Setter Property="Height" Value="72"/>
+        <Setter Property="BorderBrush" Value="Black"/>
+    </Style>
+    <Style x:Key="Fullvideo" TargetType="Border">
+        <Setter Property="Margin" Value="0,0,0,0"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="Width" Value="Auto"/>
+        <Setter Property="Height" Value="Auto"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+    </Style>
+    
+    <RadialGradientBrush Center="0.4,0.4" x:Key="LIGHT_BULB_GREEN_ON">
+        <RadialGradientBrush.GradientStops>
+            <GradientStopCollection>
+                <GradientStop Color="LightGreen" Offset="0.01"/>
+                <GradientStop Color="Green" Offset="0.95"/>
+            </GradientStopCollection>
+        </RadialGradientBrush.GradientStops>
+    </RadialGradientBrush>
+
+    <RadialGradientBrush Center="0.4,0.4" x:Key="LIGHT_BULB_GREEN_OFF">
+        <RadialGradientBrush.GradientStops>
+            <GradientStopCollection>
+                <GradientStop Color="Green" Offset="0.01"/>
+                <GradientStop Color="DarkGreen" Offset="0.95"/>
+            </GradientStopCollection>
+        </RadialGradientBrush.GradientStops>
+    </RadialGradientBrush>
+
+    <RadialGradientBrush Center="0.4,0.4" x:Key="LIGHT_BULB_RED_ON">
+        <RadialGradientBrush.GradientStops>
+            <GradientStopCollection>
+                <GradientStop Color="Red" Offset="0.01"/>
+                <GradientStop Color="#FFAB0000" Offset="0.95"/>
+            </GradientStopCollection>
+        </RadialGradientBrush.GradientStops>
+    </RadialGradientBrush>
+
+    <RadialGradientBrush Center="0.4,0.4" x:Key="LIGHT_BULB_RED_OFF">
+        <RadialGradientBrush.GradientStops>
+            <GradientStopCollection>
+                <GradientStop Color="#FFAB0000" Offset="0.01"/>
+                <GradientStop Color="DarkRed" Offset="0.95"/>
+            </GradientStopCollection>
+        </RadialGradientBrush.GradientStops>
+    </RadialGradientBrush>
+
+    <Style x:Key="LIGHT_BULB" TargetType="Ellipse">
+        <Setter Property="StrokeThickness" Value="2"/>
+        <Setter Property="MinWidth" Value="30"/>
+        <Setter Property="Margin" Value="5,5,5,5" />
+        <Setter Property="Height" Value="{Binding ActualWidth, RelativeSource={RelativeSource Self}}"/>
+    </Style>
+
+    <SolidColorBrush x:Key="TRACK_LINE_INACTIVE">#FF0000FF</SolidColorBrush>
+    <SolidColorBrush x:Key="TRACK_LINE_DEPLETED">#FFFFFFFF</SolidColorBrush>
+
+    <ColorAnimationUsingKeyFrames x:Key="TRACK_LINE_ANIMATION" BeginTime="0:0:0" Duration="0:0:4" RepeatBehavior="Forever">
+        <ColorKeyFrameCollection>
+            <DiscreteColorKeyFrame KeyTime="0:0:0" Value="Yellow"/>
+            <DiscreteColorKeyFrame KeyTime="0:0:2" Value="Blue"/>
+        </ColorKeyFrameCollection>
+    </ColorAnimationUsingKeyFrames>
+    
+    <Color x:Key="FIELD_OUTLINE">#FFFF0000</Color>
+    <Color x:Key="FIELD_FILL">#FF008000</Color>
+    <SolidColorBrush x:Key="TRACK_FILL">#FF32CD32</SolidColorBrush>
+    <SolidColorBrush x:Key="TRACK_HOLE">#FFFF0000</SolidColorBrush>
+</ResourceDictionary>

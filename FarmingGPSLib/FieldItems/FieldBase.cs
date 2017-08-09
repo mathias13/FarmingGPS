@@ -155,6 +155,11 @@ namespace FarmingGPSLib.FieldItems
             }
         }
 
+        public ProjectionInfo Projection
+        {
+            get { return _proj; }
+        }
+
         #endregion
     }
 }

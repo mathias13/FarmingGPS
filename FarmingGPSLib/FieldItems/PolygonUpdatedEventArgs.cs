@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using DotSpatial.Topology;
+﻿using DotSpatial.Topology;
+using System;
 
 namespace FarmingGPSLib.FieldItems
 {

@@ -13,23 +13,37 @@ namespace FarmingGPSLib.Equipment
 
         protected Distance _overlap;
 
-        protected Angle _fromDirectionOfTravel;
+        protected Azimuth _fromDirectionOfTravel;
+
+        protected Azimuth _bearingToLeftTip;
+
+        protected Azimuth _bearingToRightTip;
+
+        protected Distance _distanceToLeftTip;
+
+        protected Distance _distanceToRightTip;
 
         #endregion
 
-        public EquipmentBase(Distance width, Distance distanceFromVechile, Angle fromDirectionOfTravel)
+        public EquipmentBase(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel)
         {
             _width = width;
             _distanceFromVechile = distanceFromVechile;
             _fromDirectionOfTravel = fromDirectionOfTravel;
             _overlap = Distance.FromMeters(0);
+            Position attachedPoint = new Position(new Latitude(1.0), new Longitude(1.0));
+            Position centerOfEquipment = attachedPoint.TranslateTo(fromDirectionOfTravel, distanceFromVechile);
+            Position leftTip = centerOfEquipment.TranslateTo(fromDirectionOfTravel.Add(180.0).Normalize().Add(-90.0), CenterToTip);
+            Position rightTip = centerOfEquipment.TranslateTo(fromDirectionOfTravel.Add(180.0).Normalize().Add(90.0), CenterToTip);
+            _bearingToLeftTip = attachedPoint.BearingTo(leftTip);
+            _bearingToRightTip = attachedPoint.BearingTo(rightTip);
+            _distanceToLeftTip = attachedPoint.DistanceTo(leftTip);
+            _distanceToRightTip = attachedPoint.DistanceTo(rightTip);
         }
 
-        public EquipmentBase(Distance width, Distance distanceFromVechile, Angle fromDirectionOfTravel, Distance overlap)
+        public EquipmentBase(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, Distance overlap)
+            : this(width,distanceFromVechile,fromDirectionOfTravel)
         {
-            _width = width;
-            _distanceFromVechile = distanceFromVechile;
-            _fromDirectionOfTravel = fromDirectionOfTravel;
             if (overlap > width.Divide(2))
                 _overlap = width.Divide(2);
             else
@@ -38,12 +52,12 @@ namespace FarmingGPSLib.Equipment
 
         #region IEquipment Implementation
 
-        public Distance DistanceFromVechile
+        public Distance DistanceFromVechileToCenter
         {
             get { return _distanceFromVechile; }
         }
 
-        public Angle FromDirectionOfTravel
+        public Azimuth FromDirectionOfTravel
         {
             get { return _fromDirectionOfTravel; }
         }
@@ -58,7 +72,7 @@ namespace FarmingGPSLib.Equipment
             get { return _overlap; }
         }
 
-        public Distance CenterOfWidth
+        public Distance CenterToTip
         {
             get
             {
@@ -66,7 +80,7 @@ namespace FarmingGPSLib.Equipment
             }
         }
 
-        public Distance CenterToCenter
+        public Distance WidthExclOverlap
         {
             get
             {
@@ -74,9 +88,24 @@ namespace FarmingGPSLib.Equipment
             }
         }
 
-        public Distance CenterOfWidthWithOverlap
+        public Distance CenterToTipWithOverlap
         {
-            get { return CenterOfWidth.Subtract(Overlap); }
+            get { return CenterToTip.Subtract(Overlap); }
+        }
+
+        public Position GetLeftTip(Position attachedPosition, Azimuth directionOfTravel)
+        {
+            return attachedPosition.TranslateTo(directionOfTravel.Add(_bearingToLeftTip), _distanceToLeftTip);
+        }
+
+        public Position GetRightTip(Position attachedPosition, Azimuth directionOfTravel)
+        {
+            return attachedPosition.TranslateTo(directionOfTravel.Add(_bearingToRightTip), _distanceToRightTip);
+        }
+
+        public Position GetCenter(Position attachedPosition, Azimuth directionOfTravel)
+        {
+            return attachedPosition.TranslateTo(directionOfTravel.Add(FromDirectionOfTravel), DistanceFromVechileToCenter);
         }
 
         #endregion

@@ -5,12 +5,12 @@ namespace FarmingGPSLib.Equipment
 {
     public interface IEquipment
     {
-        Distance DistanceFromVechile
+        Distance DistanceFromVechileToCenter
         {
             get;
         }
 
-        Angle FromDirectionOfTravel
+        Azimuth FromDirectionOfTravel
         {
             get;
         }
@@ -25,19 +25,25 @@ namespace FarmingGPSLib.Equipment
             get;
         }
 
-        Distance CenterOfWidth
+        Distance CenterToTip
         {
             get;
         }
 
-        Distance CenterToCenter
+        Distance WidthExclOverlap
         {
             get;
         }
 
-        Distance CenterOfWidthWithOverlap
+        Distance CenterToTipWithOverlap
         {
             get;
         }
+
+        Position GetLeftTip(Position attachedPosition, Azimuth directionOfTravel);
+
+        Position GetRightTip(Position attachedPosition, Azimuth directionOfTravel);
+
+        Position GetCenter(Position attachedPosition, Azimuth directionOfTravel);
     }
 }

@@ -1,31 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using DotSpatial.Topology;
+﻿using DotSpatial.Topology;
 using DotSpatial.Topology.Algorithm;
-using DotSpatial.Topology.Precision;
-using FarmingGPSLib.HelperClasses;
 using FarmingGPSLib.FarmingModes.Tools;
+using FarmingGPSLib.HelperClasses;
+using System;
+using System.Collections.Generic;
 
 namespace FarmingGPSLib.FieldItems
 {
-    internal class CSVCoordinates
-    {
-        private IEnumerable<Coordinate> _coords;
-
-        public CSVCoordinates(IEnumerable<Coordinate> coords)
-        {
-            _coords = coords;
-        }
-
-        public override string ToString()
-        {
-            string csvString = String.Empty;
-            foreach (Coordinate coord in _coords)
-                csvString += coord.X.ToString() + ";" + coord.Y.ToString() + Environment.NewLine;
-            return csvString;
-        }
-    }
-
     public class FieldTracker
     {
         #region Events
@@ -88,95 +69,116 @@ namespace FarmingGPSLib.FieldItems
                     }
                     else
                     {
-                        bool redrawPolygon = false;
-
-                        List<Coordinate> newCoords = new List<Coordinate>();
-                        newCoords.Add(_prevRightPoint);
-                        newCoords.Add(rightPoint);
-                        newCoords.Add(leftPoint);
-                        newCoords.Add(_prevLeftPoint);
-                        LineString newCoordinates = new LineString(newCoords);
-                        List<Coordinate> newRectangleCoords = new List<Coordinate>(newCoords);
-                        newRectangleCoords.Add(_prevRightPoint);
-                        ILineString rectangle = new LineString(newRectangleCoords);
-
-                        IGeometry rectPolygon = new Polygon(rectangle.Coordinates);
-
-                        if (!rectangle.IsSimple)
+                        try
                         {
-                            RobustLineIntersector lineIntersector = new RobustLineIntersector();
-                            lineIntersector.ComputeIntersection(rightPoint, leftPoint, _prevLeftPoint, _prevRightPoint);
-                            if (!lineIntersector.HasIntersection)
-                                throw new Exception("No instersection point found but turning around itself");
+                            bool redrawPolygon = false;
 
-                            List<Coordinate> leftTriangle = new List<Coordinate>();
-                            leftTriangle.Add(_prevLeftPoint);
-                            leftTriangle.Add(lineIntersector.IntersectionPoints[0]);
-                            leftTriangle.Add(leftPoint);
-                            leftTriangle.Add(_prevLeftPoint);
+                            List<Coordinate> newCoords = new List<Coordinate>();
+                            newCoords.Add(_prevRightPoint);
+                            newCoords.Add(rightPoint);
+                            newCoords.Add(leftPoint);
+                            newCoords.Add(_prevLeftPoint);
+                            LineString newCoordinates = new LineString(newCoords);
+                            List<Coordinate> newRectangleCoords = new List<Coordinate>(newCoords);
+                            newRectangleCoords.Add(_prevRightPoint);
+                            ILineString rectangle = new LineString(newRectangleCoords);
 
-                            List<Coordinate> rightTriangle = new List<Coordinate>();
-                            rightTriangle.Add(_prevRightPoint);
-                            rightTriangle.Add(rightPoint);
-                            rightTriangle.Add(lineIntersector.IntersectionPoints[0]);
-                            rightTriangle.Add(_prevRightPoint);
+                            IGeometry rectPolygon = new Polygon(rectangle.Coordinates);
 
-                            if (CgAlgorithms.IsCounterClockwise(leftTriangle))
+                            if (!rectangle.IsSimple)
                             {
-                                newCoords = new List<Coordinate>(leftTriangle);
-                                newCoords.RemoveAt(0);
-                                newCoordinates = new LineString(newCoords);
-                                leftTriangle.RemoveAt(1);
-                                leftTriangle.Insert(1, rightPoint);
-                                rectPolygon = new Polygon(leftTriangle);
-                            }
-                            else if(CgAlgorithms.IsCounterClockwise(rightTriangle))
-                            {
-                                newCoords = new List<Coordinate>(rightTriangle);
-                                newCoords.RemoveAt(0);
-                                newCoordinates = new LineString(newCoords);
-                                rightTriangle.RemoveAt(2);
-                                rightTriangle.Insert(2, leftPoint);
-                                rectPolygon = new Polygon(rightTriangle);
-                            }
-                            else
-                                throw new Exception("No instersection point found but turning around itself");
-                        }
+                                RobustLineIntersector lineIntersector = new RobustLineIntersector();
+                                lineIntersector.ComputeIntersection(rightPoint, leftPoint, _prevLeftPoint, _prevRightPoint);
+                                if (!lineIntersector.HasIntersection)
+                                    throw new Exception("No instersection point found but turning around itself");
 
-                        int holeHash = _polygons[_currentPolygonIndex].Holes.GetHashCode();
+                                List<Coordinate> leftTriangle = new List<Coordinate>();
+                                leftTriangle.Add(_prevLeftPoint);
+                                leftTriangle.Add(lineIntersector.IntersectionPoints[0]);
+                                leftTriangle.Add(leftPoint);
+                                leftTriangle.Add(_prevLeftPoint);
 
-                        _polygons[_currentPolygonIndex] = (Polygon)_polygons[_currentPolygonIndex].Union(rectPolygon);
-                        _polygons[_currentPolygonIndex].Shell = RoundCoordinates(_polygons[_currentPolygonIndex].Shell);
-                        if (_polygons[_currentPolygonIndex].Coordinates.Count > _polygonSimplifierCount[_currentPolygonIndex])
-                        {
-                            IGeometry geometry = DotSpatial.Topology.Simplify.TopologyPreservingSimplifier.Simplify(_polygons[_currentPolygonIndex], 0.03);
-                            if (geometry is Polygon)
-                            {
-                                _polygons[_currentPolygonIndex] = geometry as Polygon;
-                                _polygonSimplifierCount[_currentPolygonIndex] = geometry.Coordinates.Count + SIMPLIFIER_COUNT_LIMIT;
-                                redrawPolygon = true;
-                            }
-                        }
+                                List<Coordinate> rightTriangle = new List<Coordinate>();
+                                rightTriangle.Add(_prevRightPoint);
+                                rightTriangle.Add(rightPoint);
+                                rightTriangle.Add(lineIntersector.IntersectionPoints[0]);
+                                rightTriangle.Add(_prevRightPoint);
 
-                        if (holeHash != _polygons[_currentPolygonIndex].Holes.GetHashCode())
-                        {
-                            redrawPolygon = true;
-                            List<ILinearRing> holes = new List<ILinearRing>(_polygons[_currentPolygonIndex].Holes);
-                            for (int i = 0; i < holes.Count; i++)
-                            {
-                                if (!CheckHoleValidity(holes[i]))
+                                if (CgAlgorithms.IsCounterClockwise(leftTriangle))
                                 {
-                                    holes.RemoveAt(i);
-                                    i--;
+                                    newCoords = new List<Coordinate>(leftTriangle);
+                                    newCoords.RemoveAt(0);
+                                    newCoordinates = new LineString(newCoords);
+                                    leftTriangle.RemoveAt(1);
+                                    leftTriangle.Insert(1, rightPoint);
+                                    rectPolygon = new Polygon(leftTriangle);
+                                }
+                                else if (CgAlgorithms.IsCounterClockwise(rightTriangle))
+                                {
+                                    newCoords = new List<Coordinate>(rightTriangle);
+                                    newCoords.RemoveAt(0);
+                                    newCoordinates = new LineString(newCoords);
+                                    rightTriangle.RemoveAt(2);
+                                    rightTriangle.Insert(2, leftPoint);
+                                    rectPolygon = new Polygon(rightTriangle);
                                 }
                                 else
-                                    holes[i] = RoundCoordinates(holes[i]);
-
+                                    throw new Exception("No instersection point found but turning around itself");
                             }
-                            _polygons[_currentPolygonIndex].Holes = holes.ToArray();
-                        }
 
-                        OnPolygonUpdated(_currentPolygonIndex, newCoordinates, redrawPolygon);
+                            int holeHash = _polygons[_currentPolygonIndex].Holes.GetHashCode();
+
+                            _polygons[_currentPolygonIndex] = (Polygon)_polygons[_currentPolygonIndex].Union(rectPolygon);
+                            _polygons[_currentPolygonIndex].Shell = RoundCoordinates(_polygons[_currentPolygonIndex].Shell);
+                            if (_polygons[_currentPolygonIndex].Coordinates.Count > _polygonSimplifierCount[_currentPolygonIndex])
+                            {
+                                IGeometry geometry = DotSpatial.Topology.Simplify.TopologyPreservingSimplifier.Simplify(_polygons[_currentPolygonIndex], 0.03);
+                                if (geometry is Polygon)
+                                {
+                                    _polygons[_currentPolygonIndex] = geometry as Polygon;
+                                    _polygonSimplifierCount[_currentPolygonIndex] = geometry.Coordinates.Count + SIMPLIFIER_COUNT_LIMIT;
+                                    redrawPolygon = true;
+                                }
+                            }
+
+                            if (holeHash != _polygons[_currentPolygonIndex].Holes.GetHashCode())
+                            {
+                                redrawPolygon = true;
+                                List<ILinearRing> holes = new List<ILinearRing>(_polygons[_currentPolygonIndex].Holes);
+                                for (int i = 0; i < holes.Count; i++)
+                                {
+                                    if (!CheckHoleValidity(holes[i]))
+                                    {
+                                        holes.RemoveAt(i);
+                                        i--;
+                                    }
+                                    else
+                                        holes[i] = RoundCoordinates(holes[i]);
+
+                                }
+                                _polygons[_currentPolygonIndex].Holes = holes.ToArray();
+                            }
+
+                            OnPolygonUpdated(_currentPolygonIndex, newCoordinates, redrawPolygon);
+                        }
+                        catch(Exception e)
+                        {
+                            System.IO.StreamWriter streamWriter = new System.IO.StreamWriter(@"C:\Binaries\positions.csv");
+                            streamWriter.Write(DateTime.Now.ToString("hh:mm:ss") + Environment.NewLine);
+                            streamWriter.Write(e.ToString() + Environment.NewLine);
+                            streamWriter.Write("Shell" + Environment.NewLine);
+                            CSVCoordinates shellCoord = new CSVCoordinates(_polygons[_currentPolygonIndex].Shell.Coordinates);
+                            streamWriter.Write(shellCoord.ToString());
+                            foreach(ILinearRing hole in _polygons[_currentPolygonIndex].Holes)
+                            {
+                                streamWriter.Write("Hole" + Environment.NewLine);
+                                CSVCoordinates holeCoord = new CSVCoordinates(hole.Coordinates);
+                                streamWriter.Write(holeCoord.ToString());
+                            }
+                            streamWriter.Flush();
+                            
+                            streamWriter.Dispose();
+                        }
                     }
                 }
                 else

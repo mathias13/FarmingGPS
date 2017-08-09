@@ -6,36 +6,13 @@ using FarmingGPSLib.Equipment;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
 using FarmingGPSLib.HelperClasses;
+using DotSpatial.Positioning;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace FarmingGPSLib.FarmingModes
 {
-    //TODO put this in some base class or interface
-    public struct EquipmentTips
-    {
-        private Coordinate _leftTip;
-
-        private Coordinate _rightTip;
-
-        public EquipmentTips(Coordinate leftTip, Coordinate rightTip)
-        {
-            _leftTip = leftTip;
-            _rightTip = rightTip;
-        }
-
-        public Coordinate LeftTip
-        {
-            get { return _leftTip; }
-        }
-
-        public Coordinate RightTip
-        {
-            get { return _rightTip; }
-        }
-    }
-
     public class GeneralHarrowingMode : FarmingModeBase, ITrackingLineModes
     {
         protected IEquipment _equipment;
@@ -45,7 +22,7 @@ namespace FarmingGPSLib.FarmingModes
         public GeneralHarrowingMode(IField field)
             : base(field)
         {
-            _equipment = new Harrow(Distance.FromMeters(6), Distance.FromMeters(1), new DotSpatial.Positioning.Angle(0));
+            _equipment = new Harrow(Distance.FromMeters(6), Distance.FromMeters(1), new Azimuth(180.0));
             _headlandTurns = 1;
             CalculateHeadLand();
         }
@@ -60,12 +37,12 @@ namespace FarmingGPSLib.FarmingModes
 
         protected void CalculateHeadLand()
         {
-            double distanceFromShell = _equipment.CenterOfWidth.ToMeters().Value;
+            double distanceFromShell = _equipment.CenterToTip.ToMeters().Value;
             List<LineString> trackingLines = new List<LineString>();
             for (int i = 0; i < _headlandTurns; i++)
             {
                 trackingLines.AddRange(GetHeadlandAround(distanceFromShell));
-                distanceFromShell += _equipment.CenterToCenter.ToMeters().Value;
+                distanceFromShell += _equipment.WidthExclOverlap.ToMeters().Value;
             }
             foreach (LineString line in trackingLines)
                 _trackingLinesHeadLand.Add(new TrackingLine(line));
@@ -96,10 +73,10 @@ namespace FarmingGPSLib.FarmingModes
 
         protected void FillFieldWithTrackingLines(ILineSegment baseLine)
         {
-            double distanceFromShell = _equipment.CenterOfWidth.ToMeters().Value;
+            double distanceFromShell = _equipment.CenterToTip.ToMeters().Value;
             for (int i = 1; i < _headlandTurns; i++)
-                distanceFromShell += _equipment.CenterToCenter.ToMeters().Value;
-            distanceFromShell += _equipment.CenterOfWidth.ToMeters().Value + 0.02; //add 2cm to make sure we dont get trackingline over headline
+                distanceFromShell += _equipment.WidthExclOverlap.ToMeters().Value;
+            distanceFromShell += _equipment.CenterToTip.ToMeters().Value + 0.02; //add 2cm to make sure we dont get trackingline over headline
             IList<Coordinate> headLandCoordinates = GetHeadlandAroundPoints(distanceFromShell);
             IList<LineSegment> headLandLines = HelperClassLines.CreateLines(headLandCoordinates);
 
@@ -112,21 +89,21 @@ namespace FarmingGPSLib.FarmingModes
 
             List<ILineSegment> linesExtended = new List<ILineSegment>();
             linesExtended.Add(baseLineExtended);
-            ILineSegment extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.CenterToCenter.ToMeters().Value);
+            ILineSegment extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.WidthExclOverlap.ToMeters().Value);
             int lineIteriator = 1;
             while (fieldEnvelope.Intersects(extendedLine))
             {
                 linesExtended.Add(extendedLine);
-                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.CenterToCenter.ToMeters().Value * lineIteriator);
+                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.WidthExclOverlap.ToMeters().Value * lineIteriator);
                 lineIteriator++;
             }
 
-            extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.CenterToCenter.ToMeters().Value);
+            extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.WidthExclOverlap.ToMeters().Value);
             lineIteriator = 1;
             while (fieldEnvelope.Intersects(extendedLine))
             {
                 linesExtended.Add(extendedLine);
-                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.CenterToCenter.ToMeters().Value * lineIteriator);
+                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.WidthExclOverlap.ToMeters().Value * lineIteriator);
                 lineIteriator++;
             }
 
@@ -186,13 +163,5 @@ namespace FarmingGPSLib.FarmingModes
                 _trackingLines.Add(new TrackingLine(line));
         }
     
-        public EquipmentTips GetEquipmentTips(Coordinate point, DotSpatial.Positioning.Azimuth direction)
-        {
-            Azimuth directionLeft = direction.Subtract(180.0).Normalize();
-            Azimuth directionRight = direction;
-            Coordinate leftPoint = HelperClassCoordinate.ComputePoint(point, directionLeft.ToRadians().Value, _equipment.Width.ToMeters().Value / 2);
-            Coordinate rightPoint = HelperClassCoordinate.ComputePoint(point, directionRight.ToRadians().Value, _equipment.Width.ToMeters().Value / 2);
-            return new EquipmentTips(leftPoint, rightPoint);
-        }
     }
 }
