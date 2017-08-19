@@ -141,10 +141,16 @@ namespace FarmingGPS
                 Dispatcher.Invoke(DispatcherPriority.Render, new EventHandler<MjpegProcessor.FrameReadyEventArgs>(FrameReady), sender, e);
         }
 
+        #region DependencyProperties
+
+        protected static readonly DependencyProperty FieldTrackerButtonStyleProperty = DependencyProperty.Register("FieldTrackerButtonStyle", typeof(Style), typeof(MainWindow));
+
         protected static readonly DependencyProperty CameraImageProperty = DependencyProperty.Register("CameraImage", typeof(BitmapImage), typeof(MainWindow));
 
         protected static readonly DependencyProperty CameraSizeProperty = DependencyProperty.Register("CameraSize", typeof(Style), typeof(MainWindow));
-        
+
+        #endregion
+
         void Current_Exit(object sender, ExitEventArgs e)
         {
             _ntripClient.Dispose();
@@ -164,37 +170,14 @@ namespace FarmingGPS
         void delayedActions()
         {
             System.Threading.Thread.Sleep(1000);
-            //List<Position> positions = new List<Position>();
-            //positions.Add(new Position(new Longitude(13.85490324303376), new Latitude(58.51282887426869)));
-            //positions.Add(new Position(new Longitude(13.85490181035013), new Latitude(58.51339680335879)));
-            //positions.Add(new Position(new Longitude(13.85428253752469), new Latitude(58.51339613650494)));
-            //positions.Add(new Position(new Longitude(13.85428227919927), new Latitude(58.51282947517689)));
-            //positions.Add(new Position(new Longitude(13.85490324303376), new Latitude(58.51282887426869)));
-
-            //_field = new Field(positions, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
             FarmingGPSLib.Equipment.Harrow harrow = new FarmingGPSLib.Equipment.Harrow(Distance.FromMeters(24.0), Distance.FromMeters(0.0), new Azimuth(180), Distance.FromCentimeters(0));
             _equipment = harrow;
-
-            //_farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, harrow, 1);
-            //_visualization.AddField(_field);
-            //foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
-            //    _visualization.AddLine(line);
-
-            //DotSpatial.Topology.Angle angle = new DotSpatial.Topology.Angle(0);
-            //angle.DegreesPos = 99;
-            //_farmingMode.CreateTrackingLines(field.GetPositionInField(new Position(new Longitude(13.855224), new Latitude(58.512617))), angle);
-            //_farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadLand[0]);
-
-            //foreach (TrackingLine line in _farmingMode.TrackingLines)
-            //    _visualization.AddLine(line);
 
             _visualization.SetEquipmentWidth(harrow.Width);
 
             _speedBar.Unit = SpeedUnit.KilometersPerHour;
             _speedBar.SetSpeed(Speed.FromKilometersPerHour(2.4));
             _receiver_FixQualityUpdate(this, FixQuality.FixedRealTimeKinematic);
-            //_visualization.UpdatePosition(_field.GetPositionInField(new Position(new Longitude(13.85490324303376), new Latitude(58.51282887426869))), Azimuth.North);
-            //_visualization.UpdatePosition(_fieldCreator.GetField().GetPositionInField(new Position(new Longitude(13.8547112149059), new Latitude(58.5126434260099))), new Azimuth(90));
             _visualization.AddFieldTracker(_fieldTracker);
 
             //_sbpReceiverSender = new SBPReceiverSender(System.Net.IPAddress.Parse("192.168.0.222"), 55555);
@@ -208,7 +191,7 @@ namespace FarmingGPS
             _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
             _speedBar.Unit = SpeedUnit.KilometersPerHour;
 
-            NTRIP.Settings.ClientSettings clientSettings = new NTRIP.Settings.ClientSettings();
+            ClientSettings clientSettings = new ClientSettings();
             clientSettings.IPorHost = "nolgarden.net";
             clientSettings.PortNumber = 5000;
             clientSettings.NTRIPMountPoint = "NolgardenSBP";
@@ -312,8 +295,6 @@ namespace FarmingGPS
             Azimuth actualHeading = receiver.CurrentBearing;
             _visualization.UpdatePosition(actualCoordinate, actualHeading);
             
-            EquipmentTips equipment = _farmingMode.GetEquipmentTips(_actualCoordinate, _actAngle);
-
             if (_fieldTracker.IsTracking && !_fieldTrackerActive)
                 _fieldTracker.StopTrack();
             else if (_fieldTrackerActive && !_fieldTracker.IsTracking)
@@ -330,7 +311,6 @@ namespace FarmingGPS
                 _fieldTracker.AddTrackPoint(leftTip, rightTip);
                 _prevTrackCoordinate = actualCoordinate;
             } 
-            }
 
             if (DateTime.Now > _trackingLineEvaluationTimeout)
             {
