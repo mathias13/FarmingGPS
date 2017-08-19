@@ -184,7 +184,7 @@ namespace FarmingGPS
             _sbpReceiverSender = new SBPReceiverSender("COM4", 115200, false);
             //_receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(1000));
             //_receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0);
-            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8547112149059), new Latitude(58.5126434260099)), false);
+            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8548025), new Latitude(58.5104914)), false);
             _receiver.BearingUpdate += _receiver_BearingUpdate;
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
@@ -291,6 +291,8 @@ namespace FarmingGPS
         private void _receiver_PositionUpdate(object sender, Position actualPosition)
         {
             IReceiver receiver = sender as IReceiver;
+            if (_field == null)
+                return;
             Coordinate actualCoordinate = _field.GetPositionInField(_equipment.GetCenter(actualPosition, receiver.CurrentBearing));
             Azimuth actualHeading = receiver.CurrentBearing;
             _visualization.UpdatePosition(actualCoordinate, actualHeading);
@@ -304,7 +306,7 @@ namespace FarmingGPS
                 _fieldTracker.InitTrack(leftTip, rightTip);
                 _prevTrackCoordinate = actualCoordinate;
             }
-            else if (actualCoordinate.Distance(_prevTrackCoordinate) > 0.5)
+            else if (_fieldTrackerActive && actualCoordinate.Distance(_prevTrackCoordinate) > 0.5)
             {
                 Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(actualPosition, actualHeading));
                 Coordinate rightTip = _field.GetPositionInField(_equipment.GetRightTip(actualPosition, actualHeading));

@@ -429,7 +429,7 @@
                         <Rectangle Style="{StaticResource BUTTON_RECT_INNER}"/>
                         <Rectangle Style="{StaticResource BUTTON_RECT_SHADE}" x:Name="TRIGGER_RECT"/>
                         <Viewbox Style="{StaticResource BUTTON_SYMBOL_VIEWBOX}">
-                            <Path Width="76" Height="76" Fill="{StaticResource BUTTON_SYMBOL_COLOR}" Data="{StaticResource SYMBOL_PLAY}"/>
+                            <Path Fill="{StaticResource BUTTON_SYMBOL_COLOR}" Data="{StaticResource SYMBOL_PLAY}"/>
                         </Viewbox>
                     </Grid>
                     <ControlTemplate.Triggers>
@@ -454,7 +454,7 @@
                         <Rectangle Style="{StaticResource BUTTON_RECT_INNER}"/>
                         <Rectangle Style="{StaticResource BUTTON_RECT_SHADE}" x:Name="TRIGGER_RECT"/>
                         <Viewbox Style="{StaticResource BUTTON_SYMBOL_VIEWBOX}">
-                            <Path Width="76" Height="76" Fill="{StaticResource BUTTON_SYMBOL_COLOR}" Data="{StaticResource SYMBOL_PAUSE}"/>
+                            <Path Fill="{StaticResource BUTTON_SYMBOL_COLOR}" Data="{StaticResource SYMBOL_PAUSE}"/>
                         </Viewbox>
                     </Grid>
                     <ControlTemplate.Triggers>

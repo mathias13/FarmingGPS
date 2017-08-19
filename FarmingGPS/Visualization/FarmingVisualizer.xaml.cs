@@ -211,6 +211,7 @@ namespace FarmingGPS.Visualization
                 NormalTrackingLine(_focusedTrackline);
                 _focusedTrackline = null;
                 UpdatePosition(_lastPoint, _lastAngle);
+                UpdateZoomLevel();
             }
             else
                 Dispatcher.BeginInvoke(new Action(CancelFocus), System.Windows.Threading.DispatcherPriority.Render);
