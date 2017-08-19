@@ -40,7 +40,7 @@ namespace FarmingGPS
         private FarmingGPSLib.FieldItems.Field _field;
 
         private FarmingGPS.Database.DatabaseHandler _database;
-
+        
         private string _cameraIp = String.Empty;
 
         private MjpegProcessor.MjpegDecoder _decoder;
@@ -60,7 +60,9 @@ namespace FarmingGPS
         private Coordinate _prevTrackCoordinate = new Coordinate(0.0, 0.0);
 
         private FieldTracker _fieldTracker = new FieldTracker();
-        
+
+        private bool _fieldTrackerActive = false;
+
         private FieldCreator _fieldCreator;
 
         private int _selectedTrackingLine = -1;
@@ -86,7 +88,7 @@ namespace FarmingGPS
             _mdsServices.ResolveNetworkInterfaces = true;
             _mdsServices.StatusNotifyAction += mdsServices_StatusNotifyAction;
             _mdsServices.ReStartAsync();
-
+            
             SqlConnectionStringBuilder connString = new SqlConnectionStringBuilder();
             connString.Encrypt = false;
             connString.TrustServerCertificate = false;
@@ -155,6 +157,7 @@ namespace FarmingGPS
 
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {   
+            SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
             SetValue(CameraSizeProperty, (Style)this.FindResource("PiPvideo"));
         }
         
@@ -253,7 +256,7 @@ namespace FarmingGPS
         void _ntripClient_StreamDataReceivedEvent(object sender, NTRIP.Eventarguments.StreamReceivedArgs e)
         {
             if (_sbpReceiverSender != null)
-                _sbpReceiverSender.SendMessage(e.DataStream);
+            _sbpReceiverSender.SendMessage(e.DataStream);
             if (!_ntripConnected)
             {
                 _ntripConnected = true;
@@ -308,9 +311,12 @@ namespace FarmingGPS
             Coordinate actualCoordinate = _field.GetPositionInField(_equipment.GetCenter(actualPosition, receiver.CurrentBearing));
             Azimuth actualHeading = receiver.CurrentBearing;
             _visualization.UpdatePosition(actualCoordinate, actualHeading);
+            
+            EquipmentTips equipment = _farmingMode.GetEquipmentTips(_actualCoordinate, _actAngle);
 
-            //TODO Fix the distance needed before we draw a new track.
-            if (!_fieldTracker.IsTracking)
+            if (_fieldTracker.IsTracking && !_fieldTrackerActive)
+                _fieldTracker.StopTrack();
+            else if (_fieldTrackerActive && !_fieldTracker.IsTracking)
             {
                 Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(actualPosition, actualHeading));
                 Coordinate rightTip = _field.GetPositionInField(_equipment.GetRightTip(actualPosition, actualHeading));
@@ -323,6 +329,7 @@ namespace FarmingGPS
                 Coordinate rightTip = _field.GetPositionInField(_equipment.GetRightTip(actualPosition, actualHeading));
                 _fieldTracker.AddTrackPoint(leftTip, rightTip);
                 _prevTrackCoordinate = actualCoordinate;
+            } 
             }
 
             if (DateTime.Now > _trackingLineEvaluationTimeout)
@@ -330,19 +337,19 @@ namespace FarmingGPS
                 if (_farmingMode != null)
                 {
                     TrackingLine newTrackingLine = _farmingMode.GetClosestLine(actualCoordinate);
-                    if (_activeTrackingLine == null)
-                        _activeTrackingLine = newTrackingLine;
+                if (_activeTrackingLine == null)
+                    _activeTrackingLine = newTrackingLine;
                     else if (!_activeTrackingLine.Equals(newTrackingLine))
-                    {
-                        //TODO change depleted limit to a setting
-                        if (_fieldTracker.GetTrackingLineCoverage(_activeTrackingLine) > 0.9)
-                            _activeTrackingLine.Depleted = true;
+                {
+                    //TODO change depleted limit to a setting
+                    if (_fieldTracker.GetTrackingLineCoverage(_activeTrackingLine) > 0.9)
+                        _activeTrackingLine.Depleted = true;
 
-                        _activeTrackingLine.Active = false;
-                        _activeTrackingLine = newTrackingLine;
-                    }
+                    _activeTrackingLine.Active = false;
+                    _activeTrackingLine = newTrackingLine;
                 }
-
+                }
+                
                 //TODO Make this a setting instead 
                 _trackingLineEvaluationTimeout = DateTime.Now.AddSeconds(5.0);
             }
@@ -416,7 +423,7 @@ namespace FarmingGPS
                 _visualization.FocusTrackingLine(_farmingMode.TrackingLinesHeadLand[_selectedTrackingLine]);
             }
             else
-            {
+        {
                 _selectedTrackingLine = 0;
                 _visualization.FocusTrackingLine(_farmingMode.TrackingLinesHeadLand[_selectedTrackingLine]);
                 BTN_CHOOSE_TRACKLINE.Style = (Style)this.FindResource("BUTTON_MOVE_NEXT");
@@ -434,6 +441,15 @@ namespace FarmingGPS
                 _visualization.AddLine(trackingLine);
             _visualization.CancelFocus();
             _selectedTrackingLine = -1;
+        }
+
+        private void BTN_PLAY_TRACKER_Click(object sender, RoutedEventArgs e)
+        {
+            _fieldTrackerActive = !_fieldTrackerActive;
+            if (_fieldTrackerActive)
+                SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PAUSE"));
+            else
+                SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
         }
 
         #endregion
