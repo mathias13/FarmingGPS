@@ -130,6 +130,23 @@ namespace FarmingGPSLib.FarmingModes.Tools
             }
         }
 
+        public double Angle
+        {
+            get
+            {
+                Angle angle = new Angle(MainLine.Angle);
+                return angle.DegreesPos;
+            }
+        }
+
+        public ILineSegment MainLine
+        {
+            get
+            {
+                return new LineSegment(_line.Coordinates[_line.Coordinates.Count - 2], _line.Coordinates[_line.Coordinates.Count - 1]);
+            }
+        }
+
         public ILineString Line
         {
             get { return _line; }
@@ -144,6 +161,11 @@ namespace FarmingGPSLib.FarmingModes.Tools
             }
             else
                 return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Line.GetHashCode();
         }
     }
 }
