@@ -3,6 +3,19 @@
                     xmlns:helix="clr-namespace:HelixToolkit.Wpf;assembly=HelixToolkit.Wpf">
 
     <ControlTemplate  x:Key="MenuBorder" TargetType="ContentControl">
+        <Border Padding="5" CornerRadius="15" Background="LightGray">
+            <Border CornerRadius="10" BorderThickness="3" Background="LightGray">
+                <Border.BorderBrush>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="DarkSlateGray" Offset="1" />
+                        <GradientStop Color="Black" Offset="0" />
+                    </LinearGradientBrush>
+                </Border.BorderBrush>
+            </Border>
+        </Border>
+    </ControlTemplate>
+    
+    <ControlTemplate  x:Key="LightbarBorder" TargetType="ContentControl">
         <Border Padding="5" CornerRadius="15" Background="#FF505050">
             <Border CornerRadius="10" BorderThickness="3" Background="#FF505050">
                 <Border.BorderBrush>
@@ -14,7 +27,7 @@
             </Border>
         </Border>
     </ControlTemplate>
-    
+
     <Style x:Key="PiPvideo" TargetType="Border">
         <Setter Property="Margin" Value="10,10,10,10"/>
         <Setter Property="HorizontalAlignment" Value="Right"/>
@@ -82,6 +95,13 @@
         <ColorKeyFrameCollection>
             <DiscreteColorKeyFrame KeyTime="0:0:0" Value="Yellow"/>
             <DiscreteColorKeyFrame KeyTime="0:0:2" Value="Blue"/>
+        </ColorKeyFrameCollection>
+    </ColorAnimationUsingKeyFrames>
+
+    <ColorAnimationUsingKeyFrames x:Key="TRACK_LINE_FOCUS_ANIMATION" BeginTime="0:0:0" Duration="0:0:6" RepeatBehavior="Forever">
+        <ColorKeyFrameCollection>
+            <DiscreteColorKeyFrame KeyTime="0:0:0" Value="OrangeRed"/>
+            <DiscreteColorKeyFrame KeyTime="0:0:3" Value="Blue"/>
         </ColorKeyFrameCollection>
     </ColorAnimationUsingKeyFrames>
     
