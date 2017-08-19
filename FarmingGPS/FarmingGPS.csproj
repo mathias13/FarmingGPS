@@ -74,6 +74,14 @@
       <HintPath>..\packages\DotSpatial.Topology.1.9\lib\net40-Client\DotSpatial.Topology.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="GMap.NET.Core, Version=1.7.5.0, Culture=neutral, PublicKeyToken=b85b9027b614afef, processorArchitecture=MSIL">
+      <HintPath>..\packages\GMap.NET.Presentation.1.7.5\lib\net40\GMap.NET.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GMap.NET.WindowsPresentation, Version=1.7.5.0, Culture=neutral, PublicKeyToken=b85b9027b614afef, processorArchitecture=MSIL">
+      <HintPath>..\packages\GMap.NET.Presentation.1.7.5\lib\net40\GMap.NET.WindowsPresentation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="HelixToolkit, Version=2015.1.715.0, Culture=neutral, PublicKeyToken=52aa3500039caf0d, processorArchitecture=MSIL">
       <HintPath>..\packages\HelixToolkit.2015.1.715\lib\portable-net4+sl4+wp71+win8\HelixToolkit.dll</HintPath>
       <Private>True</Private>
@@ -133,6 +141,9 @@
     <Compile Include="GeometryUtilities\Lines.cs" />
     <Compile Include="Settings\ISetting.cs" />
     <Compile Include="Settings\ISettingsCollection.cs" />
+    <Compile Include="Usercontrols\GetField.xaml.cs">
+      <DependentUpon>GetField.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Visualization\FarmingVisualizer.xaml.cs">
       <DependentUpon>FarmingVisualizer.xaml</DependentUpon>
     </Compile>
@@ -155,6 +166,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="StyleDefault.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Usercontrols\GetField.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

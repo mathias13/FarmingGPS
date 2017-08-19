@@ -1,0 +1,22 @@
+﻿<UserControl x:Class="FarmingGPS.Usercontrols.GetField"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:FarmingGPS.Usercontrols"
+             xmlns:GMap="clr-namespace:GMap.NET.WindowsPresentation;assembly=GMap.NET.WindowsPresentation"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <GMap:GMapControl x:FieldModifier="private" x:Name="GMapControl" Grid.Column="0"/>
+        <StackPanel Orientation="Vertical" Grid.Column="1" Margin="10,10,10,10">
+            <ListBox x:FieldModifier="private" x:Name="ListBoxFields" SelectionMode="Single"/>
+            <ListBox x:FieldModifier="private" x:Name="ListBoxIntersects" SelectionMode="Multiple"/>
+            <Button x:FieldModifier="private" x:Name="ButtonChoose" Click="ButtonChoose_Click">Välj</Button>
+        </StackPanel>
+    </Grid>
+</UserControl>
