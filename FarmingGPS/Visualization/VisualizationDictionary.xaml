@@ -98,7 +98,7 @@
         </ColorKeyFrameCollection>
     </ColorAnimationUsingKeyFrames>
 
-    <ColorAnimationUsingKeyFrames x:Key="TRACK_LINE_FOCUS_ANIMATION" BeginTime="0:0:0" Duration="0:0:6" RepeatBehavior="Forever">
+    <ColorAnimationUsingKeyFrames x:Key="TRACK_LINE_FOCUS_ANIMATION" BeginTime="0:0:0" Duration="0:0:4" RepeatBehavior="Forever">
         <ColorKeyFrameCollection>
             <DiscreteColorKeyFrame KeyTime="0:0:0" Value="OrangeRed"/>
             <DiscreteColorKeyFrame KeyTime="0:0:3" Value="Blue"/>

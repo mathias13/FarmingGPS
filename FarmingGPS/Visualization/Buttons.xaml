@@ -370,4 +370,54 @@
         </Setter>
     </Style>
 
+    <Style TargetType="{x:Type Button}" x:Key="BUTTON_MOVE_NEXT" BasedOn="{StaticResource BUTTON_BASE}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid Background="Transparent" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" ClipToBounds="True">
+                        <Rectangle Style="{StaticResource BUTTON_RECT_OUTER}"/>
+                        <Rectangle Style="{StaticResource BUTTON_RECT_INNER}"/>
+                        <Rectangle Style="{StaticResource BUTTON_RECT_SHADE}" x:Name="TRIGGER_RECT"/>
+                        <Viewbox Style="{StaticResource BUTTON_SYMBOL_VIEWBOX}" Margin="10,15,10,15">
+                            <Path Fill="{StaticResource BUTTON_SYMBOL_COLOR}" Data="{StaticResource SYMBOL_MOVE_NEXT}"/>
+                        </Viewbox>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" TargetName="TRIGGER_RECT" Value="0.4"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Opacity" TargetName="TRIGGER_RECT" Value="0.6"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type Button}" x:Key="BUTTON_CHECK" BasedOn="{StaticResource BUTTON_BASE}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid Background="Transparent" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" ClipToBounds="True">
+                        <Rectangle Style="{StaticResource BUTTON_RECT_OUTER}"/>
+                        <Rectangle Style="{StaticResource BUTTON_RECT_INNER}"/>
+                        <Rectangle Style="{StaticResource BUTTON_RECT_SHADE}" x:Name="TRIGGER_RECT"/>
+                        <Viewbox Style="{StaticResource BUTTON_SYMBOL_VIEWBOX}" Margin="10,15,10,15">
+                            <Path Fill="{StaticResource BUTTON_SYMBOL_COLOR}" Data="{StaticResource SYMBOL_CHECK}"/>
+                        </Viewbox>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" TargetName="TRIGGER_RECT" Value="0.4"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Opacity" TargetName="TRIGGER_RECT" Value="0.6"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>
