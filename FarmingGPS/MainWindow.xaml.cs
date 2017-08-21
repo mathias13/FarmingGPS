@@ -6,6 +6,7 @@ using FarmingGPSLib.FieldItems;
 using FarmingGPSLib.Positioning;
 using GpsUtilities;
 using GpsUtilities.Reciever;
+using GpsUtilities.Filter;
 using ManagedUPnP;
 using NTRIP;
 using NTRIP.Settings;
@@ -37,6 +38,14 @@ namespace FarmingGPS
     /// </summary>
     public partial class MainWindow : Window
     {
+        protected const double MINIMUM_DISTANCE_BETWEEN_POINTS = 0.5;
+
+        protected const double MAXIMUM_DISTANCE_BETWEEN_POINTS = 5.0;
+
+        protected const double MINIMUM_CHANGE_DIRECTION = 3.0;
+
+        protected const double MAXIMUM_CHANGE_DIRECTION = 10.0;
+
         private FarmingGPSLib.FieldItems.Field _field;
 
         private FarmingGPS.Database.DatabaseHandler _database;
@@ -56,14 +65,14 @@ namespace FarmingGPS
         private DateTime _trackingLineEvaluationTimeout = DateTime.MinValue;
 
         private TrackingLine _activeTrackingLine = null;
-
-        private Coordinate _prevTrackCoordinate = new Coordinate(0.0, 0.0);
-
+        
         private FieldTracker _fieldTracker = new FieldTracker();
 
         private bool _fieldTrackerActive = false;
 
         private FieldCreator _fieldCreator;
+
+        private DistanceTrigger _distanceTriggerFieldTracker;
 
         private int _selectedTrackingLine = -1;
 
@@ -101,6 +110,8 @@ namespace FarmingGPS
             _database = new FarmingGPS.Database.DatabaseHandler(connString);
             _getField.AddDatabase(_database);
             _getField.FieldChoosen += _getField_FieldChoosen;
+
+            _distanceTriggerFieldTracker = new DistanceTrigger(MINIMUM_DISTANCE_BETWEEN_POINTS, MAXIMUM_DISTANCE_BETWEEN_POINTS, MINIMUM_CHANGE_DIRECTION, MAXIMUM_CHANGE_DIRECTION);
         }
 
         private void _getField_FieldChoosen(object sender, List<Position> e)
@@ -296,23 +307,18 @@ namespace FarmingGPS
             Coordinate actualCoordinate = _field.GetPositionInField(_equipment.GetCenter(actualPosition, receiver.CurrentBearing));
             Azimuth actualHeading = receiver.CurrentBearing;
             _visualization.UpdatePosition(actualCoordinate, actualHeading);
-            
+            Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(actualPosition, actualHeading));
+            Coordinate rightTip = _field.GetPositionInField(_equipment.GetRightTip(actualPosition, actualHeading));
+
             if (_fieldTracker.IsTracking && !_fieldTrackerActive)
-                _fieldTracker.StopTrack();
+                _fieldTracker.StopTrack(leftTip, rightTip);
             else if (_fieldTrackerActive && !_fieldTracker.IsTracking)
             {
-                Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(actualPosition, actualHeading));
-                Coordinate rightTip = _field.GetPositionInField(_equipment.GetRightTip(actualPosition, actualHeading));
+                _distanceTriggerFieldTracker.Init(actualPosition, actualHeading);
                 _fieldTracker.InitTrack(leftTip, rightTip);
-                _prevTrackCoordinate = actualCoordinate;
             }
-            else if (_fieldTrackerActive && actualCoordinate.Distance(_prevTrackCoordinate) > 4.0)
-            {
-                Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(actualPosition, actualHeading));
-                Coordinate rightTip = _field.GetPositionInField(_equipment.GetRightTip(actualPosition, actualHeading));
+            else if (_fieldTrackerActive && _distanceTriggerFieldTracker.CheckDistance(actualPosition, actualHeading))
                 _fieldTracker.AddTrackPoint(leftTip, rightTip);
-                _prevTrackCoordinate = actualCoordinate;
-            } 
 
             if (DateTime.Now > _trackingLineEvaluationTimeout)
             {
@@ -333,7 +339,7 @@ namespace FarmingGPS
                 }
                 
                 //TODO Make this a setting instead 
-                _trackingLineEvaluationTimeout = DateTime.Now.AddSeconds(5.0);
+                _trackingLineEvaluationTimeout = DateTime.Now.AddSeconds(3.0);
             }
 
             if (_activeTrackingLine != null)

@@ -44,9 +44,7 @@ namespace FarmingGPSLib.FieldItems
 
         public FieldTracker(Coordinate initLeftPoint, Coordinate initRightPoint)
         {
-            _prevLeftPoint = HelperClassCoordinate.CoordinateRoundedmm(initLeftPoint);
-            _prevRightPoint = HelperClassCoordinate.CoordinateRoundedmm(initRightPoint);
-            _currentPolygonIndex = -1;
+            InitTrack(initLeftPoint, initRightPoint);
         }
 
         #region Public Methods
@@ -167,6 +165,7 @@ namespace FarmingGPSLib.FieldItems
                                 {
                                     _polygons[_currentPolygonIndex] = (Polygon)_polygons[_currentPolygonIndex].Union(_polygons[i]);
                                     _polygons.Remove(i);
+                                    _polygonSimplifierCount.Remove(i);
                                     redrawPolygon = true;
                                 }
                             }
@@ -209,16 +208,17 @@ namespace FarmingGPSLib.FieldItems
             {
                 _prevLeftPoint = HelperClassCoordinate.CoordinateRoundedmm(initLeftPoint);
                 _prevRightPoint = HelperClassCoordinate.CoordinateRoundedmm(initRightPoint);
-                _currentPolygonIndex = -1;
             }
         }
 
-        public void StopTrack()
+        public void StopTrack(Coordinate leftPoint, Coordinate rightPoint)
         {
             lock (_syncObject)
             {
+                AddTrackPoint(leftPoint, rightPoint);
                 _prevLeftPoint = Coordinate.Empty;
                 _prevRightPoint = Coordinate.Empty;
+                _currentPolygonIndex = -1;
             }
         }
 
