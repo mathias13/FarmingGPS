@@ -306,7 +306,7 @@ namespace FarmingGPS
                 _fieldTracker.InitTrack(leftTip, rightTip);
                 _prevTrackCoordinate = actualCoordinate;
             }
-            else if (_fieldTrackerActive && actualCoordinate.Distance(_prevTrackCoordinate) > 0.5)
+            else if (_fieldTrackerActive && actualCoordinate.Distance(_prevTrackCoordinate) > 4.0)
             {
                 Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(actualPosition, actualHeading));
                 Coordinate rightTip = _field.GetPositionInField(_equipment.GetRightTip(actualPosition, actualHeading));

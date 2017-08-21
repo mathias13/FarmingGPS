@@ -26,9 +26,9 @@
             <helix:HelixViewport3D.Camera>
                 <PerspectiveCamera Position="{Binding Path=CameraPosition, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:FarmingVisualizer}}}" 
                                    LookDirection="{Binding Path=CameraLookDirection, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:FarmingVisualizer}}}" 
-                                   UpDirection="1,0,1">
-                <!--<PerspectiveCamera Position="0,0,80" LookDirection="0,0,-80 " 
-                         UpDirection="1,0,1">-->
+                                   NearPlaneDistance="{Binding Path=CameraNearPlaneDistance, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:FarmingVisualizer}}}" 
+                                   FarPlaneDistance="{Binding Path=CameraFarPlaneDistance, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:FarmingVisualizer}}}"
+                                   FieldOfView="45" UpDirection="1,0,1" >
                     <PerspectiveCamera.Transform>
                         <Transform3DGroup>
                             <TranslateTransform3D OffsetX="{Binding Path=ShiftX, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:FarmingVisualizer}}}"

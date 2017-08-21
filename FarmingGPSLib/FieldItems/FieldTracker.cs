@@ -57,19 +57,19 @@ namespace FarmingGPSLib.FieldItems
             rightPoint = HelperClassCoordinate.CoordinateRoundedmm(rightPoint);
             lock (_syncObject)
             {
-                if (_currentPolygonIndex > -1)
+                try
                 {
-                    if (_polygons[_currentPolygonIndex].Shell.Coordinates.Count == 0)
+                    if (_currentPolygonIndex > -1)
                     {
-                        _polygons[_currentPolygonIndex].Shell.Coordinates.Add(_prevRightPoint);
-                        _polygons[_currentPolygonIndex].Shell.Coordinates.Add(rightPoint);
-                        _polygons[_currentPolygonIndex].Shell.Coordinates.Add(leftPoint);
-                        _polygons[_currentPolygonIndex].Shell.Coordinates.Add(_prevLeftPoint);
-                        _polygons[_currentPolygonIndex].Shell.Coordinates.Add(_prevRightPoint);
-                    }
-                    else
-                    {
-                        try
+                        if (_polygons[_currentPolygonIndex].Shell.Coordinates.Count == 0)
+                        {
+                            _polygons[_currentPolygonIndex].Shell.Coordinates.Add(_prevRightPoint);
+                            _polygons[_currentPolygonIndex].Shell.Coordinates.Add(rightPoint);
+                            _polygons[_currentPolygonIndex].Shell.Coordinates.Add(leftPoint);
+                            _polygons[_currentPolygonIndex].Shell.Coordinates.Add(_prevLeftPoint);
+                            _polygons[_currentPolygonIndex].Shell.Coordinates.Add(_prevRightPoint);
+                        }
+                        else
                         {
                             bool redrawPolygon = false;
 
@@ -173,33 +173,33 @@ namespace FarmingGPSLib.FieldItems
 
                             OnPolygonUpdated(_currentPolygonIndex, newCoordinates, redrawPolygon);
                         }
-                        catch(Exception e)
-                        {
-                            ;
-                        }
                     }
+                    else
+                    {
+                        List<Coordinate> coords = new List<Coordinate>();
+                        coords.Add(_prevRightPoint);
+                        coords.Add(rightPoint);
+                        coords.Add(leftPoint);
+                        coords.Add(_prevLeftPoint);
+                        LineString newCoordinates = new LineString(coords);
+                        coords.Add(_prevRightPoint);
+                        LinearRing ring = new LinearRing(coords);
+                        Polygon polygon = new Polygon(ring);
+                        int id = 0;
+                        while (_polygons.Keys.Contains(id))
+                            id++;
+                        _polygons.Add(id, polygon);
+                        _polygonSimplifierCount.Add(id, SIMPLIFIER_COUNT_LIMIT);
+                        _currentPolygonIndex = id;
+                        OnPolygonUpdated(_currentPolygonIndex, newCoordinates, false);
+                    }
+                    _prevLeftPoint = leftPoint;
+                    _prevRightPoint = rightPoint;
                 }
-                else
+                catch (Exception e)
                 {
-                    List<Coordinate> coords = new List<Coordinate>();
-                    coords.Add(_prevRightPoint);
-                    coords.Add(rightPoint);
-                    coords.Add(leftPoint);
-                    coords.Add(_prevLeftPoint);
-                    LineString newCoordinates = new LineString(coords);
-                    coords.Add(_prevRightPoint);
-                    LinearRing ring = new LinearRing(coords);
-                    Polygon polygon = new Polygon(ring);
-                    int id = 0;
-                    while (_polygons.Keys.Contains(id))
-                        id++;
-                    _polygons.Add(id, polygon);
-                    _polygonSimplifierCount.Add(id, SIMPLIFIER_COUNT_LIMIT);
-                    _currentPolygonIndex = id;
-                    OnPolygonUpdated(_currentPolygonIndex, newCoordinates, false);
+                    ;
                 }
-                _prevLeftPoint = leftPoint;
-                _prevRightPoint = rightPoint;
             }
         }
 
