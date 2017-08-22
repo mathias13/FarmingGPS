@@ -124,7 +124,7 @@ namespace FarmingGPS
                 _visualization.AddLine(line);
 
             _settingsGrid.Visibility = Visibility.Hidden;
-            _trackLineGrid.Visibility = Visibility.Visible;
+            ShowTrackingLineSettings();
         }
 
         void mdsServices_StatusNotifyAction(object sender, AutoEventedDiscoveryServices<Service>.StatusNotifyActionEventArgs e)
@@ -217,22 +217,21 @@ namespace FarmingGPS
         {
             _field = e.Field;
             _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, 1);
-            DotSpatial.Topology.Angle angle = new DotSpatial.Topology.Angle(0);
-            angle.DegreesPos = 99;
             foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
             {
                 _visualization.AddLine(line);
                 if (_fieldTracker.GetTrackingLineCoverage(line) > 0.9)
                     line.Depleted = true;
             }
-            _farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadLand[3]);
-            //_farmingMode.CreateTrackingLines(_field.GetPositionInField(new Position(new Longitude(13.855224), new Latitude(58.512617))), angle);
-            foreach (TrackingLine line in _farmingMode.TrackingLines)
-            {
-                _visualization.AddLine(line);
-                if (_fieldTracker.GetTrackingLineCoverage(line) > 0.9)
-                    line.Depleted = true;
-            }
+            ShowTrackingLineSettings();
+        }
+
+        private void ShowTrackingLineSettings()
+        {
+            if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
+                _trackLineGrid.Visibility = Visibility.Visible;
+            else
+                Dispatcher.Invoke(new Action(ShowTrackingLineSettings), DispatcherPriority.Render);
         }
 
         private void Image_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -243,6 +242,15 @@ namespace FarmingGPS
                 SetValue(CameraSizeProperty, fullvideo);
             else if (GetValue(CameraSizeProperty).Equals(fullvideo))
                 SetValue(CameraSizeProperty, pipvideo);
+        }
+
+        private void ToggleFieldTracker()
+        {
+            _fieldTrackerActive = !_fieldTrackerActive;
+            if (_fieldTrackerActive)
+                SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PAUSE"));
+            else
+                SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
         }
 
         #region #NTRIP Events
@@ -325,17 +333,17 @@ namespace FarmingGPS
                 if (_farmingMode != null)
                 {
                     TrackingLine newTrackingLine = _farmingMode.GetClosestLine(actualCoordinate);
-                if (_activeTrackingLine == null)
-                    _activeTrackingLine = newTrackingLine;
+                    if (_activeTrackingLine == null)
+                        _activeTrackingLine = newTrackingLine;
                     else if (!_activeTrackingLine.Equals(newTrackingLine))
-                {
-                    //TODO change depleted limit to a setting
-                    if (_fieldTracker.GetTrackingLineCoverage(_activeTrackingLine) > 0.9)
-                        _activeTrackingLine.Depleted = true;
+                    {
+                        //TODO change depleted limit to a setting
+                        if (_fieldTracker.GetTrackingLineCoverage(_activeTrackingLine) > 0.9)
+                            _activeTrackingLine.Depleted = true;
 
-                    _activeTrackingLine.Active = false;
-                    _activeTrackingLine = newTrackingLine;
-                }
+                        _activeTrackingLine.Active = false;
+                        _activeTrackingLine = newTrackingLine;
+                    }
                 }
                 
                 //TODO Make this a setting instead 
@@ -384,13 +392,15 @@ namespace FarmingGPS
 
         private void BTN_START_FIELD_Click(object sender, RoutedEventArgs e)
         {
-            //if (_fieldCreator == null)
-            //{
-            //    _fieldCreator = new FieldCreator(DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N, FieldCreator.Orientation.Lefthand, _receiver, _equipment);
-            //    _fieldCreator.FieldCreated += _fieldCreator_FieldCreated;
-            //    _field = _fieldCreator.GetField();
-            //    _visualization.AddFieldCreator(_fieldCreator);
-            //}
+            if (_fieldCreator == null)
+            {
+                _fieldCreator = new FieldCreator(DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N, FieldCreator.Orientation.Lefthand, _receiver, _equipment);
+                _fieldCreator.FieldCreated += _fieldCreator_FieldCreated;
+                _field = _fieldCreator.GetField();
+                _visualization.AddFieldCreator(_fieldCreator);
+                if (!_fieldTrackerActive)
+                    ToggleFieldTracker();
+            }
         }
 
         private void BTN_SETTINGS_Click(object sender, RoutedEventArgs e)
@@ -433,11 +443,7 @@ namespace FarmingGPS
 
         private void BTN_PLAY_TRACKER_Click(object sender, RoutedEventArgs e)
         {
-            _fieldTrackerActive = !_fieldTrackerActive;
-            if (_fieldTrackerActive)
-                SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PAUSE"));
-            else
-                SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
+            ToggleFieldTracker();
         }
 
         #endregion

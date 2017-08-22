@@ -124,7 +124,7 @@ namespace FarmingGPS.Visualization
 
         private double _viewBehindZoomLevel = 7.0;
 
-        private ModelVisual3D _focusedTrackline = null;
+        private TrackingLine _focusedTrackline = null;
 
         #endregion
 
@@ -183,7 +183,12 @@ namespace FarmingGPS.Visualization
             {
                 _viewTrackLine = true;
                 if (_focusedTrackline != null)
-                    NormalTrackingLine(_focusedTrackline);
+                {
+                    if (_focusedTrackline.Depleted)
+                        DepletedTrackingLine(_trackingLines[_focusedTrackline]);
+                    else
+                        NormalTrackingLine(_trackingLines[_focusedTrackline]);
+                }
                 SetValue(ShiftXProperty, trackingLine.MainLine.P0.X - _minPoint.X);
                 SetValue(ShiftYProperty, trackingLine.MainLine.P0.Y - _minPoint.Y);
                 double angle = 360 - trackingLine.Angle;
@@ -192,7 +197,7 @@ namespace FarmingGPS.Visualization
                     return;
                 ModelVisual3D visualLine = _trackingLines[trackingLine];
                 FocusTrackingLine(visualLine);
-                _focusedTrackline = visualLine;
+                _focusedTrackline = trackingLine;
                 SetValue(CameraPositionProperty, VIEW_TRACKLINE_POSITION);
                 SetValue(CameraLookDirectionProperty, VIEW_TRACKLINE_LOOK_DIRECTION);
                 SetValue(CameraNearPlaneDistanceProperty, VIEW_TRACKLINE_NEAR_PLANE);
@@ -209,7 +214,10 @@ namespace FarmingGPS.Visualization
                 _viewTrackLine = false;
                 if (_focusedTrackline == null)
                     return;
-                NormalTrackingLine(_focusedTrackline);
+                if (_focusedTrackline.Depleted)
+                    DepletedTrackingLine(_trackingLines[_focusedTrackline]);
+                else
+                    NormalTrackingLine(_trackingLines[_focusedTrackline]);
                 _focusedTrackline = null;
                 UpdatePosition(_lastPoint, _lastAngle);
                 UpdateZoomLevel();
@@ -331,6 +339,7 @@ namespace FarmingGPS.Visualization
         public void AddFieldTracker(FieldTracker fieldTracker)
         {
             fieldTracker.PolygonUpdated += fieldTracker_PolygonUpdated;
+            fieldTracker.PolygonDeleted += fieldTracker_PolygonDeleted;
         }
 
         public void AddFieldCreator(FieldCreator fieldCreator)
@@ -577,11 +586,35 @@ namespace FarmingGPS.Visualization
                 Dispatcher.Invoke(new Action<object, PolygonUpdatedEventArgs>(fieldTracker_PolygonUpdated), System.Windows.Threading.DispatcherPriority.Render, sender, e);
 
         }
-        
+
+        private void fieldTracker_PolygonDeleted(object sender, PolygonDeletedEventArgs e)
+        {
+            if (Dispatcher.Thread.Equals(Thread.CurrentThread))
+            {
+                if (_trackMesh.ContainsKey(e.ID))
+                {
+                    _viewPort.Children.Remove(_trackMesh[e.ID]);
+                    _trackMesh.Remove(e.ID);
+                }
+
+                if (_trackMeshBuilder.ContainsKey(e.ID))
+                    _trackMeshBuilder.Remove(e.ID);
+
+                if (_trackMeshHoles.ContainsKey(e.ID))
+                {
+                    foreach (MeshVisual3D meshHole in _trackMeshHoles[e.ID])
+                        _viewPort.Children.Remove(meshHole);
+                    _trackMeshHoles.Remove(e.ID);
+                }
+            }
+            else
+                Dispatcher.Invoke(new Action<object, PolygonDeletedEventArgs>(fieldTracker_PolygonDeleted), System.Windows.Threading.DispatcherPriority.Render, sender, e);
+        }
+
         #endregion
 
         #region FieldCreatorEvents
-    
+
         private void FieldCreator_FieldBoundaryUpdated(object sender, FieldBoundaryUpdatedEventArgs e)
         {
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
@@ -698,8 +731,8 @@ namespace FarmingGPS.Visualization
             Point3DCollection polygonPoints = new Point3DCollection();
             for (int i = 0; i < coordinates.Count - 1; i++)
             {
-                outlinePoints.Add(new Point3D(coordinates[i].X - _minPoint.X, coordinates[i].Y - _minPoint.Y, FIELD_Z_INDEX));
-                outlinePoints.Add(new Point3D(coordinates[i + 1].X - _minPoint.X, coordinates[i + 1].Y - _minPoint.Y, FIELD_Z_INDEX));
+                outlinePoints.Add(new Point3D(coordinates[i].X - _minPoint.X, coordinates[i].Y - _minPoint.Y, LINE_Z_INDEX));
+                outlinePoints.Add(new Point3D(coordinates[i + 1].X - _minPoint.X, coordinates[i + 1].Y - _minPoint.Y, LINE_Z_INDEX));
             }
             outlinePoints.Add(outlinePoints[outlinePoints.Count - 1]);
             outlinePoints.Add(outlinePoints[0]);

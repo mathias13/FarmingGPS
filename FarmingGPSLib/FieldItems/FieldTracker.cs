@@ -161,11 +161,12 @@ namespace FarmingGPSLib.FieldItems
                             {
                                 if (i == _currentPolygonIndex || !_polygons.ContainsKey(i))
                                     continue;
-                                if (_polygons[_currentPolygonIndex].Intersects(_polygons[i]))
+                                if (_polygons[_currentPolygonIndex].Overlaps(_polygons[i]))
                                 {
                                     _polygons[_currentPolygonIndex] = (Polygon)_polygons[_currentPolygonIndex].Union(_polygons[i]);
                                     _polygons.Remove(i);
                                     _polygonSimplifierCount.Remove(i);
+                                    OnPolygonDeleted(i);
                                     redrawPolygon = true;
                                 }
                             }
@@ -233,7 +234,7 @@ namespace FarmingGPSLib.FieldItems
                     if (remains is MultiLineString)
                         remainsOfLine = (MultiLineString)remains;
                     else if (remains is LineString)
-                        new MultiLineString(new IBasicLineString[1] { (LineString)remains });
+                        remainsOfLine = new MultiLineString(new IBasicLineString[1] { (LineString)remains });
                     else if (remains.IsEmpty)
                     {
                         remainsOfLine = MultiLineString.Empty;
