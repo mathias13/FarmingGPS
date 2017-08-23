@@ -35,7 +35,7 @@
             <StackPanel Orientation="Horizontal" Visibility="Collapsed" x:FieldModifier="private" x:Name="_trackLineGrid" HorizontalAlignment="Right">
                 <Button x:Name="BTN_CONFIRM_TRACKLINE" Style="{StaticResource BUTTON_CHECK}" Width="60" Height="60" Visibility="Collapsed" Margin="10,10,10,10" Click="BTN_CONFIRM_TRACKLINE_Click"/>
                 <Button x:Name="BTN_CHOOSE_TRACKLINE" Style="{StaticResource BUTTON_CHOOSE_TRACKLINE}" Width="60" Height="60" Margin="10,10,10,10" Click="BTN_CHOOSE_TRACKLINE_Click"/>
-                <Button x:Name="BTN_SET_TRACKINGLINE_AB" Style="{StaticResource BUTTON_TRACKLINE_AB}" Width="60" Height="60" Margin="10,10,10,10"/>
+                <Button x:Name="BTN_SET_TRACKINGLINE_AB" Style="{StaticResource BUTTON_TRACKLINE_AB}" Width="60" Height="60" Margin="10,10,10,10" Click="BTN_SET_TRACKINGLINE_AB_Click"/>
         </StackPanel>
         </StackPanel>
         <visualization:SpeedBar Grid.Row="1" Width="Auto" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" x:FieldModifier="private" x:Name="_speedBar"/>

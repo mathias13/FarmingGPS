@@ -82,6 +82,10 @@ namespace FarmingGPS
 
         private bool _ntripConnected = false;
 
+        private Position _trackLinePointA = Position.Empty;
+        
+        private bool _setTrackLineAB = false;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -444,6 +448,34 @@ namespace FarmingGPS
         private void BTN_PLAY_TRACKER_Click(object sender, RoutedEventArgs e)
         {
             ToggleFieldTracker();
+        }
+        
+        private void BTN_SET_TRACKINGLINE_AB_Click(object sender, RoutedEventArgs e)
+        {
+            if(!_setTrackLineAB)
+            {
+                BTN_SET_TRACKINGLINE_AB.Style = (Style)this.FindResource("BUTTON_TRACKLINE_A");
+                _setTrackLineAB = true;
+            }
+            else
+            {
+                if(_trackLinePointA.IsEmpty)
+                {
+                    _trackLinePointA = _receiver.CurrentPosition;
+                    BTN_SET_TRACKINGLINE_AB.Style = (Style)this.FindResource("BUTTON_TRACKLINE_B");
+                }
+                else
+                {
+                    Position trackLineB = _receiver.CurrentPosition;
+                    _farmingMode.CreateTrackingLines(_field.GetPositionInField(_trackLinePointA), _field.GetPositionInField(trackLineB));
+                    foreach (TrackingLine trackingLine in _farmingMode.TrackingLines)
+                        _visualization.AddLine(trackingLine);
+                    _trackLinePointA = Position.Empty;
+                    _setTrackLineAB = false;
+                    BTN_SET_TRACKINGLINE_AB.Style = (Style)this.FindResource("BUTTON_TRACKLINE_AB");
+                    _trackLineGrid.Visibility = Visibility.Collapsed;
+                }
+            }
         }
 
         #endregion
