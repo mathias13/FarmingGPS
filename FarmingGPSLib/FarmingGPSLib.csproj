@@ -95,6 +95,7 @@
     <Compile Include="FarmingModes\ITrackingLineModes.cs" />
     <Compile Include="FarmingModes\Tools\OrientationToLine.cs" />
     <Compile Include="FarmingModes\Tools\TrackingLine.cs" />
+    <Compile Include="FieldItems\AreaChanged.cs" />
     <Compile Include="FieldItems\Field.cs" />
     <Compile Include="FieldItems\FieldBase.cs" />
     <Compile Include="FieldItems\FieldCreatedEventArgs.cs" />

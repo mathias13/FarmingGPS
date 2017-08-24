@@ -38,7 +38,10 @@
                 <Button x:Name="BTN_SET_TRACKINGLINE_AB" Style="{StaticResource BUTTON_TRACKLINE_AB}" Width="60" Height="60" Margin="10,10,10,10" Click="BTN_SET_TRACKINGLINE_AB_Click"/>
         </StackPanel>
         </StackPanel>
-        <visualization:SpeedBar Grid.Row="1" Width="Auto" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" x:FieldModifier="private" x:Name="_speedBar"/>
+        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Vertical" Grid.Row="1">
+            <visualization:SpeedBar Width="Auto" Height="Auto" x:FieldModifier="private" x:Name="_speedBar"/>
+            <visualization:WorkedAreaBar Width="Auto" Height="Auto" x:FieldModifier="private" x:Name="_workedAreaBar"/>
+        </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1">
             <TextBlock x:FieldModifier="private" x:Name="_fixMode" Background="White" Padding="0,5,0,5">Fix</TextBlock>
             <TextBlock x:FieldModifier="private" x:Name="_NTRIPState" Background="White" Padding="0,5,0,5">NTRIP</TextBlock>

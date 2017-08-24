@@ -121,6 +121,8 @@ namespace FarmingGPS
         private void _getField_FieldChoosen(object sender, List<Position> e)
         {
             _field = new Field(e, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
+            _fieldTracker.FieldToCalculateAreaWithin = _field;
+            _workedAreaBar.SetField(_field);
             _visualization.AddField(_field);
 
             _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, 1);
@@ -192,6 +194,8 @@ namespace FarmingGPS
 
             _speedBar.Unit = SpeedUnit.KilometersPerHour;
             _speedBar.SetSpeed(Speed.FromKilometersPerHour(2.4));
+            _workedAreaBar.Unit = AreaUnit.SquareKilometers;
+            _fieldTracker.AreaChanged += _fieldTracker_AreaChanged;
             _receiver_FixQualityUpdate(this, FixQuality.FixedRealTimeKinematic);
             _visualization.AddFieldTracker(_fieldTracker);
 
@@ -217,9 +221,16 @@ namespace FarmingGPS
             _ntripClient.Connect();
         }
 
+        private void _fieldTracker_AreaChanged(object sender, AreaChanged e)
+        {
+            _workedAreaBar.SetWorkedArea(e.Area);
+        }
+
         private void _fieldCreator_FieldCreated(object sender, FieldCreatedEventArgs e)
         {
             _field = e.Field;
+            _fieldTracker.FieldToCalculateAreaWithin = _field;
+            _workedAreaBar.SetField(_field);
             _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, 1);
             foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
             {

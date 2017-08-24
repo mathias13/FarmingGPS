@@ -1,5 +1,6 @@
 ﻿using DotSpatial.Topology;
 using DotSpatial.Topology.Algorithm;
+using DotSpatial.Positioning;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.HelperClasses;
 using System;
@@ -15,6 +16,8 @@ namespace FarmingGPSLib.FieldItems
 
         public event EventHandler<PolygonDeletedEventArgs> PolygonDeleted;
 
+        public event EventHandler<AreaChanged> AreaChanged;
+
         #endregion
 
         #region Consts
@@ -24,6 +27,8 @@ namespace FarmingGPSLib.FieldItems
         #endregion
 
         #region Private Variables
+
+        private IField _fieldToCalculateAreaWithin = null;
 
         private IDictionary<int, Polygon> _polygons = new Dictionary<int, Polygon>();
 
@@ -70,6 +75,7 @@ namespace FarmingGPSLib.FieldItems
                         else
                         {
                             bool redrawPolygon = false;
+                            bool areaChanged = false;
 
                             List<Coordinate> newCoords = new List<Coordinate>();
                             newCoords.Add(_prevRightPoint);
@@ -125,6 +131,8 @@ namespace FarmingGPSLib.FieldItems
                             }
 
                             int holeHash = _polygons[_currentPolygonIndex].Holes.GetHashCode();
+                            if (!_polygons[_currentPolygonIndex].Intersects(leftPoint.X, leftPoint.Y) && !_polygons[_currentPolygonIndex].Intersects(rightPoint.X, rightPoint.Y))
+                                areaChanged = true;
 
                             _polygons[_currentPolygonIndex] = (Polygon)_polygons[_currentPolygonIndex].Union(rectPolygon);
                             _polygons[_currentPolygonIndex].Shell = RoundCoordinates(_polygons[_currentPolygonIndex].Shell);
@@ -136,12 +144,14 @@ namespace FarmingGPSLib.FieldItems
                                     _polygons[_currentPolygonIndex] = geometry as Polygon;
                                     _polygonSimplifierCount[_currentPolygonIndex] = geometry.Coordinates.Count + SIMPLIFIER_COUNT_LIMIT;
                                     redrawPolygon = true;
+                                    areaChanged = true;
                                 }
                             }
 
                             if (holeHash != _polygons[_currentPolygonIndex].Holes.GetHashCode())
                             {
                                 redrawPolygon = true;
+                                areaChanged = true;
                                 List<ILinearRing> holes = new List<ILinearRing>(_polygons[_currentPolygonIndex].Holes);
                                 for (int i = 0; i < holes.Count; i++)
                                 {
@@ -168,10 +178,13 @@ namespace FarmingGPSLib.FieldItems
                                     _polygonSimplifierCount.Remove(i);
                                     OnPolygonDeleted(i);
                                     redrawPolygon = true;
+                                    areaChanged = true;
                                 }
                             }
 
                             OnPolygonUpdated(_currentPolygonIndex, newCoordinates, redrawPolygon);
+                            if (areaChanged)
+                                OnAreaChanged();
                         }
                     }
                     else
@@ -192,6 +205,7 @@ namespace FarmingGPSLib.FieldItems
                         _polygonSimplifierCount.Add(id, SIMPLIFIER_COUNT_LIMIT);
                         _currentPolygonIndex = id;
                         OnPolygonUpdated(_currentPolygonIndex, newCoordinates, false);
+                        OnAreaChanged();
                     }
                     _prevLeftPoint = leftPoint;
                     _prevRightPoint = rightPoint;
@@ -254,11 +268,17 @@ namespace FarmingGPSLib.FieldItems
             }
         }
 
+        public IField FieldToCalculateAreaWithin
+        {
+            set { _fieldToCalculateAreaWithin = value; }
+            get { return _fieldToCalculateAreaWithin; }
+        }
+
         #endregion
 
         #region Public Properties
 
-        public double Area
+        public Area Area
         {
             get
             {
@@ -266,9 +286,20 @@ namespace FarmingGPSLib.FieldItems
                 {
                     double area = 0.0;
                     foreach (Polygon polygon in _polygons.Values)
-                        if (polygon.IsValid)
-                            area += polygon.Area;
-                    return area;
+                    {
+                        Polygon polygonToUse = polygon;
+                        if(_fieldToCalculateAreaWithin != null)
+                        {
+                            if (!polygon.Overlaps(_fieldToCalculateAreaWithin.Polygon))
+                                continue;
+                            IGeometry geometry = _fieldToCalculateAreaWithin.Polygon.Intersection(polygon);
+                            if (geometry is Polygon)
+                                polygonToUse = geometry as Polygon;
+                        }
+                        if (polygonToUse.IsValid)
+                            area += polygonToUse.Area;
+                    }
+                    return new Area(area, AreaUnit.SquareMeters);
                 }
             }
         }
@@ -314,7 +345,8 @@ namespace FarmingGPSLib.FieldItems
 
         protected void OnAreaChanged()
         {
-            throw new NotImplementedException();
+            if (AreaChanged != null)
+                AreaChanged.Invoke(this, new AreaChanged(Area));
         }
 
         #endregion

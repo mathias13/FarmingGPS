@@ -153,6 +153,9 @@
     <Compile Include="Visualization\SpeedBar.xaml.cs">
       <DependentUpon>SpeedBar.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Visualization\WorkedAreaBar.xaml.cs">
+      <DependentUpon>WorkedAreaBar.xaml</DependentUpon>
+    </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -194,6 +197,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Visualization\VisualizationDictionary.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Visualization\WorkedAreaBar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
