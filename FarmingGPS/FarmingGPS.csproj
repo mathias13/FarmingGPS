@@ -90,10 +90,15 @@
       <HintPath>..\packages\HelixToolkit.Wpf.2015.1.715\lib\net45\HelixToolkit.Wpf.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MjpegProcessor">
-      <HintPath>..\MJPEG_bin\MjpegProcessor.dll</HintPath>
+    <Reference Include="MjpegProcessor, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MJPEG-Decoder.1.2\lib\net35\MjpegProcessor.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="PresentationFramework" />
+    <Reference Include="Rssdp, Version=3.5.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rssdp.3.5.5\lib\net45\Rssdp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
@@ -138,6 +143,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Camera\Axis\AxisCamera.cs" />
+    <Compile Include="Camera\CameraBase.cs" />
+    <Compile Include="Camera\CameraConnectedEventArgs.cs" />
+    <Compile Include="Camera\CameraImageEventArgs.cs" />
+    <Compile Include="Camera\ICamera.cs" />
     <Compile Include="GeometryUtilities\Lines.cs" />
     <Compile Include="Settings\ISetting.cs" />
     <Compile Include="Settings\ISettingsCollection.cs" />
@@ -254,11 +264,8 @@
       <Project>{b196b5bf-5858-4121-aee4-575e78fadde7}</Project>
       <Name>FarmingGPSLib</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ManagedUPnP\ManagedUPnP.csproj">
-      <Project>{5956dabc-c1ab-498e-b8c8-f62ed6dcd30c}</Project>
-      <Name>ManagedUPnP</Name>
-    </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
