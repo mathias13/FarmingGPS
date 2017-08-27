@@ -28,21 +28,20 @@
         </Border>
     </ControlTemplate>
 
-    <Style x:Key="PiPvideo" TargetType="Border">
+    <Style x:Key="PiPvideo" TargetType="Grid">
         <Setter Property="Margin" Value="10,10,10,10"/>
         <Setter Property="HorizontalAlignment" Value="Right"/>
         <Setter Property="VerticalAlignment" Value="Bottom"/>
         <Setter Property="Width" Value="Auto"/>
         <Setter Property="Height" Value="72"/>
-        <Setter Property="BorderBrush" Value="Black"/>
     </Style>
-    <Style x:Key="Fullvideo" TargetType="Border">
-        <Setter Property="Margin" Value="0,0,0,0"/>
-        <Setter Property="HorizontalAlignment" Value="Stretch"/>
-        <Setter Property="VerticalAlignment" Value="Stretch"/>
+    
+    <Style x:Key="Fullvideo" TargetType="Grid">
+        <Setter Property="Margin" Value="2,2,2,2"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Width" Value="Auto"/>
         <Setter Property="Height" Value="Auto"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
     </Style>
     
     <RadialGradientBrush Center="0.4,0.4" x:Key="LIGHT_BULB_GREEN_ON">

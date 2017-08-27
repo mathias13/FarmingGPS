@@ -6,8 +6,9 @@ using FarmingGPSLib.FieldItems;
 using FarmingGPSLib.Positioning;
 using GpsUtilities;
 using GpsUtilities.Reciever;
+using FarmingGPS.Camera;
+using FarmingGPS.Camera.Axis;
 using GpsUtilities.Filter;
-using ManagedUPnP;
 using NTRIP;
 using NTRIP.Settings;
 using SwiftBinaryProtocol;
@@ -31,6 +32,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
+
 namespace FarmingGPS
 {
     /// <summary>
@@ -38,6 +40,8 @@ namespace FarmingGPS
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region Constants
+
         protected const double MINIMUM_DISTANCE_BETWEEN_POINTS = 0.5;
 
         protected const double MAXIMUM_DISTANCE_BETWEEN_POINTS = 5.0;
@@ -45,6 +49,10 @@ namespace FarmingGPS
         protected const double MINIMUM_CHANGE_DIRECTION = 3.0;
 
         protected const double MAXIMUM_CHANGE_DIRECTION = 10.0;
+
+        #endregion;
+
+        #region Private Variables
 
         private FarmingGPSLib.FieldItems.Field _field;
 
@@ -60,8 +68,8 @@ namespace FarmingGPS
 
         private IReceiver _receiver;
 
-        private AutoEventedDiscoveryServices<Service> _mdsServices;
-
+        private ICamera _camera;
+        
         private DateTime _trackingLineEvaluationTimeout = DateTime.MinValue;
 
         private TrackingLine _activeTrackingLine = null;
@@ -86,6 +94,8 @@ namespace FarmingGPS
         
         private bool _setTrackLineAB = false;
 
+        #endregion
+
         public MainWindow()
         {
             InitializeComponent();
@@ -96,66 +106,28 @@ namespace FarmingGPS
             System.Threading.Thread delayedActionsThread = new System.Threading.Thread(new System.Threading.ThreadStart(delayedActions));
             delayedActionsThread.Start();
             this.Loaded += MainWindow_Loaded;
-
-            _mdsServices = new AutoEventedDiscoveryServices<Service>(null);
-            _mdsServices.ResolveNetworkInterfaces = true;
-            _mdsServices.StatusNotifyAction += mdsServices_StatusNotifyAction;
-            _mdsServices.ReStartAsync();
-            
+                        
             SqlConnectionStringBuilder connString = new SqlConnectionStringBuilder();
             connString.Encrypt = false;
             connString.TrustServerCertificate = false;
+            connString.IntegratedSecurity = false;
             connString.UserID = @"sa";
             connString.Password = "vetinte";
-            connString.DataSource = @"server.nolgarden.net\SQLEXPRESS";
+            connString.DataSource = @"192.168.113.1\SQLEXPRESS";
             connString.InitialCatalog = "FarmingDatabase";
             connString.ConnectTimeout = 5;
+
+            //_camera = new AxisCamera("AxisCase");
+            _camera = new AxisCamera(System.Net.IPAddress.Parse("192.168.43.132"));
+            _camera.CameraConnectedChangedEvent += _camera_CameraConnectedChangedEvent;
+            _camera.CameraImageEvent += _camera_CameraImageEvent;
+            SetValue(CameraUnavilableProperty, Visibility.Visible);
 
             _database = new FarmingGPS.Database.DatabaseHandler(connString);
             _getField.AddDatabase(_database);
             _getField.FieldChoosen += _getField_FieldChoosen;
 
             _distanceTriggerFieldTracker = new DistanceTrigger(MINIMUM_DISTANCE_BETWEEN_POINTS, MAXIMUM_DISTANCE_BETWEEN_POINTS, MINIMUM_CHANGE_DIRECTION, MAXIMUM_CHANGE_DIRECTION);
-        }
-
-        private void _getField_FieldChoosen(object sender, List<Position> e)
-        {
-            _field = new Field(e, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
-            _fieldTracker.FieldToCalculateAreaWithin = _field;
-            _workedAreaBar.SetField(_field);
-            _visualization.AddField(_field);
-
-            _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, 1);
-            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
-                _visualization.AddLine(line);
-
-            _settingsGrid.Visibility = Visibility.Hidden;
-            ShowTrackingLineSettings();
-        }
-
-        void mdsServices_StatusNotifyAction(object sender, AutoEventedDiscoveryServices<Service>.StatusNotifyActionEventArgs e)
-        {
-            if (e.Data is Service && e.NotifyAction == AutoDiscoveryServices<Service>.NotifyAction.ServiceFound)
-            {
-                Service service = e.Data as Service;
-                if (service.Device.FriendlyName == "Axis Case")
-                {
-                    _cameraIp = service.Device.PresentationURL;
-                    _decoder = new MjpegProcessor.MjpegDecoder();
-                    _decoder.FrameReady += FrameReady;
-                    _decoder.ParseStream(new Uri(_cameraIp + "mjpg/1/video.mjpg"), "root", "vetinte13");
-                }
-            }
-        }
-
-        void FrameReady(object sender, MjpegProcessor.FrameReadyEventArgs e)
-        {
-            if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
-            {
-                SetValue(CameraImageProperty, e.BitmapImage);
-            }
-            else
-                Dispatcher.Invoke(DispatcherPriority.Render, new EventHandler<MjpegProcessor.FrameReadyEventArgs>(FrameReady), sender, e);
         }
 
         #region DependencyProperties
@@ -166,15 +138,19 @@ namespace FarmingGPS
 
         protected static readonly DependencyProperty CameraSizeProperty = DependencyProperty.Register("CameraSize", typeof(Style), typeof(MainWindow));
 
+        protected static readonly DependencyProperty CameraUnavilableProperty = DependencyProperty.Register("CameraUnavailable", typeof(Visibility), typeof(MainWindow));
+
         #endregion
 
         void Current_Exit(object sender, ExitEventArgs e)
         {
+            if (_camera != null)
+                if (_camera is IDisposable)
+                    (_camera as IDisposable).Dispose();
             _ntripClient.Dispose();
             _receiver.Dispose();
             if(_sbpReceiverSender != null)
             _sbpReceiverSender.Dispose();
-            _mdsServices.Dispose();
             _database.Dispose();
         }
 
@@ -221,6 +197,54 @@ namespace FarmingGPS
             _ntripClient.Connect();
         }
 
+        #region Private Methods
+
+        private void ShowTrackingLineSettings()
+        {
+            if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
+                _trackLineGrid.Visibility = Visibility.Visible;
+            else
+                Dispatcher.Invoke(new Action(ShowTrackingLineSettings), DispatcherPriority.Render);
+        }
+
+        private void Camera_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            Style fullvideo = (Style)this.FindResource("Fullvideo");
+            Style pipvideo = (Style)this.FindResource("PiPvideo");
+            if (GetValue(CameraSizeProperty).Equals(pipvideo))
+                SetValue(CameraSizeProperty, fullvideo);
+            else if (GetValue(CameraSizeProperty).Equals(fullvideo))
+                SetValue(CameraSizeProperty, pipvideo);
+        }
+
+        private void ToggleFieldTracker()
+        {
+            _fieldTrackerActive = !_fieldTrackerActive;
+            if (_fieldTrackerActive)
+                SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PAUSE"));
+            else
+                SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
+        }
+
+        #endregion
+
+        #region Field Events
+
+        private void _getField_FieldChoosen(object sender, List<Position> e)
+        {
+            _field = new Field(e, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
+            _fieldTracker.FieldToCalculateAreaWithin = _field;
+            _workedAreaBar.SetField(_field);
+            _visualization.AddField(_field);
+
+            _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, 1);
+            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
+                _visualization.AddLine(line);
+
+            _settingsGrid.Visibility = Visibility.Hidden;
+            ShowTrackingLineSettings();
+        }
+
         private void _fieldTracker_AreaChanged(object sender, AreaChanged e)
         {
             _workedAreaBar.SetWorkedArea(e.Area);
@@ -241,34 +265,33 @@ namespace FarmingGPS
             ShowTrackingLineSettings();
         }
 
-        private void ShowTrackingLineSettings()
+        #endregion
+
+        #region Camera Events
+
+        private void _camera_CameraImageEvent(object sender, CameraImageEventArgs e)
         {
             if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
-                _trackLineGrid.Visibility = Visibility.Visible;
+            {
+                SetValue(CameraImageProperty, e.BitmapImage);
+            }
             else
-                Dispatcher.Invoke(new Action(ShowTrackingLineSettings), DispatcherPriority.Render);
+                Dispatcher.Invoke(DispatcherPriority.Render, new Action<object, CameraImageEventArgs>(_camera_CameraImageEvent), sender, e);
         }
 
-        private void Image_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void _camera_CameraConnectedChangedEvent(object sender, CameraConnectedEventArgs e)
         {
-            Style fullvideo = (Style)this.FindResource("Fullvideo");
-            Style pipvideo = (Style)this.FindResource("PiPvideo");
-            if (GetValue(CameraSizeProperty).Equals(pipvideo))
-                SetValue(CameraSizeProperty, fullvideo);
-            else if (GetValue(CameraSizeProperty).Equals(fullvideo))
-                SetValue(CameraSizeProperty, pipvideo);
-        }
-
-        private void ToggleFieldTracker()
-        {
-            _fieldTrackerActive = !_fieldTrackerActive;
-            if (_fieldTrackerActive)
-                SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PAUSE"));
+            if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
+            {
+                SetValue(CameraUnavilableProperty, e.Connected ? Visibility.Hidden : Visibility.Visible);
+            }
             else
-                SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
+                Dispatcher.Invoke(DispatcherPriority.Render, new Action<object, CameraConnectedEventArgs>(_camera_CameraConnectedChangedEvent), sender, e);
         }
 
-        #region #NTRIP Events
+        #endregion
+
+        #region NTRIP Events
 
         void _ntripClient_StreamDataReceivedEvent(object sender, NTRIP.Eventarguments.StreamReceivedArgs e)
         {
