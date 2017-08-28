@@ -10,6 +10,11 @@ namespace FarmingGPS.Settings
             get;
         }
 
+        ISetting this[string name]
+        {
+            get;
+        }
+
         ISettingsCollection ChildSettings
         {
             get;
