@@ -147,8 +147,19 @@ namespace FarmingGPS
             SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
             SetValue(CameraSizeProperty, (Style)this.FindResource("PiPvideo"));
 
+            FarmingGPSLib.Equipment.Harrow harrow = new FarmingGPSLib.Equipment.Harrow(Distance.FromMeters(24.0), Distance.FromMeters(0.0), new Azimuth(180), Distance.FromCentimeters(0));
+            _equipment = harrow;
+
+            _visualization.SetEquipmentWidth(harrow.Width);
+
+            _speedBar.Unit = SpeedUnit.KilometersPerHour;
+            _speedBar.SetSpeed(Speed.FromKilometersPerHour(0.0));
+            _workedAreaBar.Unit = AreaUnit.SquareKilometers;
+            _fieldTracker.AreaChanged += _fieldTracker_AreaChanged;
+            _visualization.AddFieldTracker(_fieldTracker);
+
             UserPasswordDialog userPassDialog = new UserPasswordDialog();
-            bool? result = userPassDialog.ShowDialog();
+            userPassDialog.ShowDialog();
 
             SqlConnectionStringBuilder connString = new SqlConnectionStringBuilder();
             connString.Encrypt = false;
@@ -163,24 +174,16 @@ namespace FarmingGPS
             _database = new FarmingGPS.Database.DatabaseHandler(connString);
             _getField.AddDatabase(_database);
             _getField.FieldChoosen += _getField_FieldChoosen;
-        }
-        
-        void delayedActions()
-        {
-            System.Threading.Thread.Sleep(1000);
-            FarmingGPSLib.Equipment.Harrow harrow = new FarmingGPSLib.Equipment.Harrow(Distance.FromMeters(24.0), Distance.FromMeters(0.0), new Azimuth(180), Distance.FromCentimeters(0));
-            _equipment = harrow;
 
-            _visualization.SetEquipmentWidth(harrow.Width);
+            ComPortDialog comportDialog = new ComPortDialog();
+            comportDialog.ShowDialog();
 
-            _speedBar.Unit = SpeedUnit.KilometersPerHour;
-            _speedBar.SetSpeed(Speed.FromKilometersPerHour(0.0));
-            _workedAreaBar.Unit = AreaUnit.SquareKilometers;
-            _fieldTracker.AreaChanged += _fieldTracker_AreaChanged;
-            _visualization.AddFieldTracker(_fieldTracker);
+            string comport = comportDialog.ComPort;
+            if (comport == String.Empty)
+                comport = "COM1";
 
             //_sbpReceiverSender = new SBPReceiverSender(System.Net.IPAddress.Parse("192.168.0.222"), 55555);
-            _sbpReceiverSender = new SBPReceiverSender("COM10", 115200, false);
+            _sbpReceiverSender = new SBPReceiverSender(comport, 115200, false);
             _receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(1000));
             _receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0);
             //_receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8548025), new Latitude(58.5104914)), false);
@@ -188,7 +191,6 @@ namespace FarmingGPS
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
             _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
-            _speedBar.Unit = SpeedUnit.KilometersPerHour;
 
             ClientSettings clientSettings = new ClientSettings();
             clientSettings.IPorHost = "nolgarden.net";
@@ -199,6 +201,11 @@ namespace FarmingGPS
             _ntripClient.StreamDataReceivedEvent += _ntripClient_StreamDataReceivedEvent;
             _ntripClient.ConnectionExceptionEvent += _ntripClient_ConnectionExceptionEvent;
             _ntripClient.Connect();
+        }
+        
+        void delayedActions()
+        {
+            System.Threading.Thread.Sleep(1000);
         }
 
         #region Private Methods
