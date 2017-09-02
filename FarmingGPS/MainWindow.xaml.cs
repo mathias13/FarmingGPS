@@ -31,6 +31,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using FarmingGPS.Dialogs;
 
 
 namespace FarmingGPS
@@ -106,13 +107,14 @@ namespace FarmingGPS
             System.Threading.Thread delayedActionsThread = new System.Threading.Thread(new System.Threading.ThreadStart(delayedActions));
             delayedActionsThread.Start();
             this.Loaded += MainWindow_Loaded;
-                        
+            UserPasswordDialog userPassDialog = new UserPasswordDialog();
+            bool? result = userPassDialog.ShowDialog();
             SqlConnectionStringBuilder connString = new SqlConnectionStringBuilder();
             connString.Encrypt = false;
             connString.TrustServerCertificate = false;
             connString.IntegratedSecurity = false;
-            connString.UserID = @"sa";
-            connString.Password = "vetinte";
+            connString.UserID = userPassDialog.UserName;
+            connString.Password = userPassDialog.Password;
             connString.DataSource = @"192.168.113.1\SQLEXPRESS";
             connString.InitialCatalog = "FarmingDatabase";
             connString.ConnectTimeout = 5;
@@ -176,7 +178,7 @@ namespace FarmingGPS
             _visualization.AddFieldTracker(_fieldTracker);
 
             //_sbpReceiverSender = new SBPReceiverSender(System.Net.IPAddress.Parse("192.168.0.222"), 55555);
-            _sbpReceiverSender = new SBPReceiverSender("COM4", 115200, false);
+            //_sbpReceiverSender = new SBPReceiverSender("COM4", 115200, false);
             //_receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(1000));
             //_receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0);
             _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8548025), new Latitude(58.5104914)), false);

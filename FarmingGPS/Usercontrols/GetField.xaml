@@ -7,6 +7,16 @@
              xmlns:GMap="clr-namespace:GMap.NET.WindowsPresentation;assembly=GMap.NET.WindowsPresentation"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary x:Key="Dictionary">
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary Source="../Visualization/Buttons.xaml" />
+                    <ResourceDictionary Source="../Visualization/VisualizationDictionary.xaml" />
+                </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
