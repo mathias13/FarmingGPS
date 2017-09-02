@@ -148,6 +148,9 @@
     <Compile Include="Camera\CameraConnectedEventArgs.cs" />
     <Compile Include="Camera\CameraImageEventArgs.cs" />
     <Compile Include="Camera\ICamera.cs" />
+    <Compile Include="Dialogs\ComPortDialog.xaml.cs">
+      <DependentUpon>ComPortDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\UserPasswordDialog.xaml.cs">
       <DependentUpon>UserPasswordDialog.xaml</DependentUpon>
     </Compile>
@@ -169,6 +172,10 @@
     <Compile Include="Visualization\WorkedAreaBar.xaml.cs">
       <DependentUpon>WorkedAreaBar.xaml</DependentUpon>
     </Compile>
+    <Page Include="Dialogs\ComPortDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Dialogs\UserPasswordDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -262,6 +269,10 @@
     <ProjectReference Include="..\..\SwiftBinaryProtocol\SwiftBinaryProtocol\SwiftBinaryProtocol.csproj">
       <Project>{cab096cd-070d-45db-8340-8b4efb073bb9}</Project>
       <Name>SwiftBinaryProtocol</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Utilities\Utilities\Utilities.csproj">
+      <Project>{7b42a768-a977-4e3f-936a-4f3b72ecb6e1}</Project>
+      <Name>Utilities</Name>
     </ProjectReference>
     <ProjectReference Include="..\Database\FarmingGPS.Database.csproj">
       <Project>{d73db0c0-d9d1-489e-b6bc-7ef3203afdc0}</Project>

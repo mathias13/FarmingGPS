@@ -102,6 +102,7 @@ namespace FarmingGPS
             InitializeComponent();
 
             Application.Current.Exit += Current_Exit;
+            Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
             WindowState = WindowState.Maximized;
 
             System.Threading.Thread delayedActionsThread = new System.Threading.Thread(new System.Threading.ThreadStart(delayedActions));
@@ -116,6 +117,11 @@ namespace FarmingGPS
 
 
             _distanceTriggerFieldTracker = new DistanceTrigger(MINIMUM_DISTANCE_BETWEEN_POINTS, MAXIMUM_DISTANCE_BETWEEN_POINTS, MINIMUM_CHANGE_DIRECTION, MAXIMUM_CHANGE_DIRECTION);
+        }
+
+        private void Current_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            Utilities.Log.Log.Error(e.Exception);
         }
 
         #region DependencyProperties
@@ -184,6 +190,9 @@ namespace FarmingGPS
 
             //_sbpReceiverSender = new SBPReceiverSender(System.Net.IPAddress.Parse("192.168.0.222"), 55555);
             _sbpReceiverSender = new SBPReceiverSender(comport, 115200, false);
+            _sbpReceiverSender.ReadExceptionEvent += _sbpReceiverSender_ReadExceptionEvent;
+            _sbpReceiverSender.SendExeceptionEvent += _sbpReceiverSender_SendExeceptionEvent;
+
             _receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(1000));
             _receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0);
             //_receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8548025), new Latitude(58.5104914)), false);
@@ -202,7 +211,17 @@ namespace FarmingGPS
             _ntripClient.ConnectionExceptionEvent += _ntripClient_ConnectionExceptionEvent;
             _ntripClient.Connect();
         }
-        
+
+        private void _sbpReceiverSender_SendExeceptionEvent(object sender, SBPSendExceptionEventArgs e)
+        {
+            Utilities.Log.Log.Error(e.Exception);
+        }
+
+        private void _sbpReceiverSender_ReadExceptionEvent(object sender, SBPReadExceptionEventArgs e)
+        {
+            Utilities.Log.Log.Error(e.Exception);
+        }
+
         void delayedActions()
         {
             System.Threading.Thread.Sleep(1000);

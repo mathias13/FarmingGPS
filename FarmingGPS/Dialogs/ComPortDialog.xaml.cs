@@ -14,7 +14,6 @@ namespace FarmingGPS.Dialogs
             string[] ports = SerialPort.GetPortNames();
             foreach (string port in ports)
                 ComboBoxPort.Items.Add(port.ToString());
-            ComboBoxPort.Items.oo
         }
 
         public string ComPort
