@@ -107,17 +107,6 @@ namespace FarmingGPS
             System.Threading.Thread delayedActionsThread = new System.Threading.Thread(new System.Threading.ThreadStart(delayedActions));
             delayedActionsThread.Start();
             this.Loaded += MainWindow_Loaded;
-            UserPasswordDialog userPassDialog = new UserPasswordDialog();
-            bool? result = userPassDialog.ShowDialog();
-            SqlConnectionStringBuilder connString = new SqlConnectionStringBuilder();
-            connString.Encrypt = false;
-            connString.TrustServerCertificate = false;
-            connString.IntegratedSecurity = false;
-            connString.UserID = userPassDialog.UserName;
-            connString.Password = userPassDialog.Password;
-            connString.DataSource = @"192.168.113.1\SQLEXPRESS";
-            connString.InitialCatalog = "FarmingDatabase";
-            connString.ConnectTimeout = 5;
 
             //_camera = new AxisCamera("AxisCase");
             _camera = new AxisCamera(System.Net.IPAddress.Parse("192.168.43.132"));
@@ -125,9 +114,6 @@ namespace FarmingGPS
             _camera.CameraImageEvent += _camera_CameraImageEvent;
             SetValue(CameraUnavilableProperty, Visibility.Visible);
 
-            _database = new FarmingGPS.Database.DatabaseHandler(connString);
-            _getField.AddDatabase(_database);
-            _getField.FieldChoosen += _getField_FieldChoosen;
 
             _distanceTriggerFieldTracker = new DistanceTrigger(MINIMUM_DISTANCE_BETWEEN_POINTS, MAXIMUM_DISTANCE_BETWEEN_POINTS, MINIMUM_CHANGE_DIRECTION, MAXIMUM_CHANGE_DIRECTION);
         }
@@ -160,6 +146,23 @@ namespace FarmingGPS
         {   
             SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
             SetValue(CameraSizeProperty, (Style)this.FindResource("PiPvideo"));
+
+            UserPasswordDialog userPassDialog = new UserPasswordDialog();
+            bool? result = userPassDialog.ShowDialog();
+
+            SqlConnectionStringBuilder connString = new SqlConnectionStringBuilder();
+            connString.Encrypt = false;
+            connString.TrustServerCertificate = false;
+            connString.IntegratedSecurity = false;
+            connString.UserID = userPassDialog.UserName;
+            connString.Password = userPassDialog.Password;
+            connString.DataSource = @"192.168.113.1\SQLEXPRESS";
+            connString.InitialCatalog = "FarmingDatabase";
+            connString.ConnectTimeout = 5;
+
+            _database = new FarmingGPS.Database.DatabaseHandler(connString);
+            _getField.AddDatabase(_database);
+            _getField.FieldChoosen += _getField_FieldChoosen;
         }
         
         void delayedActions()
@@ -171,17 +174,16 @@ namespace FarmingGPS
             _visualization.SetEquipmentWidth(harrow.Width);
 
             _speedBar.Unit = SpeedUnit.KilometersPerHour;
-            _speedBar.SetSpeed(Speed.FromKilometersPerHour(2.4));
+            _speedBar.SetSpeed(Speed.FromKilometersPerHour(0.0));
             _workedAreaBar.Unit = AreaUnit.SquareKilometers;
             _fieldTracker.AreaChanged += _fieldTracker_AreaChanged;
-            _receiver_FixQualityUpdate(this, FixQuality.FixedRealTimeKinematic);
             _visualization.AddFieldTracker(_fieldTracker);
 
             //_sbpReceiverSender = new SBPReceiverSender(System.Net.IPAddress.Parse("192.168.0.222"), 55555);
-            //_sbpReceiverSender = new SBPReceiverSender("COM4", 115200, false);
-            //_receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(1000));
-            //_receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0);
-            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8548025), new Latitude(58.5104914)), false);
+            _sbpReceiverSender = new SBPReceiverSender("COM10", 115200, false);
+            _receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(1000));
+            _receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0);
+            //_receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8548025), new Latitude(58.5104914)), false);
             _receiver.BearingUpdate += _receiver_BearingUpdate;
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
