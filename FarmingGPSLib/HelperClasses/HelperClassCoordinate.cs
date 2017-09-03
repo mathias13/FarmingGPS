@@ -25,22 +25,4 @@ namespace FarmingGPSLib.HelperClasses
         }
 
     }
-
-    public class CSVCoordinates
-    {
-        private IEnumerable<Coordinate> _coords;
-
-        public CSVCoordinates(IEnumerable<Coordinate> coords)
-        {
-            _coords = coords;
-        }
-
-        public override string ToString()
-        {
-            string csvString = String.Empty;
-            foreach (Coordinate coord in _coords)
-                csvString += coord.X.ToString() + ";" + coord.Y.ToString() + Environment.NewLine;
-            return csvString;
-        }
-    }
 }

@@ -191,7 +191,6 @@ namespace FarmingGPS
             //_sbpReceiverSender = new SBPReceiverSender(System.Net.IPAddress.Parse("192.168.0.222"), 55555);
             _sbpReceiverSender = new SBPReceiverSender(comport, 115200, false);
             _sbpReceiverSender.ReadExceptionEvent += _sbpReceiverSender_ReadExceptionEvent;
-            _sbpReceiverSender.SendExeceptionEvent += _sbpReceiverSender_SendExeceptionEvent;
 
             _receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(1000));
             _receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0);
@@ -210,11 +209,6 @@ namespace FarmingGPS
             _ntripClient.StreamDataReceivedEvent += _ntripClient_StreamDataReceivedEvent;
             _ntripClient.ConnectionExceptionEvent += _ntripClient_ConnectionExceptionEvent;
             _ntripClient.Connect();
-        }
-
-        private void _sbpReceiverSender_SendExeceptionEvent(object sender, SBPSendExceptionEventArgs e)
-        {
-            Utilities.Log.Log.Error(e.Exception);
         }
 
         private void _sbpReceiverSender_ReadExceptionEvent(object sender, SBPReadExceptionEventArgs e)

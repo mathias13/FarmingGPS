@@ -563,23 +563,9 @@ namespace FarmingGPS.Visualization
 
                     }
                 }
-                catch (Exception e1)
+                catch (Exception exception)
                 {
-                    System.IO.StreamWriter streamWriter = new System.IO.StreamWriter(@"C:\Binaries\positions.csv");
-                    streamWriter.Write(DateTime.Now.ToString("hh:mm:ss") + Environment.NewLine);
-                    streamWriter.Write(e1.ToString() + Environment.NewLine);
-                    streamWriter.Write("Shell" + Environment.NewLine);
-                    FarmingGPSLib.HelperClasses.CSVCoordinates shellCoord = new FarmingGPSLib.HelperClasses.CSVCoordinates(e.Polygon.Shell.Coordinates);
-                    streamWriter.Write(shellCoord.ToString());
-                    foreach (DotSpatial.Topology.ILinearRing hole in e.Polygon.Holes)
-                    {
-                        streamWriter.Write("Hole" + Environment.NewLine);
-                        FarmingGPSLib.HelperClasses.CSVCoordinates holeCoord = new FarmingGPSLib.HelperClasses.CSVCoordinates(hole.Coordinates);
-                        streamWriter.Write(holeCoord.ToString());
-                    }
-                    streamWriter.Flush();
-
-                    streamWriter.Dispose();
+                    Utilities.Log.Log.Error(exception);
                 }
             }
             else
