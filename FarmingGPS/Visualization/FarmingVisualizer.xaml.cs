@@ -150,7 +150,7 @@ namespace FarmingGPS.Visualization
                 _lastAngle = angle;
             }
             else
-                Dispatcher.BeginInvoke(new Action<Point,double>(UpdatePosition), System.Windows.Threading.DispatcherPriority.Render, position, angle);
+                Dispatcher.BeginInvoke(new Action<Point,double>(UpdatePosition), System.Windows.Threading.DispatcherPriority.Send, position, angle);
         }
 
         public void UpdatePosition(DotSpatial.Topology.Coordinate coord, Azimuth bearing)
@@ -174,7 +174,7 @@ namespace FarmingGPS.Visualization
                 _lastAngle = (double)GetValue(ShiftHeadingProperty);
             }
             else
-                Dispatcher.BeginInvoke(new Action<DotSpatial.Topology.Coordinate, Azimuth>(UpdatePosition), System.Windows.Threading.DispatcherPriority.Render, coord, bearing);
+                Dispatcher.BeginInvoke(new Action<DotSpatial.Topology.Coordinate, Azimuth>(UpdatePosition), System.Windows.Threading.DispatcherPriority.Send, coord, bearing);
         }
        
         public void FocusTrackingLine(TrackingLine trackingLine)
@@ -244,7 +244,7 @@ namespace FarmingGPS.Visualization
         public void AddPoint(DotSpatial.Topology.Coordinate coord, Color color)
         {
             if (!Dispatcher.Thread.Equals(Thread.CurrentThread))
-                Dispatcher.Invoke(new Action<DotSpatial.Topology.Coordinate, Color>(AddPoint), System.Windows.Threading.DispatcherPriority.Render, coord, color);
+                Dispatcher.Invoke(new Action<DotSpatial.Topology.Coordinate, Color>(AddPoint), System.Windows.Threading.DispatcherPriority.Normal, coord, color);
             else
             {
                 double x = coord.X;
@@ -303,7 +303,7 @@ namespace FarmingGPS.Visualization
                 _viewPort.Children.Add(modelVisual);
             }
             else
-                Dispatcher.Invoke(new Action<TrackingLine>(AddLine), System.Windows.Threading.DispatcherPriority.Render, trackingLine);
+                Dispatcher.Invoke(new Action<TrackingLine>(AddLine), System.Windows.Threading.DispatcherPriority.Normal, trackingLine);
         }
 
         public void DeleteLine(TrackingLine trackingLine)
@@ -320,7 +320,7 @@ namespace FarmingGPS.Visualization
                 }
             }
             else
-                Dispatcher.Invoke(new Action<TrackingLine>(DeleteLine), System.Windows.Threading.DispatcherPriority.Render, trackingLine);
+                Dispatcher.Invoke(new Action<TrackingLine>(DeleteLine), System.Windows.Threading.DispatcherPriority.Normal, trackingLine);
         }
         
         public void AddField(IField field)
@@ -333,7 +333,7 @@ namespace FarmingGPS.Visualization
                 DrawFieldMesh(field.Polygon.Coordinates);
             }
             else
-                Dispatcher.Invoke(new Action<IField>(AddField), System.Windows.Threading.DispatcherPriority.Render, field);
+                Dispatcher.Invoke(new Action<IField>(AddField), System.Windows.Threading.DispatcherPriority.Normal, field);
         }
 
         public void AddFieldTracker(FieldTracker fieldTracker)
@@ -569,7 +569,7 @@ namespace FarmingGPS.Visualization
                 }
             }
             else
-                Dispatcher.Invoke(new Action<object, PolygonUpdatedEventArgs>(fieldTracker_PolygonUpdated), System.Windows.Threading.DispatcherPriority.Render, sender, e);
+                Dispatcher.Invoke(new Action<object, PolygonUpdatedEventArgs>(fieldTracker_PolygonUpdated), System.Windows.Threading.DispatcherPriority.Normal, sender, e);
 
         }
 
@@ -594,7 +594,7 @@ namespace FarmingGPS.Visualization
                 }
             }
             else
-                Dispatcher.Invoke(new Action<object, PolygonDeletedEventArgs>(fieldTracker_PolygonDeleted), System.Windows.Threading.DispatcherPriority.Render, sender, e);
+                Dispatcher.Invoke(new Action<object, PolygonDeletedEventArgs>(fieldTracker_PolygonDeleted), System.Windows.Threading.DispatcherPriority.Normal, sender, e);
         }
 
         #endregion
@@ -614,7 +614,7 @@ namespace FarmingGPS.Visualization
                 DrawOutline(coordinates);
             }
             else
-                Dispatcher.Invoke(new Action<object, FieldBoundaryUpdatedEventArgs>(FieldCreator_FieldBoundaryUpdated), System.Windows.Threading.DispatcherPriority.Render, sender, e);
+                Dispatcher.Invoke(new Action<object, FieldBoundaryUpdatedEventArgs>(FieldCreator_FieldBoundaryUpdated), System.Windows.Threading.DispatcherPriority.Normal, sender, e);
         }
 
         private void FieldCreator_FieldCreated(object sender, FieldCreatedEventArgs e)
