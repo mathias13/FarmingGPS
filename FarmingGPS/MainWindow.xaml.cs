@@ -153,7 +153,7 @@ namespace FarmingGPS
             SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
             SetValue(CameraSizeProperty, (Style)this.FindResource("PiPvideo"));
 
-            FarmingGPSLib.Equipment.Harrow harrow = new FarmingGPSLib.Equipment.Harrow(Distance.FromMeters(24.0), Distance.FromMeters(0.0), new Azimuth(180), Distance.FromCentimeters(0));
+            FarmingGPSLib.Equipment.Harrow harrow = new FarmingGPSLib.Equipment.Harrow(Distance.FromMeters(5.0), Distance.FromMeters(0.0), new Azimuth(180), Distance.FromCentimeters(20));
             _equipment = harrow;
 
             _visualization.SetEquipmentWidth(harrow.Width);
@@ -168,12 +168,12 @@ namespace FarmingGPS
             userPassDialog.ShowDialog();
 
             SqlConnectionStringBuilder connString = new SqlConnectionStringBuilder();
-            connString.Encrypt = false;
-            connString.TrustServerCertificate = false;
+            connString.Encrypt = true;
+            connString.TrustServerCertificate = true;
             connString.IntegratedSecurity = false;
             connString.UserID = userPassDialog.UserName;
             connString.Password = userPassDialog.Password;
-            connString.DataSource = @"192.168.113.1\SQLEXPRESS";
+            connString.DataSource = @"nolgarden.net\SQLPublic,50801";
             connString.InitialCatalog = "FarmingDatabase";
             connString.ConnectTimeout = 5;
 
@@ -192,9 +192,9 @@ namespace FarmingGPS
             _sbpReceiverSender = new SBPReceiverSender(comport, 115200, false);
             _sbpReceiverSender.ReadExceptionEvent += _sbpReceiverSender_ReadExceptionEvent;
 
-            _receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(1000));
-            _receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0);
-            //_receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8548025), new Latitude(58.5104914)), false);
+            //_receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(1000));
+            //_receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0);
+            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8548025), new Latitude(58.5104914)), false);
             _receiver.BearingUpdate += _receiver_BearingUpdate;
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
@@ -283,7 +283,7 @@ namespace FarmingGPS
             foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
             {
                 _visualization.AddLine(line);
-                if (_fieldTracker.GetTrackingLineCoverage(line) > 0.9)
+                if (_fieldTracker.GetTrackingLineCoverage(line) > 0.97)
                     line.Depleted = true;
             }
             ShowTrackingLineSettings();
@@ -400,7 +400,7 @@ namespace FarmingGPS
                     else if (!_activeTrackingLine.Equals(newTrackingLine))
                     {
                         //TODO change depleted limit to a setting
-                        if (_fieldTracker.GetTrackingLineCoverage(_activeTrackingLine) > 0.9)
+                        if (_fieldTracker.GetTrackingLineCoverage(_activeTrackingLine) > 0.97)
                             _activeTrackingLine.Depleted = true;
 
                         _activeTrackingLine.Active = false;
