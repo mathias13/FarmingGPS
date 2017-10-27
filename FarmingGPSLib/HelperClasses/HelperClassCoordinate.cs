@@ -15,14 +15,12 @@ namespace FarmingGPSLib.HelperClasses
         {
             return new Coordinate(Math.Round(coord.X, 3), Math.Round(coord.Y, 3));
         }
-
+        
         public static Coordinate ComputePoint(Coordinate coord, double angle, double distance)
         {
-            angle = (360.0 * (Math.PI / 180.0)) - angle;
             double leftX = coord.X + Math.Cos(angle) * distance;
             double leftY = coord.Y + Math.Sin(angle) * distance;
             return new Coordinate(leftX, leftY);
         }
-
     }
 }
