@@ -30,7 +30,7 @@
 
     <Style x:Key="PiPvideo" TargetType="Grid">
         <Setter Property="Margin" Value="10,10,10,10"/>
-        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Bottom"/>
         <Setter Property="Width" Value="Auto"/>
         <Setter Property="Height" Value="72"/>
