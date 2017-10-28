@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>FarmingGPS</RootNamespace>
     <AssemblyName>FarmingGPS</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -90,10 +90,15 @@
       <HintPath>..\packages\HelixToolkit.Wpf.2015.1.715\lib\net45\HelixToolkit.Wpf.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MjpegProcessor">
-      <HintPath>..\MJPEG_bin\MjpegProcessor.dll</HintPath>
+    <Reference Include="MjpegProcessor, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MJPEG-Decoder.1.2\lib\net35\MjpegProcessor.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="PresentationFramework" />
+    <Reference Include="Rssdp, Version=3.5.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rssdp.3.5.5\lib\net45\Rssdp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
@@ -138,6 +143,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Camera\Axis\AxisCamera.cs" />
+    <Compile Include="Camera\CameraBase.cs" />
+    <Compile Include="Camera\CameraConnectedEventArgs.cs" />
+    <Compile Include="Camera\CameraImageEventArgs.cs" />
+    <Compile Include="Camera\ICamera.cs" />
+    <Compile Include="Dialogs\ComPortDialog.xaml.cs">
+      <DependentUpon>ComPortDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\UserPasswordDialog.xaml.cs">
+      <DependentUpon>UserPasswordDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GeometryUtilities\Lines.cs" />
     <Compile Include="Settings\ISetting.cs" />
     <Compile Include="Settings\ISettingsCollection.cs" />
@@ -153,6 +169,17 @@
     <Compile Include="Visualization\SpeedBar.xaml.cs">
       <DependentUpon>SpeedBar.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Visualization\WorkedAreaBar.xaml.cs">
+      <DependentUpon>WorkedAreaBar.xaml</DependentUpon>
+    </Compile>
+    <Page Include="Dialogs\ComPortDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialogs\UserPasswordDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -197,6 +224,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Visualization\WorkedAreaBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -216,6 +247,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -239,6 +271,10 @@
       <Project>{cab096cd-070d-45db-8340-8b4efb073bb9}</Project>
       <Name>SwiftBinaryProtocol</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Utilities\Utilities\Utilities.csproj">
+      <Project>{7b42a768-a977-4e3f-936a-4f3b72ecb6e1}</Project>
+      <Name>Utilities</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Database\FarmingGPS.Database.csproj">
       <Project>{d73db0c0-d9d1-489e-b6bc-7ef3203afdc0}</Project>
       <Name>FarmingGPS.Database</Name>
@@ -247,11 +283,8 @@
       <Project>{b196b5bf-5858-4121-aee4-575e78fadde7}</Project>
       <Name>FarmingGPSLib</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ManagedUPnP\ManagedUPnP.csproj">
-      <Project>{5956dabc-c1ab-498e-b8c8-f62ed6dcd30c}</Project>
-      <Name>ManagedUPnP</Name>
-    </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

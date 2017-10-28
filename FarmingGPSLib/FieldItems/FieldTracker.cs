@@ -15,6 +15,8 @@ namespace FarmingGPSLib.FieldItems
 
         public event EventHandler<PolygonDeletedEventArgs> PolygonDeleted;
 
+        public event EventHandler<AreaChanged> AreaChanged;
+
         #endregion
 
         #region Consts
@@ -24,6 +26,8 @@ namespace FarmingGPSLib.FieldItems
         #endregion
 
         #region Private Variables
+
+        private IField _fieldToCalculateAreaWithin = null;
 
         private IDictionary<int, Polygon> _polygons = new Dictionary<int, Polygon>();
 
@@ -44,35 +48,29 @@ namespace FarmingGPSLib.FieldItems
 
         public FieldTracker(Coordinate initLeftPoint, Coordinate initRightPoint)
         {
-            _prevLeftPoint = HelperClassCoordinate.CoordinateRoundedmm(initLeftPoint);
-            _prevRightPoint = HelperClassCoordinate.CoordinateRoundedmm(initRightPoint);
-            _currentPolygonIndex = -1;
+            InitTrack(initLeftPoint, initRightPoint);
         }
 
         #region Public Methods
 
         public void AddTrackPoint(Coordinate leftPoint, Coordinate rightPoint)
         {
-            leftPoint = HelperClassCoordinate.CoordinateRoundedmm(leftPoint);
-            rightPoint = HelperClassCoordinate.CoordinateRoundedmm(rightPoint);
             lock (_syncObject)
             {
-                if (_currentPolygonIndex > -1 && _currentPolygonIndex < _polygons.Count)
+                try
                 {
-                    if (_polygons[_currentPolygonIndex].Shell.Coordinates.Count == 0)
+                    if (_currentPolygonIndex > -1)
                     {
-                        _polygons[_currentPolygonIndex].Shell.Coordinates.Add(_prevRightPoint);
-                        _polygons[_currentPolygonIndex].Shell.Coordinates.Add(rightPoint);
-                        _polygons[_currentPolygonIndex].Shell.Coordinates.Add(leftPoint);
-                        _polygons[_currentPolygonIndex].Shell.Coordinates.Add(_prevLeftPoint);
-                        _polygons[_currentPolygonIndex].Shell.Coordinates.Add(_prevRightPoint);
-                    }
-                    else
-                    {
-                        try
+                        if (_polygons[_currentPolygonIndex].Shell.Coordinates.Count == 0)
                         {
-                            bool redrawPolygon = false;
-
+                            _polygons[_currentPolygonIndex].Shell.Coordinates.Add(_prevRightPoint);
+                            _polygons[_currentPolygonIndex].Shell.Coordinates.Add(rightPoint);
+                            _polygons[_currentPolygonIndex].Shell.Coordinates.Add(leftPoint);
+                            _polygons[_currentPolygonIndex].Shell.Coordinates.Add(_prevLeftPoint);
+                            _polygons[_currentPolygonIndex].Shell.Coordinates.Add(_prevRightPoint);
+                        }
+                        else
+                        {
                             List<Coordinate> newCoords = new List<Coordinate>();
                             newCoords.Add(_prevRightPoint);
                             newCoords.Add(rightPoint);
@@ -85,51 +83,48 @@ namespace FarmingGPSLib.FieldItems
 
                             IGeometry rectPolygon = new Polygon(rectangle.Coordinates);
 
-                            if (!rectangle.IsSimple)
+                            RobustLineIntersector lineIntersector = new RobustLineIntersector();
+                            lineIntersector.ComputeIntersection(rightPoint, leftPoint, _prevLeftPoint, _prevRightPoint);
+                            if (lineIntersector.HasIntersection)
                             {
-                                RobustLineIntersector lineIntersector = new RobustLineIntersector();
-                                lineIntersector.ComputeIntersection(rightPoint, leftPoint, _prevLeftPoint, _prevRightPoint);
-                                if (!lineIntersector.HasIntersection)
-                                    throw new Exception("No instersection point found but turning around itself");
+                                List<Coordinate> leftTriangle = new List<Coordinate>(new Coordinate[] { _prevLeftPoint, lineIntersector.IntersectionPoints[0], leftPoint, _prevLeftPoint });
 
-                                List<Coordinate> leftTriangle = new List<Coordinate>();
-                                leftTriangle.Add(_prevLeftPoint);
-                                leftTriangle.Add(lineIntersector.IntersectionPoints[0]);
-                                leftTriangle.Add(leftPoint);
-                                leftTriangle.Add(_prevLeftPoint);
-
-                                List<Coordinate> rightTriangle = new List<Coordinate>();
-                                rightTriangle.Add(_prevRightPoint);
-                                rightTriangle.Add(rightPoint);
-                                rightTriangle.Add(lineIntersector.IntersectionPoints[0]);
-                                rightTriangle.Add(_prevRightPoint);
-
+                                List<Coordinate> rightTriangle = new List<Coordinate>(new Coordinate[] { _prevRightPoint, rightPoint, lineIntersector.IntersectionPoints[0], _prevRightPoint });
+     
                                 if (CgAlgorithms.IsCounterClockwise(leftTriangle))
                                 {
                                     newCoords = new List<Coordinate>(leftTriangle);
                                     newCoords.RemoveAt(0);
                                     newCoordinates = new LineString(newCoords);
-                                    leftTriangle.RemoveAt(1);
-                                    leftTriangle.Insert(1, rightPoint);
-                                    rectPolygon = new Polygon(leftTriangle);
+                                    //rectPolygon = new Polygon(new Coordinate[] { _prevLeftPoint, lineIntersector.IntersectionPoints[0], leftPoint, _prevLeftPoint });
+                                    rectPolygon = new Polygon(new Coordinate[] { _prevLeftPoint, rightPoint, leftPoint, _prevLeftPoint });
                                 }
                                 else if (CgAlgorithms.IsCounterClockwise(rightTriangle))
                                 {
                                     newCoords = new List<Coordinate>(rightTriangle);
                                     newCoords.RemoveAt(0);
                                     newCoordinates = new LineString(newCoords);
-                                    rightTriangle.RemoveAt(2);
-                                    rightTriangle.Insert(2, leftPoint);
-                                    rectPolygon = new Polygon(rightTriangle);
+                                    //rectPolygon = new Polygon(new Coordinate[] { _prevRightPoint, rightPoint, lineIntersector.IntersectionPoints[0], _prevRightPoint });
+                                    rectPolygon = new Polygon(new Coordinate[] { _prevRightPoint, rightPoint, leftPoint, _prevRightPoint });
                                 }
                                 else
-                                    throw new Exception("No instersection point found but turning around itself");
+                                    throw new Exception("Intersection found but can't decide triangle");
                             }
 
-                            int holeHash = _polygons[_currentPolygonIndex].Holes.GetHashCode();
+                            bool insidePolygon = _polygons[_currentPolygonIndex].Contains(rectPolygon);
 
                             _polygons[_currentPolygonIndex] = (Polygon)_polygons[_currentPolygonIndex].Union(rectPolygon);
-                            _polygons[_currentPolygonIndex].Shell = RoundCoordinates(_polygons[_currentPolygonIndex].Shell);
+                            List<ILinearRing> holes = new List<ILinearRing>(_polygons[_currentPolygonIndex].Holes);
+                            for (int i = 0; i < holes.Count; i++)
+                            {
+                                if (!CheckHoleValidity(holes[i]))
+                                {
+                                    holes.RemoveAt(i);
+                                    i--;
+                                }
+                            }
+                            _polygons[_currentPolygonIndex].Holes = holes.ToArray();
+
                             if (_polygons[_currentPolygonIndex].Coordinates.Count > _polygonSimplifierCount[_currentPolygonIndex])
                             {
                                 IGeometry geometry = DotSpatial.Topology.Simplify.TopologyPreservingSimplifier.Simplify(_polygons[_currentPolygonIndex], 0.03);
@@ -137,71 +132,58 @@ namespace FarmingGPSLib.FieldItems
                                 {
                                     _polygons[_currentPolygonIndex] = geometry as Polygon;
                                     _polygonSimplifierCount[_currentPolygonIndex] = geometry.Coordinates.Count + SIMPLIFIER_COUNT_LIMIT;
-                                    redrawPolygon = true;
                                 }
                             }
 
-                            if (holeHash != _polygons[_currentPolygonIndex].Holes.GetHashCode())
+                            for (int i = 0; i < _polygons.Count; i++)
                             {
-                                redrawPolygon = true;
-                                List<ILinearRing> holes = new List<ILinearRing>(_polygons[_currentPolygonIndex].Holes);
-                                for (int i = 0; i < holes.Count; i++)
+                                if (i == _currentPolygonIndex || !_polygons.ContainsKey(i))
+                                    continue;
+                                if (_polygons[_currentPolygonIndex].Overlaps(_polygons[i]))
                                 {
-                                    if (!CheckHoleValidity(holes[i]))
-                                    {
-                                        holes.RemoveAt(i);
-                                        i--;
-                                    }
-                                    else
-                                        holes[i] = RoundCoordinates(holes[i]);
-
+                                    _polygons[_currentPolygonIndex] = (Polygon)_polygons[_currentPolygonIndex].Union(_polygons[i]);
+                                    _polygons.Remove(i);
+                                    _polygonSimplifierCount.Remove(i);
+                                    OnPolygonDeleted(i);
                                 }
-                                _polygons[_currentPolygonIndex].Holes = holes.ToArray();
                             }
-
-                            OnPolygonUpdated(_currentPolygonIndex, newCoordinates, redrawPolygon);
-                        }
-                        catch(Exception e)
-                        {
-                            System.IO.StreamWriter streamWriter = new System.IO.StreamWriter(@"C:\Binaries\positions.csv");
-                            streamWriter.Write(DateTime.Now.ToString("hh:mm:ss") + Environment.NewLine);
-                            streamWriter.Write(e.ToString() + Environment.NewLine);
-                            streamWriter.Write("Shell" + Environment.NewLine);
-                            CSVCoordinates shellCoord = new CSVCoordinates(_polygons[_currentPolygonIndex].Shell.Coordinates);
-                            streamWriter.Write(shellCoord.ToString());
-                            foreach(ILinearRing hole in _polygons[_currentPolygonIndex].Holes)
+                            if (!insidePolygon)
                             {
-                                streamWriter.Write("Hole" + Environment.NewLine);
-                                CSVCoordinates holeCoord = new CSVCoordinates(hole.Coordinates);
-                                streamWriter.Write(holeCoord.ToString());
+                                OnAreaChanged();
+                                OnPolygonUpdated(_currentPolygonIndex);
                             }
-                            streamWriter.Flush();
-                            
-                            streamWriter.Dispose();
                         }
                     }
+                    else
+                    {
+                        List<Coordinate> coords = new List<Coordinate>();
+                        coords.Add(_prevRightPoint);
+                        coords.Add(rightPoint);
+                        coords.Add(leftPoint);
+                        coords.Add(_prevLeftPoint);
+                        coords.Add(_prevRightPoint);
+                        LinearRing ring = new LinearRing(coords);
+                        Polygon polygon = new Polygon(ring);
+                        int id = 0;
+                        while (_polygons.Keys.Contains(id))
+                            id++;
+                        _polygons.Add(id, polygon);
+                        _polygonSimplifierCount.Add(id, SIMPLIFIER_COUNT_LIMIT);
+                        _currentPolygonIndex = id;
+                        OnPolygonUpdated(_currentPolygonIndex);
+                        OnAreaChanged();
+                    }
+                    //Make sure we are a little bit behind so .Union doesn't throw an exception
+                    LineSegment line = new LineSegment(leftPoint, rightPoint);
+                    Angle angle = new Angle(line.Angle);
+                    angle -= new Angle(Angle.PI / 2.0);
+                    _prevLeftPoint = HelperClassCoordinate.ComputePoint(leftPoint, angle.Radians, 0.05);
+                    _prevRightPoint = HelperClassCoordinate.ComputePoint(rightPoint, angle.Radians, 0.05); ;
                 }
-                else
+                catch (Exception e)
                 {
-                    List<Coordinate> coords = new List<Coordinate>();
-                    coords.Add(_prevRightPoint);
-                    coords.Add(rightPoint);
-                    coords.Add(leftPoint);
-                    coords.Add(_prevLeftPoint);
-                    LineString newCoordinates = new LineString(coords);
-                    coords.Add(_prevRightPoint);
-                    LinearRing ring = new LinearRing(coords);
-                    Polygon polygon = new Polygon(ring);
-                    int id = 0;
-                    while (_polygons.Keys.Contains(id))
-                        id++;
-                    _polygons.Add(id, polygon);
-                    _polygonSimplifierCount.Add(id, SIMPLIFIER_COUNT_LIMIT);
-                    _currentPolygonIndex = id;
-                    OnPolygonUpdated(_currentPolygonIndex, newCoordinates, false);
+                    ;
                 }
-                _prevLeftPoint = leftPoint;
-                _prevRightPoint = rightPoint;
             }
         }
 
@@ -209,18 +191,19 @@ namespace FarmingGPSLib.FieldItems
         {
             lock (_syncObject)
             {
-                _prevLeftPoint = HelperClassCoordinate.CoordinateRoundedmm(initLeftPoint);
-                _prevRightPoint = HelperClassCoordinate.CoordinateRoundedmm(initRightPoint);
-                _currentPolygonIndex = -1;
+                _prevLeftPoint = initLeftPoint;
+                _prevRightPoint = initRightPoint;
             }
         }
 
-        public void StopTrack()
+        public void StopTrack(Coordinate leftPoint, Coordinate rightPoint)
         {
             lock (_syncObject)
             {
+                AddTrackPoint(leftPoint, rightPoint);
                 _prevLeftPoint = Coordinate.Empty;
                 _prevRightPoint = Coordinate.Empty;
+                _currentPolygonIndex = -1;
             }
         }
 
@@ -235,7 +218,7 @@ namespace FarmingGPSLib.FieldItems
                     if (remains is MultiLineString)
                         remainsOfLine = (MultiLineString)remains;
                     else if (remains is LineString)
-                        new MultiLineString(new IBasicLineString[1] { (LineString)remains });
+                        remainsOfLine = new MultiLineString(new IBasicLineString[1] { (LineString)remains });
                     else if (remains.IsEmpty)
                     {
                         remainsOfLine = MultiLineString.Empty;
@@ -255,11 +238,17 @@ namespace FarmingGPSLib.FieldItems
             }
         }
 
+        public IField FieldToCalculateAreaWithin
+        {
+            set { _fieldToCalculateAreaWithin = value; }
+            get { return _fieldToCalculateAreaWithin; }
+        }
+
         #endregion
 
         #region Public Properties
 
-        public double Area
+        public DotSpatial.Positioning.Area Area
         {
             get
             {
@@ -267,9 +256,20 @@ namespace FarmingGPSLib.FieldItems
                 {
                     double area = 0.0;
                     foreach (Polygon polygon in _polygons.Values)
-                        if (polygon.IsValid)
-                            area += polygon.Area;
-                    return area;
+                    {
+                        Polygon polygonToUse = polygon;
+                        if(_fieldToCalculateAreaWithin != null)
+                        {
+                            if (!polygon.Overlaps(_fieldToCalculateAreaWithin.Polygon))
+                                continue;
+                            IGeometry geometry = _fieldToCalculateAreaWithin.Polygon.Intersection(polygon);
+                            if (geometry is Polygon)
+                                polygonToUse = geometry as Polygon;
+                        }
+                        if (polygonToUse.IsValid)
+                            area += polygonToUse.Area;
+                    }
+                    return new DotSpatial.Positioning.Area(area, DotSpatial.Positioning.AreaUnit.SquareMeters);
                 }
             }
         }
@@ -301,10 +301,10 @@ namespace FarmingGPSLib.FieldItems
 
         #region Protected Methods
 
-        protected void OnPolygonUpdated(int id, ILineString newRectangle, bool redrawPolygon)
+        protected void OnPolygonUpdated(int id)
         {
             if (PolygonUpdated != null)
-                PolygonUpdated.Invoke(this, new PolygonUpdatedEventArgs(id, _polygons[id], newRectangle, redrawPolygon));
+                PolygonUpdated.Invoke(this, new PolygonUpdatedEventArgs(id, _polygons[id]));
         }
 
         protected void OnPolygonDeleted(int id)
@@ -315,7 +315,8 @@ namespace FarmingGPSLib.FieldItems
 
         protected void OnAreaChanged()
         {
-            throw new NotImplementedException();
+            if (AreaChanged != null)
+                AreaChanged.Invoke(this, new AreaChanged(Area));
         }
 
         #endregion

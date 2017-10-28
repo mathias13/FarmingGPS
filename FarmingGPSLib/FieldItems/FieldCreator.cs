@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using GpsUtilities.Reciever;
 using FarmingGPSLib.Equipment;
+using GpsUtilities.Filter;
 
 namespace FarmingGPSLib.FieldItems
 {
@@ -46,9 +47,7 @@ namespace FarmingGPSLib.FieldItems
 
         private Field _field;
 
-        private Azimuth _previousHeading;
-
-        private Position _previousPosition;
+        private DistanceTrigger _distanceTrigger;
 
         private bool _waitForFinish = false;
 
@@ -66,8 +65,8 @@ namespace FarmingGPSLib.FieldItems
             fieldPoints.Add(receiver.CurrentPosition.TranslateTo(Azimuth.Southeast, Distance.FromMeters(1.0)));
             fieldPoints.Add(receiver.CurrentPosition.TranslateTo(Azimuth.Northeast, Distance.FromMeters(1.0)));
             fieldPoints.Add(receiver.CurrentPosition.TranslateTo(Azimuth.Northwest, Distance.FromMeters(1.0)));
-            _previousHeading = receiver.CurrentBearing;
-            _previousPosition = receiver.CurrentPosition;
+            _distanceTrigger = new DistanceTrigger(MINIMUM_DISTANCE_BETWEEN_POINTS, MAXIMUM_DISTANCE_BETWEEN_POINTS, MINIMUM_CHANGE_DIRECTION, MAXIMUM_CHANGE_DIRECTION);
+            _distanceTrigger.Init(receiver.CurrentPosition, receiver.CurrentBearing);
             _field = new Field(fieldPoints, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
             Position leftTip = _equipment.GetLeftTip(receiver.CurrentPosition, receiver.CurrentBearing);
             Position rightTip = _equipment.GetRightTip(receiver.CurrentPosition, receiver.CurrentBearing);
@@ -88,7 +87,7 @@ namespace FarmingGPSLib.FieldItems
                 receiver.PositionUpdate -= Receiver_PositionUpdate;
             else
             {
-                if (CheckDistanceFromPreviousPoint(correctPosition, receiver.CurrentBearing))
+                if (_distanceTrigger.CheckDistance(correctPosition, receiver.CurrentBearing))
                 {
                     AddPoint(correctPosition);
                     if (_track.Count > 3)
@@ -126,20 +125,7 @@ namespace FarmingGPSLib.FieldItems
             }
             return false;
         }
-
-        private bool CheckDistanceFromPreviousPoint(Position position, Azimuth heading)
-        {
-            double changeOfDirection = Math.Abs(heading.DecimalDegrees - _previousHeading.DecimalDegrees);
-            double limit = MAXIMUM_DISTANCE_BETWEEN_POINTS - (((MAXIMUM_DISTANCE_BETWEEN_POINTS - MINIMUM_DISTANCE_BETWEEN_POINTS) / (MAXIMUM_CHANGE_DIRECTION - MINIMUM_CHANGE_DIRECTION)) * changeOfDirection);
-            if (Distance.FromMeters(limit) < _previousPosition.DistanceTo(position))
-            {
-                _previousPosition = position;
-                _previousHeading = heading;
-                return true;
-            }
-            else
-                return false;
-        }
+        
 
         #region Public Methods
         

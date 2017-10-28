@@ -71,7 +71,7 @@ namespace FarmingGPS.Database
 
         public DatabaseHandler(SqlConnectionStringBuilder connection)
         {
-            _databaseContext = new FarmingGPSDataContext();
+            _databaseContext = new FarmingGPSDataContext(connection.ConnectionString);
             _databaseContext.Connection.StateChange += Connection_StateChange;
             _onlineCheckerThread = new Thread(new ThreadStart(OnlineCheckThread));
             _onlineCheckerThread.Start();

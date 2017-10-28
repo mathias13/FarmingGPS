@@ -8,6 +8,6 @@
              x:Name="SpeedBarControl">
     <Grid Margin="5,5,2,2">
         <Border Background="White" BorderBrush="Black" BorderThickness="2" CornerRadius="4"/>
-        <TextBlock Margin="10,2,10,2" FontSize="20" Text="{Binding SpeedString,ElementName=SpeedBarControl}"/>
+        <TextBlock Margin="10,2,10,2" FontSize="20" TextAlignment="Center" Text="{Binding SpeedString,ElementName=SpeedBarControl}"/>
     </Grid>
 </UserControl>

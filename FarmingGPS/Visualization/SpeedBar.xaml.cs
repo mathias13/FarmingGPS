@@ -23,9 +23,7 @@ namespace FarmingGPS.Visualization
     public partial class SpeedBar : UserControl
     {
         private SpeedUnit _unit = SpeedUnit.KilometersPerHour;
-
-        private delegate void SetSpeedDelegate(Speed speed);
-
+        
         public SpeedBar()
         {
             InitializeComponent();
@@ -75,7 +73,7 @@ namespace FarmingGPS.Visualization
                 }
             }
             else
-                Dispatcher.BeginInvoke(new SetSpeedDelegate(SetSpeed), System.Windows.Threading.DispatcherPriority.Render, speed);
+                Dispatcher.BeginInvoke(new Action<Speed>(SetSpeed), System.Windows.Threading.DispatcherPriority.Render, speed);
         }
         
         #endregion

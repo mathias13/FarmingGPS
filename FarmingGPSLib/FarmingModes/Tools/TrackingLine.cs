@@ -91,6 +91,8 @@ namespace FarmingGPSLib.FarmingModes.Tools
             { 
                 if(_depleted != value)
                 {
+                    if (value && Active)
+                        Active = false;
                     DepletedChangedEventHandler handler = DepletedChanged;
                     if (handler != null)
                         handler.Invoke(this, value);
@@ -106,6 +108,9 @@ namespace FarmingGPSLib.FarmingModes.Tools
             {
                 if(_active != value)
                 {
+                    if (value && Depleted)
+                        Depleted = false;
+
                     ActiveChangedEventHandler handler = ActiveChanged;
                     if (handler != null)
                         handler.Invoke(this, value);
