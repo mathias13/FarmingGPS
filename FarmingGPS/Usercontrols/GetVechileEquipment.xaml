@@ -1,0 +1,76 @@
+﻿<UserControl x:Class="FarmingGPS.Usercontrols.GetVechileEquipment"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:FarmingGPS.Usercontrols"
+             xmlns:extended="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
+                    xmlns:local2="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
+                    xmlns:themes="clr-namespace:Xceed.Wpf.Toolkit.Themes;assembly=Xceed.Wpf.Toolkit"
+                    xmlns:prim="clr-namespace:Xceed.Wpf.Toolkit.Primitives;assembly=Xceed.Wpf.Toolkit"
+             mc:Ignorable="d" 
+             d:DesignHeight="500" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Visualization/Buttons.xaml" />
+                <ResourceDictionary Source="../Visualization/VisualizationDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Vertical" Grid.Column="1" Grid.Row="0" Margin="10,10,10,10">
+            <Border Style="{StaticResource SUBJECT_HEADER_BORDER}">
+                <TextBlock Style="{StaticResource SUBJECT_HEADER_TEXT}">Fordon</TextBlock>
+            </Border>
+            <ListBox x:FieldModifier="private" x:Name="ListBoxVechile" SelectionMode="Single" SelectionChanged="ListBoxVechile_SelectionChanged" Style="{StaticResource LISTBOX}" ItemContainerStyle="{StaticResource LISTBOX_ITEM}"/>
+            <StackPanel Orientation="Horizontal">
+                <Button HorizontalAlignment="Center" Height="40" Margin="10,10,10,10" x:FieldModifier="private" x:Name="ButtonVechileUpdate" Click="ButtonVechileUpdate_Click" Style="{StaticResource GENERAL_BUTTON}">Ändra</Button>
+                <Button HorizontalAlignment="Center" Height="40" Margin="10,10,10,10" x:FieldModifier="private" x:Name="ButtonVechileAdd" Click="ButtonVechileAdd_Click" Style="{StaticResource GENERAL_BUTTON}">Lägg till</Button>
+                <Button HorizontalAlignment="Center" Height="40" Margin="10,10,10,10" x:FieldModifier="private" x:Name="ButtonVechileDelete" Click="ButtonVechileDelete_Click" Style="{StaticResource GENERAL_BUTTON}">Ta bort</Button>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Orientation="Vertical" Grid.Column="1" Grid.Row="1" Margin="10,10,10,10">
+            <Border Style="{StaticResource SUBJECT_HEADER_BORDER}">
+                <TextBlock Style="{StaticResource SUBJECT_HEADER_TEXT}">Redskap</TextBlock>
+            </Border>
+            <ListBox x:FieldModifier="private" x:Name="ListBoxEquipment" SelectionMode="Single" SelectionChanged="ListBoxEquipment_SelectionChanged" Style="{StaticResource LISTBOX}" ItemContainerStyle="{StaticResource LISTBOX_ITEM}"/>
+            <StackPanel Orientation="Horizontal">
+                <Button HorizontalAlignment="Center" Height="40" Margin="10,10,10,10" x:FieldModifier="private" x:Name="ButtonEquipmentUpdate" Click="ButtonEquipmentUpdate_Click" Style="{StaticResource GENERAL_BUTTON}">Ändra</Button>
+                <Button HorizontalAlignment="Center" Height="40" Margin="10,10,10,10" x:FieldModifier="private" x:Name="ButtonEquipmentAdd" Click="ButtonEquipmentAdd_Click" Style="{StaticResource GENERAL_BUTTON}">Lägg till</Button>
+                <Button HorizontalAlignment="Center" Height="40" Margin="10,10,10,10" x:FieldModifier="private" x:Name="ButtonEquipmentDelete" Click="ButtonEquipmentDelete_Click" Style="{StaticResource GENERAL_BUTTON}">Ta bort</Button>
+            </StackPanel>
+            <Button HorizontalAlignment="Center" Height="40" x:FieldModifier="private" x:Name="ButtonChoose" Click="ButtonChoose_Click" Style="{StaticResource GENERAL_BUTTON}">Välj</Button>
+        </StackPanel>
+        <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="0" Margin="10,10,10,10">
+            <Border Style="{StaticResource SUBJECT_HEADER_BORDER}">
+                <TextBlock Style="{StaticResource SUBJECT_HEADER_TEXT}">Fordon egenskaper</TextBlock>
+            </Border>
+            <TextBlock Style="{StaticResource SETTING_HEADER}">Modell</TextBlock>
+            <TextBox x:FieldModifier="private" x:Name="TextBoxVechileModel" Style="{StaticResource TEXTBOX}"></TextBox>
+            <TextBlock Style="{StaticResource SETTING_HEADER}">Tillverkare</TextBlock>
+            <TextBox x:FieldModifier="private" x:Name="TextBoxVechileManufacturer" Style="{StaticResource TEXTBOX}"></TextBox>
+        </StackPanel>
+        <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="1" Margin="10,10,10,10">
+            <Border Style="{StaticResource SUBJECT_HEADER_BORDER}">
+                <TextBlock Style="{StaticResource SUBJECT_HEADER_TEXT}">Redskap egenskaper</TextBlock>
+            </Border>
+            <TextBlock Style="{StaticResource SETTING_HEADER}">Namn</TextBlock>
+            <TextBox x:FieldModifier="private" x:Name="TextBoxEquipmenName" Style="{StaticResource TEXTBOX}"></TextBox>
+            <TextBlock Style="{StaticResource SETTING_HEADER}">Bredd</TextBlock>
+            <extended:DoubleUpDown Minimum="0" Maximum="100" AllowSpin="True" Increment="0.2" FormatString="0.0m" x:FieldModifier="private" x:Name="NumericEquipmentWorkWidth" Style="{StaticResource DOUBLEUPDOWN}"/>
+            <TextBlock Style="{StaticResource SETTING_HEADER}">Vinkel från upphängning</TextBlock>
+            <extended:DoubleUpDown Minimum="0" Maximum="360" AllowSpin="True" Increment="0.2" FormatString="0.0°" x:FieldModifier="private" x:Name="NumericEquipmentAngleFromAttach" Style="{StaticResource DOUBLEUPDOWN}"/>
+            <TextBlock Style="{StaticResource SETTING_HEADER}">Mått från upphängning</TextBlock>
+            <extended:DoubleUpDown Minimum="0" Maximum="5" AllowSpin="True" Increment="0.01" FormatString="0.00°" x:FieldModifier="private" x:Name="NumericEquipmentDistFromAttach" Style="{StaticResource DOUBLEUPDOWN}"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="FarmingGPS.Usercontrols.SettingsCollectionControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:FarmingGPS.Usercontrols"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Visualization/Buttons.xaml" />
+                <ResourceDictionary Source="../Visualization/VisualizationDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <StackPanel Orientation="Vertical">
+        <Border Style="{StaticResource SUBJECT_HEADER_BORDER}">
+            <TextBlock Style="{StaticResource SUBJECT_HEADER_TEXT}" Text="{Binding Path=HeaderName, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:SettingsCollectionControl}}}"/>
+        </Border>
+        <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Auto">
+            <StackPanel x:FieldModifier="private" x:Name="SettingPanel" Orientation="Vertical">
+                
+            </StackPanel>
+        </ScrollViewer>
+
+        <Button HorizontalAlignment="Center" Height="80" Margin="10,10,10,10" x:FieldModifier="private" x:Name="ButtonUpdate" Click="ButtonUpdate_Click" Style="{StaticResource GENERAL_BUTTON}">Ändra</Button>
+    </StackPanel>
+</UserControl>
