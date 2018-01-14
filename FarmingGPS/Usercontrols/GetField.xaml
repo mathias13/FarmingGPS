@@ -9,12 +9,10 @@
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary x:Key="Dictionary">
-                <ResourceDictionary.MergedDictionaries>
-                    <ResourceDictionary Source="../Visualization/Buttons.xaml" />
-                    <ResourceDictionary Source="../Visualization/VisualizationDictionary.xaml" />
-                </ResourceDictionary.MergedDictionaries>
-            </ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Visualization/Buttons.xaml" />
+                <ResourceDictionary Source="../Visualization/VisualizationDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
@@ -24,9 +22,15 @@
         </Grid.ColumnDefinitions>
         <GMap:GMapControl x:FieldModifier="private" x:Name="GMapControl" Grid.Column="0"/>
         <StackPanel Orientation="Vertical" Grid.Column="1" Margin="10,10,10,10">
-            <ListBox x:FieldModifier="private" x:Name="ListBoxFields" SelectionMode="Single"/>
-            <ListBox x:FieldModifier="private" x:Name="ListBoxIntersects" SelectionMode="Multiple"/>
-            <Button x:FieldModifier="private" x:Name="ButtonChoose" Click="ButtonChoose_Click">Välj</Button>
+            <Border Style="{StaticResource SUBJECT_HEADER_BORDER}">
+                <TextBlock Style="{StaticResource SUBJECT_HEADER_TEXT}">Fält</TextBlock>
+            </Border>
+            <ListBox x:FieldModifier="private" x:Name="ListBoxFields" SelectionMode="Single" Style="{StaticResource LISTBOX}" ItemContainerStyle="{StaticResource LISTBOX_ITEM}"/>
+            <Border Style="{StaticResource SUBJECT_HEADER_BORDER}">
+                <TextBlock Style="{StaticResource SUBJECT_HEADER_TEXT}">Fält delning</TextBlock>
+            </Border>
+            <ListBox x:FieldModifier="private" x:Name="ListBoxIntersects" SelectionMode="Multiple" Style="{StaticResource LISTBOX}" ItemContainerStyle="{StaticResource LISTBOX_ITEM}"/>
+            <Button HorizontalAlignment="Center" Height="60" x:FieldModifier="private" x:Name="ButtonChoose" Click="ButtonChoose_Click" Style="{StaticResource GENERAL_BUTTON}">Välj</Button>
         </StackPanel>
     </Grid>
 </UserControl>

@@ -3,8 +3,13 @@ using System.Collections.Generic;
 
 namespace FarmingGPS.Settings
 {
-    public interface ISettingsCollection : ICollection<ISetting>
+    public interface ISettingsCollection : IEnumerable<ISetting>
     {
+        int Count
+        {
+            get;
+        }
+
         string Name
         {
             get;
@@ -15,7 +20,7 @@ namespace FarmingGPS.Settings
             get;
         }
 
-        ISettingsCollection ChildSettings
+        IList<ISettingsCollection> ChildSettings
         {
             get;
             set;

@@ -2,6 +2,30 @@ using System;
 
 namespace FarmingGPS.Database
 {
+    partial class Equipment
+    {
+        public override string ToString()
+        {
+            return Name;
+        }
+    }
+
+    partial class VechileAttach
+    {
+        public override string ToString()
+        {
+            return Name;
+        }
+    }
+
+    partial class Vechile
+    {
+        public override string ToString()
+        {
+            return String.Format("{0} {1}", Manufacturer, Model);
+        }
+    }
+
     partial class SubFieldIntersect
     {
         public override string ToString()

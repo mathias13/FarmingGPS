@@ -7,7 +7,8 @@
         mc:Ignorable="d"
         Title="ComPortDialog" Height="300" Width="300"
         WindowStyle="None"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Background="Transparent">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -17,10 +18,10 @@
         </ResourceDictionary>
     </Window.Resources>
     <Grid>
-        <Border BorderBrush="Black" BorderThickness="3" CornerRadius="5"/>
+        <Border BorderBrush="Black" Background="White" BorderThickness="3" CornerRadius="5"/>
         <StackPanel Orientation="Vertical">
-            <TextBlock HorizontalAlignment="Center" FontStretch="Normal" Margin="10,10,10,5">Com Port</TextBlock>
-            <ComboBox x:Name="ComboBoxPort" x:FieldModifier="private" Margin="10,5,10,5" Width="100" Height="30"/>
+            <TextBlock HorizontalAlignment="Center" FontStretch="Normal" Margin="10,10,10,5" Style="{StaticResource SETTING_HEADER}">Com Port</TextBlock>
+            <ComboBox x:Name="ComboBoxPort" x:FieldModifier="private" Margin="10,5,10,5" Width="100" Height="30" HorizontalAlignment="Center" Style="{StaticResource COMBOBOX}"/>
             <Button x:Name="BTN_OK" x:FieldModifier="private" Click="BTN_OK_Click" Margin="10,10,10,10" Width="100" Height="40" Style="{StaticResource GENERAL_BUTTON}">OK</Button>
         </StackPanel>
     </Grid>

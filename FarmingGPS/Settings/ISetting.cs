@@ -17,6 +17,9 @@ namespace FarmingGPS.Settings
         object Value
         {
             get;
+            set;
         }
+
+        event EventHandler SettingChanged;
     }
 }

@@ -176,6 +176,26 @@ namespace FarmingGPS.Database
             _databaseContext.SubFieldIntersects.DeleteOnSubmit(intersect);
         }
 
+        public void AddVechile(Vechile vechile)
+        {
+            _databaseContext.Vechiles.InsertOnSubmit(vechile);
+        }
+
+        public void DeleteVechile(Vechile vechile)
+        {
+            _databaseContext.Vechiles.DeleteOnSubmit(vechile);
+        }
+
+        public void AddEquipment(Equipment equipment)
+        {
+            _databaseContext.Equipments.InsertOnSubmit(equipment);
+        }
+
+        public void DeleteEquipment(Equipment equipment)
+        {
+            _databaseContext.Equipments.DeleteOnSubmit(equipment);
+        }
+
         public Field[] GetFields()
         {
             try
@@ -231,6 +251,61 @@ namespace FarmingGPS.Database
             catch (Exception e)
             {
                 OnDatabaseHandlerException(e, "GetCoordinatesForField");
+                return null;
+            }
+        }
+
+        public Equipment[] GetEquipments()
+        {
+            try
+            {
+                lock (_syncObject)
+                {
+                    var queryResult = from equipment in _databaseContext.Equipments
+                                      select equipment;
+                    return queryResult.ToArray();
+                }
+            }
+            catch (Exception e)
+            {
+                OnDatabaseHandlerException(e, "GetEquipments");
+                return null;
+            }
+        }
+
+        public Vechile[] GetVechiles()
+        {
+            try
+            {
+                lock (_syncObject)
+                {
+                    var queryResult = from vechile in _databaseContext.Vechiles
+                                      select vechile;
+                    return queryResult.ToArray();
+                }
+            }
+            catch (Exception e)
+            {
+                OnDatabaseHandlerException(e, "GetVechiles");
+                return null;
+            }
+        }
+
+        public VechileAttach[] GetAttachPoints(int vechileId)
+        {
+            try
+            {
+                lock (_syncObject)
+                {
+                    var queryResult = from vechileAttach in _databaseContext.VechileAttaches
+                                      where vechileAttach.VechileId == vechileId
+                                      select vechileAttach;
+                    return queryResult.ToArray();
+                }
+            }
+            catch (Exception e)
+            {
+                OnDatabaseHandlerException(e, "GetIntersects");
                 return null;
             }
         }

@@ -1,37 +1,29 @@
 ﻿using DotSpatial.Positioning;
 using DotSpatial.Topology;
+using FarmingGPS.Camera;
+using FarmingGPS.Camera.Axis;
+using FarmingGPS.Dialogs;
+using FarmingGPS.Settings;
+using FarmingGPS.Settings.NTRIP;
+using FarmingGPS.Settings.Database;
+using FarmingGPS.Usercontrols;
 using FarmingGPS.Visualization;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
-using FarmingGPSLib.Positioning;
-using GpsUtilities;
-using GpsUtilities.Reciever;
-using FarmingGPS.Camera;
-using FarmingGPS.Camera.Axis;
 using GpsUtilities.Filter;
+using GpsUtilities.Reciever;
 using NTRIP;
 using NTRIP.Settings;
 using SwiftBinaryProtocol;
 using SwiftBinaryProtocol.Eventarguments;
-using SwiftBinaryProtocol.MessageStructs;
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
-using FarmingGPS.Dialogs;
 
 
 namespace FarmingGPS
@@ -57,7 +49,7 @@ namespace FarmingGPS
 
         private FarmingGPSLib.FieldItems.Field _field;
 
-        private FarmingGPS.Database.DatabaseHandler _database;
+        private Database.DatabaseHandler _database;
         
         private string _cameraIp = String.Empty;
 
@@ -105,8 +97,6 @@ namespace FarmingGPS
             Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
             WindowState = WindowState.Maximized;
 
-            System.Threading.Thread delayedActionsThread = new System.Threading.Thread(new System.Threading.ThreadStart(delayedActions));
-            delayedActionsThread.Start();
             this.Loaded += MainWindow_Loaded;
 
             //_camera = new AxisCamera("AxisCase");
@@ -134,6 +124,14 @@ namespace FarmingGPS
 
         protected static readonly DependencyProperty CameraUnavilableProperty = DependencyProperty.Register("CameraUnavailable", typeof(Visibility), typeof(MainWindow));
 
+        protected static readonly DependencyProperty FixMode = DependencyProperty.Register("FixMode", typeof(string), typeof(MainWindow));
+
+        protected static readonly DependencyProperty FixModeState = DependencyProperty.Register("FixModeState", typeof(bool), typeof(MainWindow));
+
+        protected static readonly DependencyProperty NTRIPState = DependencyProperty.Register("NTRIPState", typeof(bool), typeof(MainWindow));
+
+        protected static readonly DependencyProperty DBState = DependencyProperty.Register("DBState", typeof(bool), typeof(MainWindow));
+
         #endregion
 
         void Current_Exit(object sender, ExitEventArgs e)
@@ -153,6 +151,8 @@ namespace FarmingGPS
             SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
             SetValue(CameraSizeProperty, (Style)this.FindResource("PiPvideo"));
 
+            SetupSettingsPanel(null);
+
             FarmingGPSLib.Equipment.Harrow harrow = new FarmingGPSLib.Equipment.Harrow(Distance.FromMeters(5.0), Distance.FromMeters(0.0), new Azimuth(180), Distance.FromCentimeters(20));
             _equipment = harrow;
 
@@ -163,23 +163,6 @@ namespace FarmingGPS
             _workedAreaBar.Unit = AreaUnit.SquareKilometers;
             _fieldTracker.AreaChanged += _fieldTracker_AreaChanged;
             _visualization.AddFieldTracker(_fieldTracker);
-
-            UserPasswordDialog userPassDialog = new UserPasswordDialog();
-            userPassDialog.ShowDialog();
-
-            SqlConnectionStringBuilder connString = new SqlConnectionStringBuilder();
-            connString.Encrypt = true;
-            connString.TrustServerCertificate = true;
-            connString.IntegratedSecurity = false;
-            connString.UserID = userPassDialog.UserName;
-            connString.Password = userPassDialog.Password;
-            connString.DataSource = @"nolgarden.net\SQLPublic,50801";
-            connString.InitialCatalog = "FarmingDatabase";
-            connString.ConnectTimeout = 5;
-
-            _database = new FarmingGPS.Database.DatabaseHandler(connString);
-            _getField.AddDatabase(_database);
-            _getField.FieldChoosen += _getField_FieldChoosen;
 
             ComPortDialog comportDialog = new ComPortDialog();
             comportDialog.ShowDialog();
@@ -199,27 +182,13 @@ namespace FarmingGPS
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
             _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
-
-            ClientSettings clientSettings = new ClientSettings();
-            clientSettings.IPorHost = "nolgarden.net";
-            clientSettings.PortNumber = 5000;
-            clientSettings.NTRIPMountPoint = "NolgardenSBP";
-            clientSettings.NTRIPUser = new NTRIP.Settings.NTRIPUser("Mathias", "vetinte");
-            _ntripClient = new NTRIP.ClientService(clientSettings);
-            _ntripClient.StreamDataReceivedEvent += _ntripClient_StreamDataReceivedEvent;
-            _ntripClient.ConnectionExceptionEvent += _ntripClient_ConnectionExceptionEvent;
-            _ntripClient.Connect();
         }
 
         private void _sbpReceiverSender_ReadExceptionEvent(object sender, SBPReadExceptionEventArgs e)
         {
             Utilities.Log.Log.Error(e.Exception);
         }
-
-        void delayedActions()
-        {
-            System.Threading.Thread.Sleep(1000);
-        }
+        
 
         #region Private Methods
 
@@ -254,7 +223,7 @@ namespace FarmingGPS
 
         #region Field Events
 
-        private void _getField_FieldChoosen(object sender, List<Position> e)
+        private void FieldChoosen(List<Position> e)
         {
             _field = new Field(e, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
             _fieldTracker.FieldToCalculateAreaWithin = _field;
@@ -315,9 +284,67 @@ namespace FarmingGPS
 
         #endregion
 
-        #region NTRIP Events
+        #region Database
 
-        void _ntripClient_StreamDataReceivedEvent(object sender, NTRIP.Eventarguments.StreamReceivedArgs e)
+        private void SetupDatabase(DatabaseConn connSetting)
+        {
+            if (_database != null)
+            {
+                _database.DatabaseOnlineChanged -= _database_DatabaseOnlineChanged;
+                _database.Dispose();
+                _database = null;
+            }
+
+            SqlConnectionStringBuilder connString = new SqlConnectionStringBuilder();
+            connString.Encrypt = connSetting.Encrypt;
+            connString.TrustServerCertificate = connSetting.TrustServerCertificate;
+            connString.IntegratedSecurity = connSetting.IntegratedSecurity;
+            connString.DataSource = connSetting.Url;
+            connString.InitialCatalog = connSetting.DatabaseName;
+            connString.ConnectTimeout = 5;
+
+            UserPasswordDialog userPassDialog = new UserPasswordDialog(connSetting.UserName);
+            userPassDialog.ShowDialog();
+
+            connString.UserID = userPassDialog.UserName;
+            connString.Password = userPassDialog.Password;
+
+            _database = new Database.DatabaseHandler(connString);
+            _database.DatabaseOnlineChanged += _database_DatabaseOnlineChanged;
+
+        }
+
+        private void _database_DatabaseOnlineChanged(object sender, Database.DatabaseOnlineChangedEventArgs e)
+        {
+            if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
+            {
+                SetValue(DBState, e.Online);
+            }
+            else
+                Dispatcher.Invoke(new Action<object, Database.DatabaseOnlineChangedEventArgs>(_database_DatabaseOnlineChanged), System.Windows.Threading.DispatcherPriority.Render, sender, e);
+        }
+
+        #endregion
+
+        #region NTRIP
+        
+        private void SetupNTRIP(ClientSettings settings)
+        {
+            if(_ntripClient != null)
+            {
+                _ntripClient.StreamDataReceivedEvent -= _ntripClient_StreamDataReceivedEvent;
+                _ntripClient.ConnectionExceptionEvent -= _ntripClient_ConnectionExceptionEvent;
+                _ntripClient.Disconnect();
+                _ntripClient.Dispose();
+                _ntripClient = null;
+            }
+            _ntripClient = new ClientService(settings);
+            _ntripClient.StreamDataReceivedEvent += _ntripClient_StreamDataReceivedEvent;
+            _ntripClient.ConnectionExceptionEvent += _ntripClient_ConnectionExceptionEvent;
+            _ntripClient.Connect();
+        }
+
+        private void _ntripClient_StreamDataReceivedEvent(object sender, NTRIP.Eventarguments.StreamReceivedArgs e)
         {
             if (_sbpReceiverSender != null)
             _sbpReceiverSender.SendMessage(e.DataStream);
@@ -342,10 +369,7 @@ namespace FarmingGPS
         {
             if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
             {
-                if (_ntripConnected)
-                    _NTRIPState.Background = Brushes.Green;
-                else
-                    _NTRIPState.Background = Brushes.Red;
+                SetValue(NTRIPState, _ntripConnected);
             }
             else
                 Dispatcher.Invoke(new Action(ChangeNTRIPState), System.Windows.Threading.DispatcherPriority.Render);
@@ -359,11 +383,8 @@ namespace FarmingGPS
         {
             if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
             {
-                _fixMode.Text = fixQuality.ToString();
-                if (fixQuality == FixQuality.FixedRealTimeKinematic)
-                    _fixMode.Background = Brushes.Green;
-                else
-                    _fixMode.Background = Brushes.Red;
+                SetValue(FixMode, fixQuality.ToString());
+                SetValue(FixModeState, fixQuality == FixQuality.FixedRealTimeKinematic);
             }
             else
                 Dispatcher.Invoke(new Action<object, FixQuality>(_receiver_FixQualityUpdate), System.Windows.Threading.DispatcherPriority.Render, this, fixQuality);
@@ -537,5 +558,95 @@ namespace FarmingGPS
         }
 
         #endregion
+
+        #region Settings
+
+        private void SetupSettingsPanel(SettingsCollection settings)
+        {
+            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            ClientSettingsExt sectionNTRIP = (ClientSettingsExt)config.Sections["NTRIP"];
+            ISettingsCollection ntripClient;
+            if (sectionNTRIP != null)
+            {
+                ntripClient = new ClientSettingsExt(sectionNTRIP);
+                SetupNTRIP(sectionNTRIP);
+            }
+            else
+                ntripClient = new ClientSettingsExt();
+
+            DatabaseConn sectionDatabase = (DatabaseConn)config.Sections["Database"];
+            ISettingsCollection database;
+            if (sectionDatabase != null)
+            {
+                database = sectionDatabase;
+                SetupDatabase(sectionDatabase);
+            }
+            else
+                database = new DatabaseConn();
+
+
+            ISettingsCollection connections = new SettingsCollection("Anslutningar");
+            connections.ChildSettings.Add(ntripClient);
+            connections.ChildSettings.Add(database);
+            SettingGroup ntripGroup = new SettingGroup(connections.ChildSettings[0].Name, null, new SettingsCollectionControl(connections.ChildSettings[0]));
+            (ntripGroup.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+            SettingGroup databaseGroup = new SettingGroup(connections.ChildSettings[1].Name, null, new SettingsCollectionControl(connections.ChildSettings[1]));
+            (databaseGroup.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+            SettingGroup connectionGroup = new SettingGroup(connections.Name, new SettingGroup[] { ntripGroup, databaseGroup}, new SettingsCollectionControl(connections));
+            SettingGroup field = new SettingGroup("Fält", null, new GetField());
+            (field.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+            SettingGroup redskap = new SettingGroup("Redskap", null, new GetVechileEquipment());
+            (redskap.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+            SettingGroup settingRoot = new SettingGroup("Inställningar", new SettingGroup[] { connectionGroup, field, redskap }, null);
+            _settingsTree.ItemsSource = settingRoot;
+        }
+
+        private void _settingsTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (_settingsTree.SelectedItem is SettingGroup)
+            {
+                SettingGroup settingItem = _settingsTree.SelectedItem as SettingGroup;
+                if (settingItem.SettingControl is IDatabaseSettings)
+                    (settingItem.SettingControl as IDatabaseSettings).RegisterDatabaseHandler(_database);
+                _settingsUsercontrolGrid.Children.Clear();
+                _settingsUsercontrolGrid.Children.Add(settingItem.SettingControl);
+            }
+
+        }
+
+        private void SettingItem_SettingChanged(object sender, string e)
+        {
+            if (sender is GetField)
+                GetFieldChanged((sender as GetField), e);
+            else if (sender is SettingsCollectionControl)
+            {
+                SettingsCollectionControl settingControl = sender as SettingsCollectionControl;
+                if (settingControl.Settings is ConfigurationSection)
+                {
+                    Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                    config.Sections.Clear();
+                    config.Sections.Remove(settingControl.Settings.Name);
+                    config.Sections.Add(settingControl.Settings.Name, settingControl.Settings as ConfigurationSection);
+                    config.Save(ConfigurationSaveMode.Minimal, true);
+                }
+                if (settingControl.Settings is DatabaseConn)
+                    SetupDatabase(settingControl.Settings as DatabaseConn);
+                else if (settingControl.Settings is ClientSettingsExt)
+                    SetupNTRIP(settingControl.Settings as ClientSettings);
+            }
+        }
+
+        private void GetFieldChanged(GetField userControl, string eventName)
+        {
+            switch (eventName)
+            {
+                case GetField.FIELD_CHOOSEN:
+                    FieldChoosen(userControl.FieldChoosen);
+                    break;
+            }
+        }
+
+        #endregion
+
     }
 }

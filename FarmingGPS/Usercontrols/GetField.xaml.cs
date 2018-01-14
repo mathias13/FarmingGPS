@@ -1,38 +1,31 @@
-﻿using FarmingGPS.Database;
-using FarmingGPSLib;
+﻿using DotSpatial.Positioning;
+using FarmingGPS.Database;
 using FarmingGPSLib.DatabaseHelper;
-using DotSpatial.Positioning;
-using DotSpatial.Projections;
+using FarmingGPS.Settings;
 using GMap.NET;
 using GMap.NET.MapProviders;
 using GMap.NET.WindowsPresentation;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Collections;
 
 namespace FarmingGPS.Usercontrols
 {
     /// <summary>
     /// Interaction logic for GetField.xaml
     /// </summary>
-    public partial class GetField : UserControl
+    public partial class GetField : UserControl, IDatabaseSettings, ISettingsChanged
     {
         private DatabaseHandler _database;
 
         private List<Position> _fieldChoosen;
-
-        public event EventHandler<List<Position>> FieldChoosen;
+        
+        public const string FIELD_CHOOSEN = "FIELD_CHOOSEN";
 
         public GetField()
         {
@@ -40,14 +33,14 @@ namespace FarmingGPS.Usercontrols
             GMapControl.Bearing = 0F;
             GMapControl.CanDragMap = true;
             GMapControl.EmptytileBrush = Brushes.Navy;
-            GMapControl.HelperLineOption = GMap.NET.WindowsPresentation.HelperLineOptions.DontShow;
+            GMapControl.HelperLineOption = HelperLineOptions.DontShow;
             GMapControl.LevelsKeepInMemmory = 5;
             GMapControl.MaxZoom = 18;
             GMapControl.MinZoom = 14;
             GMapControl.MouseWheelZoomEnabled = true;
-            GMapControl.MouseWheelZoomType = GMap.NET.MouseWheelZoomType.ViewCenter;
+            GMapControl.MouseWheelZoomType = MouseWheelZoomType.ViewCenter;
             GMapControl.RetryLoadTile = 0;
-            GMapControl.ScaleMode = GMap.NET.WindowsPresentation.ScaleModes.Integer;
+            GMapControl.ScaleMode = ScaleModes.Integer;
             GMapControl.SelectedAreaFill = new SolidColorBrush(Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(65)))), ((int)(((byte)(105)))), ((int)(((byte)(225))))));
             GMapControl.ShowTileGridLines = false;
             GMapControl.TabIndex = 0;
@@ -59,16 +52,7 @@ namespace FarmingGPS.Usercontrols
             ListBoxFields.SelectionChanged += ListBoxFields_SelectionChanged;
             ListBoxIntersects.SelectionChanged += ListBoxIntersects_SelectionChanged;
         }
-
-        public void AddDatabase(DatabaseHandler database)
-        {
-            _database = database;
-            Field[] _fields = _database.GetFields();
-            if (_fields != null)
-                foreach (Field field in _fields)
-                    ListBoxFields.Items.Add(field);
-        }
-
+        
         private void ListBoxFields_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ListBoxIntersects.Items.Clear();
@@ -125,7 +109,7 @@ namespace FarmingGPS.Usercontrols
                     polygon.Tag = pointsField;
                     Path path = new Path();
                     path.Fill = Brushes.Blue;
-                    path.Stroke = Brushes.DarkBlue;
+                    path.Stroke = Brushes.Yellow;
                     path.Opacity = 0.5;
                     polygon.Shape = path;
                     GMapControl.Markers.Add(polygon);
@@ -157,8 +141,34 @@ namespace FarmingGPS.Usercontrols
         private void ButtonChoose_Click(object sender, RoutedEventArgs e)
         {
             if (_fieldChoosen != null)
-                if (FieldChoosen != null)
-                    FieldChoosen.Invoke(this, _fieldChoosen);
+                if (SettingChanged != null)
+                    SettingChanged.Invoke(this, FIELD_CHOOSEN);
         }
+        
+        public List<Position> FieldChoosen
+        {
+            get { return _fieldChoosen; }
+        }
+
+        #region IDatabaseSettings
+
+        public void RegisterDatabaseHandler(DatabaseHandler databaseHandler)
+        {
+            if (_database != null)
+                return;
+            _database = databaseHandler;
+            Field[] _fields = _database.GetFields();
+            if (_fields != null)
+                foreach (Field field in _fields)
+                    ListBoxFields.Items.Add(field);
+        }
+
+        #endregion
+
+        #region ISettingsChanged
+
+        public event EventHandler<string> SettingChanged;
+
+        #endregion
     }
 }

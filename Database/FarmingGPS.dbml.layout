@@ -2,10 +2,10 @@
 <ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11.75, 14.375" name="FarmingGPS">
   <DataContextMoniker Name="/FarmingGPSDataContext" />
   <nestedChildShapes>
-    <classShape Id="684c79fa-1f52-49e5-845f-5be2eb5317f5" absoluteBounds="0.75, 0.875, 2, 1.5785953776041666">
+    <classShape Id="684c79fa-1f52-49e5-845f-5be2eb5317f5" absoluteBounds="0.75, 0.875, 2, 1.7708968098958331">
       <DataClassMoniker Name="/FarmingGPSDataContext/Equipment" />
       <nestedChildShapes>
-        <elementListCompartment Id="56f4f27e-c471-4b30-94d5-58ceca08742a" absoluteBounds="0.765, 1.335, 1.9700000000000002, 1.0185953776041665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+        <elementListCompartment Id="56f4f27e-c471-4b30-94d5-58ceca08742a" absoluteBounds="0.765, 1.335, 1.9700000000000002, 1.2108968098958333" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
     <classShape Id="f01f0d9a-93a0-4851-b8a1-76a81b0356e9" absoluteBounds="9.5, 4.125, 2, 1.7708968098958327">
@@ -75,14 +75,14 @@
         <classShapeMoniker Id="efd62ec8-abc1-4363-a8e9-a2d993f07ac0" />
       </nodes>
     </associationConnector>
-    <associationConnector edgePoints="[(2.75 : 4.56814697265625); (3.5 : 4.56814697265625)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+    <associationConnector edgePoints="[(2.75 : 4.56814697265625); (3.5 : 4.56814697265625)]" fixedFrom="NotFixed" fixedTo="NotFixed">
       <AssociationMoniker Name="/FarmingGPSDataContext/Field/Field_FieldBoundary" />
       <nodes>
         <classShapeMoniker Id="efd62ec8-abc1-4363-a8e9-a2d993f07ac0" />
         <classShapeMoniker Id="412e51ff-3156-4526-b5d4-7d994e9e9fc3" />
       </nodes>
     </associationConnector>
-    <associationConnector edgePoints="[(2.75 : 1.60179768880208); (3.04166666666667 : 1.60179768880208 : JumpStart); (3.20833333333333 : 1.60179768880208 : JumpEnd); (3.5 : 1.60179768880208)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+    <associationConnector edgePoints="[(2.75 : 1.60179768880208); (3.04166666666667 : 1.60179768880208 : JumpStart); (3.20833333333333 : 1.60179768880208 : JumpEnd); (3.5 : 1.60179768880208)]" fixedFrom="Algorithm" fixedTo="Algorithm">
       <AssociationMoniker Name="/FarmingGPSDataContext/Equipment/Equipment_FieldRecording" />
       <nodes>
         <classShapeMoniker Id="684c79fa-1f52-49e5-845f-5be2eb5317f5" />
@@ -131,7 +131,7 @@
         <classShapeMoniker Id="d045feaa-1b96-4b57-a4f1-26320c3816aa" />
       </nodes>
     </associationConnector>
-    <associationConnector edgePoints="[(1.06840602801983 : 5.2612939453125); (1.06840602801983 : 9.03929768880208); (3.04166666666667 : 9.03929768880208 : JumpStart); (3.20833333333333 : 9.03929768880208 : JumpEnd); (3.5 : 9.03929768880208)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+    <associationConnector edgePoints="[(1.06840602801983 : 5.2612939453125); (1.06840602801983 : 9.03929768880208); (3.5 : 9.03929768880208)]" fixedFrom="NotFixed" fixedTo="NotFixed">
       <AssociationMoniker Name="/FarmingGPSDataContext/Field/Field_SubFieldIntersect" />
       <nodes>
         <classShapeMoniker Id="efd62ec8-abc1-4363-a8e9-a2d993f07ac0" />
@@ -145,14 +145,14 @@
         <classShapeMoniker Id="f01f0d9a-93a0-4851-b8a1-76a81b0356e9" />
       </nodes>
     </associationConnector>
-    <associationConnector edgePoints="[(4.50060665206831 : 11.625); (4.50060665206831 : 9.82859537760417)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+    <associationConnector edgePoints="[(4.50060665206831 : 11.625); (4.50060665206831 : 9.82859537760417)]" fixedFrom="NotFixed" fixedTo="NotFixed">
       <AssociationMoniker Name="/FarmingGPSDataContext/GpsCoordinate/GpsCoordinate_SubFieldIntersect" />
       <nodes>
         <classShapeMoniker Id="4cbac5f7-66e8-4169-bdd3-deacfd69a955" />
         <classShapeMoniker Id="c1bebfea-d50f-4f86-a3c4-a86f58c47eb5" />
       </nodes>
     </associationConnector>
-    <associationConnector edgePoints="[(3.96966247810246 : 11.625); (3.96966247810246 : 9.82859537760417)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+    <associationConnector edgePoints="[(3.96966247810246 : 11.625); (3.96966247810246 : 9.82859537760417)]" fixedFrom="NotFixed" fixedTo="NotFixed">
       <AssociationMoniker Name="/FarmingGPSDataContext/GpsCoordinate/GpsCoordinate_SubFieldIntersect1" />
       <nodes>
         <classShapeMoniker Id="4cbac5f7-66e8-4169-bdd3-deacfd69a955" />
