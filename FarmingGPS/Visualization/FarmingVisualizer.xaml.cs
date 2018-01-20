@@ -1,25 +1,15 @@
-﻿using System;
+﻿using DotSpatial.Positioning;
+using FarmingGPSLib.FarmingModes.Tools;
+using FarmingGPSLib.FieldItems;
+using HelixToolkit.Wpf;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
-using System.Windows.Navigation;
-using HelixToolkit.Wpf;
-using DotSpatial.Positioning;
-using FarmingGPSLib.Positioning;
-using FarmingGPSLib.FarmingModes;
-using FarmingGPSLib.FieldItems;
-using FarmingGPSLib.FarmingModes.Tools;
 
 namespace FarmingGPS.Visualization
 {

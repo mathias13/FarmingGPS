@@ -207,6 +207,21 @@ namespace FarmingGPSLib.FieldItems
             }
         }
 
+        public void ClearTrack()
+        {
+            lock(_syncObject)
+            {
+                _prevLeftPoint = Coordinate.Empty;
+                _prevRightPoint = Coordinate.Empty;
+                _currentPolygonIndex = -1;
+                foreach (KeyValuePair<int, Polygon> polygon in _polygons)
+                    OnPolygonDeleted(polygon.Key);
+
+                _polygons.Clear();
+                _polygonSimplifierCount.Clear();
+            }
+        }
+
         public double GetTrackingLineCoverage(TrackingLine trackingLine)
         {
             lock(_syncObject)

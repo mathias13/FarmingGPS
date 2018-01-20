@@ -30,7 +30,10 @@
             <Button x:Name="BTN_ZOOM_IN" Style="{StaticResource BUTTON_ZOOM_IN}" Width="60" Height="60" Margin="10,10,10,10" HorizontalAlignment="Right" Click="BTN_ZOOM_IN_Click"/>
             <Button x:Name="BTN_ZOOM_OUT" Style="{StaticResource BUTTON_ZOOM_OUT}" Width="60" Height="60" Margin="10,10,10,10" HorizontalAlignment="Right" Click="BTN_ZOOM_OUT_Click"/>
             <Button x:Name="BTN_VIEW_CHANGE" Style="{StaticResource BUTTON_CAMERA}" Width="60" Height="60" Margin="10,10,10,10" HorizontalAlignment="Right" Click="BTN_VIEW_CHANGE_Click"/>
-            <Button x:Name="BTN_PLAY_TRACKER" Style="{Binding Path=FieldTrackerButtonStyle, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Width="60" Height="60" Margin="10,10,10,10" HorizontalAlignment="Right" Click="BTN_PLAY_TRACKER_Click"/> 
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="BTN_CLEAR_TRACKER" Style="{StaticResource BUTTON_DELETE}" Height="60" Margin="10,10,10,10" Visibility="{Binding Path=FieldTrackerClearButtonVisibility, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Click="BTN_CLEAR_TRACKER_Click"/>
+                <Button x:Name="BTN_PLAY_TRACKER" Style="{Binding Path=FieldTrackerButtonStyle, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Width="60" Height="60" Margin="10,10,10,10" Click="BTN_PLAY_TRACKER_Click"/>
+            </StackPanel>
             <Button x:Name="BTN_SETTINGS" Style="{StaticResource BUTTON_TOOLS}" Width="60" Height="60" Margin="10,10,10,10" HorizontalAlignment="Right" Click="BTN_SETTINGS_Click"/>
             <Button x:Name="BTN_START_FIELD" Style="{StaticResource BUTTON_CREATE_FIELD}" Width="60" Height="60" Margin="10,10,10,10" HorizontalAlignment="Right" Click="BTN_START_FIELD_Click"/>
             <StackPanel Orientation="Horizontal" Visibility="Collapsed" x:FieldModifier="private" x:Name="_trackLineGrid" HorizontalAlignment="Right">

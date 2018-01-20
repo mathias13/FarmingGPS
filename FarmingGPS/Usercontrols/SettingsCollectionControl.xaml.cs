@@ -79,6 +79,15 @@ namespace FarmingGPS.Usercontrols
                     settingControl = comboBox;
                     settingControl.Style = (Style)FindResource("COMBOBOX");
                 }
+                else if(setting.ValueType.IsEnum)
+                {
+                    ComboBox comboBox = new ComboBox();
+                    foreach (object item in Enum.GetValues(setting.ValueType))
+                        comboBox.Items.Add(item);
+                    comboBox.SelectedItem = setting.Value;
+                    settingControl = comboBox;
+                    settingControl.Style = (Style)FindResource("COMBOBOX");
+                }
                 else
                 {
                     TextBox textBox = new TextBox();
@@ -106,6 +115,8 @@ namespace FarmingGPS.Usercontrols
                         setting.Value = Convert.ChangeType((SettingPanel.Children[i + 1] as LongUpDown).Value, setting.ValueType);
                     else if (setting.ValueType == typeof(bool))
                         setting.Value = (SettingPanel.Children[i + 1] as ComboBox).SelectedIndex == 1 ? true : false;
+                    else if (setting.ValueType.IsEnum)
+                        setting.Value = (SettingPanel.Children[i + 1] as ComboBox).SelectedItem;
                     else if (setting.ValueType == typeof(string))
                         setting.Value = (SettingPanel.Children[i + 1] as TextBox).Text;
                 }

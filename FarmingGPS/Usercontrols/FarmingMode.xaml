@@ -1,0 +1,68 @@
+﻿<UserControl x:Class="FarmingGPS.Usercontrols.FarmingMode"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:FarmingGPS.Usercontrols"             
+             xmlns:extended="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Visualization/Buttons.xaml" />
+                <ResourceDictionary Source="../Visualization/VisualizationDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Margin="20,20,20,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Viewbox Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Right" MaxWidth="400" Stretch="Uniform">
+                <Canvas Width="12" Height="4">
+                    <Rectangle Canvas.Top="3" RadiusX="0.3" RadiusY="0.3" Fill="Brown" Width="12" Height="1"></Rectangle>
+                    <Path Data="m 6 3 l 1 -1 l -1 -2 l -1 2 z" Fill="Blue"/>
+                </Canvas>
+            </Viewbox>
+            <Viewbox Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Left" MaxWidth="400" Stretch="Uniform">                
+                <Canvas Width="12" Height="4">
+                    <Rectangle Canvas.Top="0" RadiusX="0.3" RadiusY="0.3" Fill="Brown" Width="12" Height="1"></Rectangle>
+                    <Path Data="m 6 1 l 1 1 l -1 2 l -1 -2 z" Fill="Blue"/>
+                </Canvas>
+            </Viewbox>
+        </Grid>
+        <Grid Grid.Row="1" Margin="20,10,20,10">
+            <StackPanel Orientation="Vertical">
+            <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Överlapp</TextBlock>
+                <extended:DoubleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="2" AllowSpin="True" Increment="0.1" FormatString="0.0m" x:FieldModifier="private" x:Name="NumericOverlap" Style="{StaticResource DOUBLEUPDOWN}" Value="0.0"/>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="2" Margin="20,10,20,10">
+            <Viewbox Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="400" Stretch="Uniform">
+                <Canvas Width="100" Height="100">
+                    <Rectangle Canvas.Top="0" RadiusX="5" RadiusY="5" Fill="Green" Stroke="Red" StrokeThickness="0.4" Width="100" Height="100"></Rectangle>
+                    <Path Data="m 5 5 l 0 90 l 90 0 l 0 -90  z" Stroke="Blue" StrokeThickness="0.4"/>
+                </Canvas>
+            </Viewbox>
+        </Grid>
+        <Grid Grid.Row="3" Margin="20,10,20,20">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Antal tegar</TextBlock>
+                <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="1" Maximum="20" AllowSpin="True" Increment="1" FormatString="0 varv" x:FieldModifier="private" x:Name="NumericHeadland" Style="{StaticResource INTEGERUPDOWN}" Value="1"/>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="4">
+            <Button HorizontalAlignment="Center" Height="40" x:FieldModifier="private" x:Name="ButtonChoose" Click="ButtonChoose_Click"  Style="{StaticResource GENERAL_BUTTON}">Välj</Button>
+        </Grid>
+    </Grid>
+</UserControl>

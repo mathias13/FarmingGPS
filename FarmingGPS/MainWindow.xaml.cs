@@ -6,6 +6,7 @@ using FarmingGPS.Dialogs;
 using FarmingGPS.Settings;
 using FarmingGPS.Settings.NTRIP;
 using FarmingGPS.Settings.Database;
+using FarmingGPS.Settings.Receiver;
 using FarmingGPS.Usercontrols;
 using FarmingGPS.Visualization;
 using FarmingGPSLib.FarmingModes.Tools;
@@ -62,7 +63,7 @@ namespace FarmingGPS
         private IReceiver _receiver;
 
         private ICamera _camera;
-        
+                
         private DateTime _trackingLineEvaluationTimeout = DateTime.MinValue;
 
         private TrackingLine _activeTrackingLine = null;
@@ -80,6 +81,8 @@ namespace FarmingGPS
         private FarmingGPSLib.FarmingModes.GeneralHarrowingMode _farmingMode;
 
         private FarmingGPSLib.Equipment.IEquipment _equipment;
+
+        private Database.Equipment _equipmentChoosen;
 
         private bool _ntripConnected = false;
 
@@ -118,6 +121,8 @@ namespace FarmingGPS
 
         protected static readonly DependencyProperty FieldTrackerButtonStyleProperty = DependencyProperty.Register("FieldTrackerButtonStyle", typeof(Style), typeof(MainWindow));
 
+        protected static readonly DependencyProperty FieldTrackerClearButtonVisibility = DependencyProperty.Register("FieldTrackerClearButtonVisibility", typeof(Visibility), typeof(MainWindow));
+
         protected static readonly DependencyProperty CameraImageProperty = DependencyProperty.Register("CameraImage", typeof(BitmapImage), typeof(MainWindow));
 
         protected static readonly DependencyProperty CameraSizeProperty = DependencyProperty.Register("CameraSize", typeof(Style), typeof(MainWindow));
@@ -139,11 +144,14 @@ namespace FarmingGPS
             if (_camera != null)
                 if (_camera is IDisposable)
                     (_camera as IDisposable).Dispose();
-            _ntripClient.Dispose();
-            _receiver.Dispose();
+            if(_ntripClient != null)
+                _ntripClient.Dispose();
+            if(_receiver != null)
+                _receiver.Dispose();
             if(_sbpReceiverSender != null)
-            _sbpReceiverSender.Dispose();
-            _database.Dispose();
+                _sbpReceiverSender.Dispose();
+            if(_database != null)
+                _database.Dispose();
         }
 
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -152,36 +160,14 @@ namespace FarmingGPS
             SetValue(CameraSizeProperty, (Style)this.FindResource("PiPvideo"));
 
             SetupSettingsPanel(null);
-
-            FarmingGPSLib.Equipment.Harrow harrow = new FarmingGPSLib.Equipment.Harrow(Distance.FromMeters(5.0), Distance.FromMeters(0.0), new Azimuth(180), Distance.FromCentimeters(20));
-            _equipment = harrow;
-
-            _visualization.SetEquipmentWidth(harrow.Width);
-
+            
             _speedBar.Unit = SpeedUnit.KilometersPerHour;
             _speedBar.SetSpeed(Speed.FromKilometersPerHour(0.0));
             _workedAreaBar.Unit = AreaUnit.SquareKilometers;
             _fieldTracker.AreaChanged += _fieldTracker_AreaChanged;
             _visualization.AddFieldTracker(_fieldTracker);
 
-            ComPortDialog comportDialog = new ComPortDialog();
-            comportDialog.ShowDialog();
 
-            string comport = comportDialog.ComPort;
-            if (comport == String.Empty)
-                comport = "COM1";
-
-            //_sbpReceiverSender = new SBPReceiverSender(System.Net.IPAddress.Parse("192.168.0.222"), 55555);
-            _sbpReceiverSender = new SBPReceiverSender(comport, 115200, false);
-            _sbpReceiverSender.ReadExceptionEvent += _sbpReceiverSender_ReadExceptionEvent;
-
-            //_receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(1000));
-            //_receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0);
-            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8548025), new Latitude(58.5104914)), false);
-            _receiver.BearingUpdate += _receiver_BearingUpdate;
-            _receiver.PositionUpdate += _receiver_PositionUpdate;
-            _receiver.SpeedUpdate += _receiver_SpeedUpdate;
-            _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
         }
 
         private void _sbpReceiverSender_ReadExceptionEvent(object sender, SBPReadExceptionEventArgs e)
@@ -214,9 +200,15 @@ namespace FarmingGPS
         {
             _fieldTrackerActive = !_fieldTrackerActive;
             if (_fieldTrackerActive)
+            {
                 SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PAUSE"));
+                SetValue(FieldTrackerClearButtonVisibility, Visibility.Collapsed);
+            }
             else
+            {
                 SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
+                SetValue(FieldTrackerClearButtonVisibility, Visibility.Visible);
+            }
         }
 
         #endregion
@@ -229,13 +221,8 @@ namespace FarmingGPS
             _fieldTracker.FieldToCalculateAreaWithin = _field;
             _workedAreaBar.SetField(_field);
             _visualization.AddField(_field);
-
-            _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, 1);
-            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
-                _visualization.AddLine(line);
-
+            
             _settingsGrid.Visibility = Visibility.Hidden;
-            ShowTrackingLineSettings();
         }
 
         private void _fieldTracker_AreaChanged(object sender, AreaChanged e)
@@ -377,7 +364,37 @@ namespace FarmingGPS
 
         #endregion
 
-        #region Receiver Events
+        #region Receiver
+
+        private void SetupReceiver(SBPSerial receiver)
+        {
+            if (!receiver.COMPort.Contains("COM"))
+            {
+                ComPortDialog comportDialog = new ComPortDialog();
+                comportDialog.ShowDialog();
+
+                string comport = comportDialog.ComPort;
+                if (comport == String.Empty)
+                    comport = "COM1";
+
+                _sbpReceiverSender = new SBPReceiverSender(comport, (int)receiver.Baudrate, receiver.RtsCts);
+            }
+            else
+                _sbpReceiverSender = new SBPReceiverSender(receiver.COMPort, (int)receiver.Baudrate, receiver.RtsCts);
+            
+            _sbpReceiverSender.ReadExceptionEvent += _sbpReceiverSender_ReadExceptionEvent;
+
+            #if DEBUG
+            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8548025), new Latitude(58.5104914)), false);
+            #else
+            _receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(1000));
+            _receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0);
+            #endif
+            _receiver.BearingUpdate += _receiver_BearingUpdate;
+            _receiver.PositionUpdate += _receiver_PositionUpdate;
+            _receiver.SpeedUpdate += _receiver_SpeedUpdate;
+            _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
+        }
 
         private void _receiver_FixQualityUpdate(object sender, FixQuality fixQuality)
         {
@@ -395,21 +412,29 @@ namespace FarmingGPS
             IReceiver receiver = sender as IReceiver;
             if (_field == null)
                 return;
-            Coordinate actualCoordinate = _field.GetPositionInField(_equipment.GetCenter(actualPosition, receiver.CurrentBearing));
+            Coordinate actualCoordinate;
+            if (_equipment == null)
+                actualCoordinate = _field.GetPositionInField(actualPosition);
+            else
+                actualCoordinate = _field.GetPositionInField(_equipment.GetCenter(actualPosition, receiver.CurrentBearing));
+
             Azimuth actualHeading = receiver.CurrentBearing;
             _visualization.UpdatePosition(actualCoordinate, actualHeading);
-            Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(actualPosition, actualHeading));
-            Coordinate rightTip = _field.GetPositionInField(_equipment.GetRightTip(actualPosition, actualHeading));
-
-            if (_fieldTracker.IsTracking && !_fieldTrackerActive)
-                _fieldTracker.StopTrack(leftTip, rightTip);
-            else if (_fieldTrackerActive && !_fieldTracker.IsTracking)
+            if (_equipment != null)
             {
-                _distanceTriggerFieldTracker.Init(actualPosition, actualHeading);
-                _fieldTracker.InitTrack(leftTip, rightTip);
+                Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(actualPosition, actualHeading));
+                Coordinate rightTip = _field.GetPositionInField(_equipment.GetRightTip(actualPosition, actualHeading));
+
+                if (_fieldTracker.IsTracking && !_fieldTrackerActive)
+                    _fieldTracker.StopTrack(leftTip, rightTip);
+                else if (_fieldTrackerActive && !_fieldTracker.IsTracking)
+                {
+                    _distanceTriggerFieldTracker.Init(actualPosition, actualHeading);
+                    _fieldTracker.InitTrack(leftTip, rightTip);
+                }
+                else if (_fieldTrackerActive && _distanceTriggerFieldTracker.CheckDistance(actualPosition, actualHeading))
+                    _fieldTracker.AddTrackPoint(leftTip, rightTip);
             }
-            else if (_fieldTrackerActive && _distanceTriggerFieldTracker.CheckDistance(actualPosition, actualHeading))
-                _fieldTracker.AddTrackPoint(leftTip, rightTip);
 
             if (DateTime.Now > _trackingLineEvaluationTimeout)
             {
@@ -528,7 +553,12 @@ namespace FarmingGPS
         {
             ToggleFieldTracker();
         }
-        
+
+        private void BTN_CLEAR_TRACKER_Click(object sender, RoutedEventArgs e)
+        {
+            _fieldTracker.ClearTrack();
+        }
+
         private void BTN_SET_TRACKINGLINE_AB_Click(object sender, RoutedEventArgs e)
         {
             if(!_setTrackLineAB)
@@ -583,19 +613,33 @@ namespace FarmingGPS
             }
             else
                 database = new DatabaseConn();
-
+            
+            SBPSerial sectionReceiver = (SBPSerial)config.Sections["SBPSerial"];
+            ISettingsCollection receiver;
+            if (sectionReceiver != null)
+            {
+                receiver = sectionReceiver;
+                SetupReceiver(sectionReceiver);
+            }
+            else
+                receiver = new SBPSerial();
 
             ISettingsCollection connections = new SettingsCollection("Anslutningar");
             connections.ChildSettings.Add(ntripClient);
             connections.ChildSettings.Add(database);
+            connections.ChildSettings.Add(receiver);
             SettingGroup ntripGroup = new SettingGroup(connections.ChildSettings[0].Name, null, new SettingsCollectionControl(connections.ChildSettings[0]));
             (ntripGroup.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
             SettingGroup databaseGroup = new SettingGroup(connections.ChildSettings[1].Name, null, new SettingsCollectionControl(connections.ChildSettings[1]));
             (databaseGroup.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
-            SettingGroup connectionGroup = new SettingGroup(connections.Name, new SettingGroup[] { ntripGroup, databaseGroup}, new SettingsCollectionControl(connections));
+            SettingGroup receiverGroup = new SettingGroup(connections.ChildSettings[2].Name, null, new SettingsCollectionControl(connections.ChildSettings[2]));
+            (receiverGroup.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+            SettingGroup connectionGroup = new SettingGroup(connections.Name, new SettingGroup[] { ntripGroup, databaseGroup, receiverGroup}, new SettingsCollectionControl(connections));
             SettingGroup field = new SettingGroup("Fält", null, new GetField());
             (field.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
-            SettingGroup redskap = new SettingGroup("Redskap", null, new GetVechileEquipment());
+            SettingGroup farmingMode = new SettingGroup("Bearbetningläge", null, new FarmingMode());
+            (farmingMode.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+            SettingGroup redskap = new SettingGroup("Redskap", new SettingGroup[] { farmingMode }, new GetVechileEquipment());
             (redskap.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
             SettingGroup settingRoot = new SettingGroup("Inställningar", new SettingGroup[] { connectionGroup, field, redskap }, null);
             _settingsTree.ItemsSource = settingRoot;
@@ -618,6 +662,10 @@ namespace FarmingGPS
         {
             if (sender is GetField)
                 GetFieldChanged((sender as GetField), e);
+            else if (sender is GetVechileEquipment)
+                GetVechileEquipment((sender as GetVechileEquipment));
+            else if (sender is FarmingMode)
+                SetEquipmentAndFarmingMode((sender as FarmingMode));
             else if (sender is SettingsCollectionControl)
             {
                 SettingsCollectionControl settingControl = sender as SettingsCollectionControl;
@@ -633,7 +681,42 @@ namespace FarmingGPS
                     SetupDatabase(settingControl.Settings as DatabaseConn);
                 else if (settingControl.Settings is ClientSettingsExt)
                     SetupNTRIP(settingControl.Settings as ClientSettings);
+                else if (settingControl.Settings is SBPSerial)
+                    SetupReceiver(settingControl.Settings as SBPSerial);
             }
+        }
+
+        private void SetEquipmentAndFarmingMode(FarmingMode userControl)
+        {
+            if (_equipmentChoosen == null)
+                return;
+            FarmingGPSLib.Equipment.Harrow harrow = new FarmingGPSLib.Equipment.Harrow(Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(0.0), new Azimuth(180), Distance.FromCentimeters(userControl.Overlap));
+            _equipment = harrow;
+
+            _visualization.SetEquipmentWidth(harrow.Width);
+
+            if (_farmingMode != null)
+            {
+                foreach (TrackingLine trackingLine in _farmingMode.TrackingLines)
+                    _visualization.DeleteLine(trackingLine);
+                foreach (TrackingLine trackingLine in _farmingMode.TrackingLinesHeadLand)
+                    _visualization.DeleteLine(trackingLine);
+            }
+                _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, userControl.Headlands);
+            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
+                _visualization.AddLine(line);
+
+            if (_fieldTrackerActive)
+                ToggleFieldTracker();
+            _fieldTracker.ClearTrack();
+
+            _settingsGrid.Visibility = Visibility.Hidden;
+            ShowTrackingLineSettings();
+        }
+
+        private void GetVechileEquipment(GetVechileEquipment userControl)
+        {
+            _equipmentChoosen = userControl.Equipment;
         }
 
         private void GetFieldChanged(GetField userControl, string eventName)

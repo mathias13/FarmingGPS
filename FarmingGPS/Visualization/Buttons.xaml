@@ -472,6 +472,31 @@
         </Setter>
     </Style>
 
+    <Style TargetType="{x:Type Button}" x:Key="BUTTON_DELETE" BasedOn="{StaticResource BUTTON_BASE}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid Background="Transparent" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" ClipToBounds="True">
+                        <Rectangle Style="{StaticResource BUTTON_RECT_OUTER}"/>
+                        <Rectangle Style="{StaticResource BUTTON_RECT_INNER}"/>
+                        <Rectangle Style="{StaticResource BUTTON_RECT_SHADE}" x:Name="TRIGGER_RECT"/>
+                        <Viewbox Style="{StaticResource BUTTON_SYMBOL_VIEWBOX}">
+                            <Path Width="76" Height="76" Fill="{StaticResource BUTTON_SYMBOL_COLOR}" Data="{StaticResource SYMBOL_DELETE}"/>
+                        </Viewbox>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" TargetName="TRIGGER_RECT" Value="0.4"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Opacity" TargetName="TRIGGER_RECT" Value="0.6"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="{x:Type Button}" x:Key="BUTTON_PAUSE" BasedOn="{StaticResource BUTTON_BASE}">
         <Setter Property="Template">
             <Setter.Value>

@@ -1,17 +1,8 @@
-﻿using DotSpatial.Positioning;
-using FarmingGPS.Database;
-using FarmingGPSLib.DatabaseHelper;
+﻿using FarmingGPS.Database;
 using FarmingGPS.Settings;
-using GMap.NET;
-using GMap.NET.MapProviders;
-using GMap.NET.WindowsPresentation;
 using System;
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Shapes;
 
 namespace FarmingGPS.Usercontrols
 {
@@ -126,6 +117,8 @@ namespace FarmingGPS.Usercontrols
         {
             if(ListBoxEquipment.SelectedItem != null && ListBoxVechile.SelectedItem != null)
             {
+                _vechile = ListBoxVechile.SelectedItem as Vechile;
+                _equipment = ListBoxEquipment.SelectedItem as Equipment;
                 if (SettingChanged != null)
                     SettingChanged.Invoke(this, VECHILE_EQUIPMENT_CHOOSEN);
             }
