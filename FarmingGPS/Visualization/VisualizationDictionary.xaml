@@ -505,6 +505,15 @@
         <Setter Property="HorizontalContentAlignment" Value="Right"/>
     </Style>
 
+    <Style x:Key="SINGLEUPDOWN" TargetType="local:SingleUpDown" BasedOn="{StaticResource NumericUpDown}">
+        <Setter Property="FormatString" Value="0.0"/>
+        <Setter Property="Increment" Value="0.1"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Width" Value="Auto"/>
+        <Setter Property="MinWidth" Value="80"/>
+        <Setter Property="HorizontalContentAlignment" Value="Right"/>
+    </Style>
+
     <Style x:Key="INTEGERUPDOWN" TargetType="local:IntegerUpDown" BasedOn="{StaticResource NumericUpDown}">
         <Setter Property="FormatString" Value="0"/>
         <Setter Property="Increment" Value="1"/>

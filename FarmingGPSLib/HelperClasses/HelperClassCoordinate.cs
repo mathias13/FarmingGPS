@@ -22,5 +22,21 @@ namespace FarmingGPSLib.HelperClasses
             double leftY = coord.Y + Math.Sin(angle) * distance;
             return new Coordinate(leftX, leftY);
         }
+
+        public static Coordinate FindClosestCoordinate(IList<Coordinate> coordinates, Coordinate coordinate)
+        {
+            double prevDistance = double.MaxValue;
+            Coordinate coordinateToReturn = Coordinate.Empty;
+            foreach (Coordinate coordinateItem in coordinates)
+            {
+                double distance = coordinate.Distance(coordinateItem);
+                if (prevDistance > distance)
+                {
+                    coordinateToReturn = coordinateItem;
+                    prevDistance = distance;
+                }
+            }
+            return coordinateToReturn;
+        }
     }
 }

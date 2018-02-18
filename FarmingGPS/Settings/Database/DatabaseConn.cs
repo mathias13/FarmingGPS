@@ -31,7 +31,7 @@ namespace FarmingGPS.Settings.Database
 
         public DatabaseConn()
         {
-            _settings = new SettingsCollection("Database");
+            _settings = new SettingsCollection("Databas");
             _settings.Add(new Setting("Kryptering", _encrypt.Type, Encrypt));
             _settings.Add(new Setting("Betrott certifikat", _trustServerCertificate.Type, TrustServerCertificate));
             _settings.Add(new Setting("Windows inloggning", _integratedSecurity.Type, IntegratedSecurity));
@@ -41,6 +41,22 @@ namespace FarmingGPS.Settings.Database
             foreach(ISetting setting in _settings)
                 setting.SettingChanged += Setting_SettingChanged;
 
+        }
+
+        public DatabaseConn(DatabaseConn databaseSettings) : this()
+        {
+            Encrypt = databaseSettings.Encrypt;
+            TrustServerCertificate = databaseSettings.TrustServerCertificate;
+            IntegratedSecurity = databaseSettings.IntegratedSecurity;
+            UserName = databaseSettings.UserName;
+            Url = databaseSettings.Url;
+            DatabaseName = databaseSettings.DatabaseName;
+            _settings["Kryptering"].Value = Encrypt;
+            _settings["Betrott certifikat"].Value = TrustServerCertificate;
+            _settings["Windows inloggning"].Value = IntegratedSecurity;
+            _settings["Användarnamn"].Value = UserName;
+            _settings["URL"].Value = Url;
+            _settings["Databas"].Value = DatabaseName;
         }
 
         private void Setting_SettingChanged(object sender, EventArgs e)

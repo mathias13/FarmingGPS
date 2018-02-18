@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace FarmingGPSLib.FarmingModes.Tools
 {
-    interface IFarmingEvents
+    public interface IFarmingEvents
     {
-        IList<FarmingEventBase> FarmingEvents
+        IList<IFarmingEvent> FarmingEvents
         {
             get;
         }

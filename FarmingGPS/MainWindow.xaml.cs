@@ -11,6 +11,7 @@ using FarmingGPS.Usercontrols;
 using FarmingGPS.Visualization;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
+using FarmingGPSLib.Equipment;
 using GpsUtilities.Filter;
 using GpsUtilities.Reciever;
 using NTRIP;
@@ -48,6 +49,8 @@ namespace FarmingGPS
 
         #region Private Variables
 
+        Configuration _config;
+
         private FarmingGPSLib.FieldItems.Field _field;
 
         private Database.DatabaseHandler _database;
@@ -78,9 +81,9 @@ namespace FarmingGPS
 
         private int _selectedTrackingLine = -1;
 
-        private FarmingGPSLib.FarmingModes.GeneralHarrowingMode _farmingMode;
+        private FarmingGPSLib.FarmingModes.IFarmingMode _farmingMode;
 
-        private FarmingGPSLib.Equipment.IEquipment _equipment;
+        private IEquipment _equipment;
 
         private Database.Equipment _equipmentChoosen;
 
@@ -89,6 +92,8 @@ namespace FarmingGPS
         private Position _trackLinePointA = Position.Empty;
         
         private bool _setTrackLineAB = false;
+
+        private bool _startStopAuto = false;
 
         #endregion
 
@@ -99,6 +104,8 @@ namespace FarmingGPS
             Application.Current.Exit += Current_Exit;
             Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
             WindowState = WindowState.Maximized;
+
+            _config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
             this.Loaded += MainWindow_Loaded;
 
@@ -167,6 +174,31 @@ namespace FarmingGPS
             _fieldTracker.AreaChanged += _fieldTracker_AreaChanged;
             _visualization.AddFieldTracker(_fieldTracker);
 
+#if DEBUG
+            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8531152), new Latitude(58.50953)), false);
+            _receiver.BearingUpdate += _receiver_BearingUpdate;
+            _receiver.PositionUpdate += _receiver_PositionUpdate;
+            _receiver.SpeedUpdate += _receiver_SpeedUpdate;
+            _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
+            List<Position> positions = new List<Position>();
+            positions.Add(new Position(new Latitude(58.51114), new Longitude(13.8537299)));
+            positions.Add(new Position(new Latitude(58.509705), new Longitude(13.8532929)));
+            positions.Add(new Position(new Latitude(58.509073), new Longitude(13.8606883)));
+            positions.Add(new Position(new Latitude(58.510477), new Longitude(13.8611945)));
+            positions.Add(new Position(new Latitude(58.51114), new Longitude(13.8537299)));
+            FieldChoosen(positions);
+            
+            FarmingGPSLib.Equipment.BogBalle.L2Plus fertilizer = new FarmingGPSLib.Equipment.BogBalle.L2Plus(Distance.FromMeters(5.0), Distance.FromMeters(0.0), new Azimuth(180), new FarmingGPSLib.Equipment.BogBalle.Calibrator("COM1", 1000));
+            _equipment = fertilizer;
+            _visualization.SetEquipmentWidth(fertilizer.Width);
+            _farmingMode = new FarmingGPSLib.FarmingModes.FertilizingMode(_field, _equipment, 1);
+            _farmingMode.FarmingEvent += FarmingEvent;
+            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
+                _visualization.AddLine(line);
+            ShowTrackingLineSettings();
+
+            _equipmentControlGrid.Children.Add(new FarmingGPS.Usercontrols.Equipments.BogballeCalibrator(new FarmingGPSLib.Equipment.BogBalle.Calibrator("COM1", 1000)));
+#endif
 
         }
 
@@ -175,7 +207,6 @@ namespace FarmingGPS
             Utilities.Log.Log.Error(e.Exception);
         }
         
-
         #region Private Methods
 
         private void ShowTrackingLineSettings()
@@ -211,6 +242,30 @@ namespace FarmingGPS
             }
         }
 
+        private void FarmingEvent(object sender, string e)
+        {
+            TestEventText(e);
+            if(e.Contains("EQUIPMENT"))
+            {
+                if (_equipment is IEquipmentControl && _startStopAuto)
+                {
+                    IEquipmentControl equipmentControl = _equipment as IEquipmentControl;
+                    if (e.Contains("START"))
+                    {
+                        equipmentControl.Start();
+                        if (!_fieldTrackerActive)
+                            Dispatcher.Invoke(new Action(ToggleFieldTracker), DispatcherPriority.Normal);
+                    }
+                    else if (e.Contains("STOP"))
+                    {
+                        equipmentControl.Start();
+                        if (_fieldTrackerActive)
+                            Dispatcher.Invoke(new Action(ToggleFieldTracker), DispatcherPriority.Normal);
+                    }
+                }
+            }
+        }
+        
         #endregion
 
         #region Field Events
@@ -383,13 +438,8 @@ namespace FarmingGPS
                 _sbpReceiverSender = new SBPReceiverSender(receiver.COMPort, (int)receiver.Baudrate, receiver.RtsCts);
             
             _sbpReceiverSender.ReadExceptionEvent += _sbpReceiverSender_ReadExceptionEvent;
-
-            #if DEBUG
-            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8548025), new Latitude(58.5104914)), false);
-            #else
             _receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(1000));
             _receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0);
-            #endif
             _receiver.BearingUpdate += _receiver_BearingUpdate;
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
@@ -420,6 +470,7 @@ namespace FarmingGPS
 
             Azimuth actualHeading = receiver.CurrentBearing;
             _visualization.UpdatePosition(actualCoordinate, actualHeading);
+            _farmingMode.UpdateEvents(actualCoordinate, actualHeading);
             if (_equipment != null)
             {
                 Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(actualPosition, actualHeading));
@@ -448,6 +499,8 @@ namespace FarmingGPS
                         //TODO change depleted limit to a setting
                         if (_fieldTracker.GetTrackingLineCoverage(_activeTrackingLine) > 0.97)
                             _activeTrackingLine.Depleted = true;
+                        else
+                            ;
 
                         _activeTrackingLine.Active = false;
                         _activeTrackingLine = newTrackingLine;
@@ -457,7 +510,7 @@ namespace FarmingGPS
                 //TODO Make this a setting instead 
                 _trackingLineEvaluationTimeout = DateTime.Now.AddSeconds(3.0);
             }
-
+            
             if (_activeTrackingLine != null)
             {
                 _activeTrackingLine.Active = true;
@@ -468,6 +521,16 @@ namespace FarmingGPS
 
                 _lightBar.SetDistance(Distance.FromMeters(orientationToLine.DistanceTo), lightBarDirection);
             }
+        }
+
+        private void TestEventText(string message)
+        {
+            if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
+            {
+                testEvent.Text = message;
+            }
+            else
+                Dispatcher.Invoke(new Action<string>(TestEventText), System.Windows.Threading.DispatcherPriority.Render, message);
         }
 
         private void _receiver_BearingUpdate(object sender, Azimuth actualBearing)
@@ -587,14 +650,26 @@ namespace FarmingGPS
             }
         }
 
+        private void BTN_EQUIPMENT_Click(object sender, RoutedEventArgs e)
+        {
+            if (_equipmentControlGrid.Visibility == System.Windows.Visibility.Hidden)
+                _equipmentControlGrid.Visibility = System.Windows.Visibility.Visible;
+            else
+                _equipmentControlGrid.Visibility = System.Windows.Visibility.Hidden;
+        }
+
+        private void BTN_START_STOP_AUTO_Checked(object sender, RoutedEventArgs e)
+        {
+            _startStopAuto = BTN_START_STOP_AUTO.IsChecked.Value;
+        }
+
         #endregion
 
         #region Settings
 
         private void SetupSettingsPanel(SettingsCollection settings)
         {
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            ClientSettingsExt sectionNTRIP = (ClientSettingsExt)config.Sections["NTRIP"];
+            ClientSettingsExt sectionNTRIP = (ClientSettingsExt)_config.Sections["NTRIP"];
             ISettingsCollection ntripClient;
             if (sectionNTRIP != null)
             {
@@ -604,21 +679,21 @@ namespace FarmingGPS
             else
                 ntripClient = new ClientSettingsExt();
 
-            DatabaseConn sectionDatabase = (DatabaseConn)config.Sections["Database"];
+            DatabaseConn sectionDatabase = (DatabaseConn)_config.Sections["Databas"];
             ISettingsCollection database;
             if (sectionDatabase != null)
             {
-                database = sectionDatabase;
+                database = new DatabaseConn(sectionDatabase);
                 SetupDatabase(sectionDatabase);
             }
             else
                 database = new DatabaseConn();
             
-            SBPSerial sectionReceiver = (SBPSerial)config.Sections["SBPSerial"];
+            SBPSerial sectionReceiver = (SBPSerial)_config.Sections["SBPSeriell"];
             ISettingsCollection receiver;
             if (sectionReceiver != null)
             {
-                receiver = sectionReceiver;
+                receiver = new SBPSerial(sectionReceiver);
                 SetupReceiver(sectionReceiver);
             }
             else
@@ -650,7 +725,7 @@ namespace FarmingGPS
             if (_settingsTree.SelectedItem is SettingGroup)
             {
                 SettingGroup settingItem = _settingsTree.SelectedItem as SettingGroup;
-                if (settingItem.SettingControl is IDatabaseSettings)
+                if (settingItem.SettingControl is IDatabaseSettings && _database != null)
                     (settingItem.SettingControl as IDatabaseSettings).RegisterDatabaseHandler(_database);
                 _settingsUsercontrolGrid.Children.Clear();
                 _settingsUsercontrolGrid.Children.Add(settingItem.SettingControl);
@@ -671,11 +746,11 @@ namespace FarmingGPS
                 SettingsCollectionControl settingControl = sender as SettingsCollectionControl;
                 if (settingControl.Settings is ConfigurationSection)
                 {
-                    Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                    config.Sections.Clear();
-                    config.Sections.Remove(settingControl.Settings.Name);
-                    config.Sections.Add(settingControl.Settings.Name, settingControl.Settings as ConfigurationSection);
-                    config.Save(ConfigurationSaveMode.Minimal, true);
+                    ConfigurationSection configSection = _config.Sections[settingControl.Settings.Name];
+                    if (configSection == null)
+                        _config.Sections.Add(settingControl.Settings.Name, settingControl.Settings as ConfigurationSection);
+
+                    _config.Save(ConfigurationSaveMode.Minimal, true);
                 }
                 if (settingControl.Settings is DatabaseConn)
                     SetupDatabase(settingControl.Settings as DatabaseConn);
@@ -702,7 +777,8 @@ namespace FarmingGPS
                 foreach (TrackingLine trackingLine in _farmingMode.TrackingLinesHeadLand)
                     _visualization.DeleteLine(trackingLine);
             }
-                _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, userControl.Headlands);
+            
+            _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, userControl.Headlands);
             foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
                 _visualization.AddLine(line);
 

@@ -165,6 +165,9 @@
     <Compile Include="Settings\Setting.cs" />
     <Compile Include="Settings\SettingGroup.cs" />
     <Compile Include="Settings\SettingsCollection.cs" />
+    <Compile Include="Usercontrols\Equipments\BogballeCalibrator.xaml.cs">
+      <DependentUpon>BogballeCalibrator.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Usercontrols\FarmingMode.xaml.cs">
       <DependentUpon>FarmingMode.xaml</DependentUpon>
     </Compile>
@@ -210,6 +213,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="StyleDefault.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Usercontrols\Equipments\BogballeCalibrator.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

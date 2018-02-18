@@ -13,7 +13,7 @@ using System.Collections.Generic;
 
 namespace FarmingGPSLib.FarmingModes
 {
-    public class GeneralHarrowingMode : FarmingModeBase, ITrackingLineModes
+    public class GeneralHarrowingMode : FarmingModeBase
     {
         protected IEquipment _equipment;
 
@@ -48,19 +48,19 @@ namespace FarmingGPSLib.FarmingModes
                 _trackingLinesHeadLand.Add(new TrackingLine(line));
         }
 
-        public void CreateTrackingLines(Coordinate aCoord, DotSpatial.Topology.Angle direction)
+        public override void CreateTrackingLines(Coordinate aCoord, DotSpatial.Topology.Angle direction)
         {
             direction.DegreesPos += 90;
             direction.Radians = direction.Radians * -1;
             FillFieldWithTrackingLines(HelperClassLines.CreateLine(aCoord, direction, 5.0));
         }
 
-        public void CreateTrackingLines(Coordinate aCoord, Coordinate bCoord)
+        public override void CreateTrackingLines(Coordinate aCoord, Coordinate bCoord)
         {
             FillFieldWithTrackingLines(new LineSegment(aCoord, bCoord));
         }
 
-        public void CreateTrackingLines(TrackingLine headLine)
+        public override void CreateTrackingLines(TrackingLine headLine)
         {
             IList<LineSegment> lines = HelperClassLines.CreateLines(headLine.Points);
             LineSegment baseLine = lines[0];
@@ -69,6 +69,10 @@ namespace FarmingGPSLib.FarmingModes
                     baseLine = lines[i];
 
             FillFieldWithTrackingLines(baseLine);
+        }
+
+        public override void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction)
+        {
         }
 
         protected void FillFieldWithTrackingLines(ILineSegment baseLine)
@@ -90,7 +94,7 @@ namespace FarmingGPSLib.FarmingModes
             List<ILineSegment> linesExtended = new List<ILineSegment>();
             linesExtended.Add(baseLineExtended);
             ILineSegment extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.WidthExclOverlap.ToMeters().Value);
-            int lineIteriator = 1;
+            int lineIteriator = 2;
             while (fieldEnvelope.Intersects(extendedLine))
             {
                 linesExtended.Add(extendedLine);
@@ -99,7 +103,7 @@ namespace FarmingGPSLib.FarmingModes
             }
 
             extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.WidthExclOverlap.ToMeters().Value);
-            lineIteriator = 1;
+            lineIteriator = 2;
             while (fieldEnvelope.Intersects(extendedLine))
             {
                 linesExtended.Add(extendedLine);
@@ -158,10 +162,14 @@ namespace FarmingGPSLib.FarmingModes
                 lineCoordinates.Clear();
             }
 
+            AddTrackingLines(trackingLines);
+        }
+    
+        protected virtual void AddTrackingLines(IList<LineString> trackingLines)
+        {
             _trackingLines.Clear();
             foreach (LineString line in trackingLines)
                 _trackingLines.Add(new TrackingLine(line));
         }
-    
     }
 }

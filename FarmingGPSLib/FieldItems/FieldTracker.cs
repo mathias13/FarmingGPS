@@ -21,7 +21,7 @@ namespace FarmingGPSLib.FieldItems
 
         #region Consts
 
-        private const int SIMPLIFIER_COUNT_LIMIT = 400;
+        private const int SIMPLIFIER_COUNT_LIMIT = 100;
 
         #endregion
 
@@ -96,7 +96,6 @@ namespace FarmingGPSLib.FieldItems
                                     newCoords = new List<Coordinate>(leftTriangle);
                                     newCoords.RemoveAt(0);
                                     newCoordinates = new LineString(newCoords);
-                                    //rectPolygon = new Polygon(new Coordinate[] { _prevLeftPoint, lineIntersector.IntersectionPoints[0], leftPoint, _prevLeftPoint });
                                     rectPolygon = new Polygon(new Coordinate[] { _prevLeftPoint, rightPoint, leftPoint, _prevLeftPoint });
                                 }
                                 else if (CgAlgorithms.IsCounterClockwise(rightTriangle))
@@ -104,7 +103,6 @@ namespace FarmingGPSLib.FieldItems
                                     newCoords = new List<Coordinate>(rightTriangle);
                                     newCoords.RemoveAt(0);
                                     newCoordinates = new LineString(newCoords);
-                                    //rectPolygon = new Polygon(new Coordinate[] { _prevRightPoint, rightPoint, lineIntersector.IntersectionPoints[0], _prevRightPoint });
                                     rectPolygon = new Polygon(new Coordinate[] { _prevRightPoint, rightPoint, leftPoint, _prevRightPoint });
                                 }
                                 else
@@ -114,6 +112,7 @@ namespace FarmingGPSLib.FieldItems
                             bool insidePolygon = _polygons[_currentPolygonIndex].Contains(rectPolygon);
 
                             _polygons[_currentPolygonIndex] = (Polygon)_polygons[_currentPolygonIndex].Union(rectPolygon);
+
                             List<ILinearRing> holes = new List<ILinearRing>(_polygons[_currentPolygonIndex].Holes);
                             for (int i = 0; i < holes.Count; i++)
                             {
@@ -173,12 +172,8 @@ namespace FarmingGPSLib.FieldItems
                         OnPolygonUpdated(_currentPolygonIndex);
                         OnAreaChanged();
                     }
-                    //Make sure we are a little bit behind so .Union doesn't throw an exception
-                    LineSegment line = new LineSegment(leftPoint, rightPoint);
-                    Angle angle = new Angle(line.Angle);
-                    angle -= new Angle(Angle.PI / 2.0);
-                    _prevLeftPoint = HelperClassCoordinate.ComputePoint(leftPoint, angle.Radians, 0.05);
-                    _prevRightPoint = HelperClassCoordinate.ComputePoint(rightPoint, angle.Radians, 0.05); ;
+                    _prevLeftPoint = leftPoint;
+                    _prevRightPoint = rightPoint;
                 }
                 catch (Exception e)
                 {
@@ -275,8 +270,8 @@ namespace FarmingGPSLib.FieldItems
                         Polygon polygonToUse = polygon;
                         if(_fieldToCalculateAreaWithin != null)
                         {
-                            if (!polygon.Overlaps(_fieldToCalculateAreaWithin.Polygon))
-                                continue;
+                            //if (!polygon.Overlaps(_fieldToCalculateAreaWithin.Polygon))
+                            //    continue;
                             IGeometry geometry = _fieldToCalculateAreaWithin.Polygon.Intersection(polygon);
                             if (geometry is Polygon)
                                 polygonToUse = geometry as Polygon;
@@ -354,7 +349,7 @@ namespace FarmingGPSLib.FieldItems
                 coords.Add(HelperClassCoordinate.CoordinateRoundedmm(coord));
             return new LinearRing(coords);
         }
-
+        
         #endregion
     }
 }

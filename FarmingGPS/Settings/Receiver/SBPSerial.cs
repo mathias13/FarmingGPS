@@ -39,6 +39,16 @@ namespace FarmingGPS.Settings.Receiver
                 setting.SettingChanged += Setting_SettingChanged;
         }
 
+        public SBPSerial(SBPSerial sbpSettings)
+        {
+            COMPort = sbpSettings.COMPort;
+            Baudrate = sbpSettings.Baudrate;
+            RtsCts = sbpSettings.RtsCts;
+            _settings["COMPort"].Value = COMPort;
+            _settings["Baudrate"].Value = Baudrate;
+            _settings["RtsCts"].Value = RtsCts;
+        }
+
         private void Setting_SettingChanged(object sender, EventArgs e)
         {
             ISetting setting = sender as ISetting;

@@ -61,6 +61,21 @@
         </Setter>
     </Style>
 
+    <Style x:Key="TOGGLE_BUTTON_BASE" TargetType="{x:Type ToggleButton}" >
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="BorderBrush" Value="#FF2B5F91"/>
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF2778BB" Offset="0.51"/>
+                    <GradientStop Color="#FF2683C5" Offset="0.484"/>
+                    <GradientStop Color="#FF8CD4FF" Offset="1"/>
+                    <GradientStop Color="#FF1973AE" Offset="0.497"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="{x:Type Button}" x:Key="GENERAL_BUTTON" BasedOn="{StaticResource BUTTON_BASE}">
         <Setter Property="Template">
             <Setter.Value>
@@ -81,6 +96,35 @@
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter Property="Opacity" TargetName="TRIGGER_RECT" Value="0.6"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type ToggleButton}" x:Key="GENERAL_TOGGLE_BUTTON" BasedOn="{StaticResource TOGGLE_BUTTON_BASE}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Grid Background="Transparent" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" ClipToBounds="True">
+                        <Rectangle Style="{StaticResource BUTTON_RECT_OUTER}"/>
+                        <Rectangle Style="{StaticResource BUTTON_RECT_INNER}" Fill="Gray" Margin="4,4,2,2" x:Name="INNER_RECT"/>
+                        <Rectangle Style="{StaticResource BUTTON_RECT_SHADE}" Opacity="0.6" Margin="2,2,4,4" x:Name="TRIGGER_RECT"/>
+                        <Viewbox VerticalAlignment="Stretch" Height="Auto" Margin="20,10,20,10">
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="NoWrap" Text="{TemplateBinding Content}" Foreground="Black" TextAlignment="Center">
+
+                            </TextBlock>
+                        </Viewbox>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" TargetName="TRIGGER_RECT" Value="0.4"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter Property="Fill" TargetName="INNER_RECT" Value="DarkGray"/>
+                            <Setter Property="Margin" TargetName="INNER_RECT" Value="2,2,4,4"/>
+                            <Setter Property="Margin" TargetName="TRIGGER_RECT" Value="4,4,2,2"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -507,6 +551,31 @@
                         <Rectangle Style="{StaticResource BUTTON_RECT_SHADE}" x:Name="TRIGGER_RECT"/>
                         <Viewbox Style="{StaticResource BUTTON_SYMBOL_VIEWBOX}">
                             <Path Fill="{StaticResource BUTTON_SYMBOL_COLOR}" Data="{StaticResource SYMBOL_PAUSE}"/>
+                        </Viewbox>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" TargetName="TRIGGER_RECT" Value="0.4"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Opacity" TargetName="TRIGGER_RECT" Value="0.6"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type Button}" x:Key="BUTTON_TRACTOR" BasedOn="{StaticResource BUTTON_BASE}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid Background="Transparent" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" ClipToBounds="True">
+                        <Rectangle Style="{StaticResource BUTTON_RECT_OUTER}"/>
+                        <Rectangle Style="{StaticResource BUTTON_RECT_INNER}"/>
+                        <Rectangle Style="{StaticResource BUTTON_RECT_SHADE}" x:Name="TRIGGER_RECT"/>
+                        <Viewbox Style="{StaticResource BUTTON_SYMBOL_VIEWBOX}">
+                            <Path Fill="{StaticResource BUTTON_SYMBOL_COLOR}" Data="{StaticResource SYMBOL_TRACTOR}"/>
                         </Viewbox>
                     </Grid>
                     <ControlTemplate.Triggers>

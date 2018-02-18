@@ -87,13 +87,9 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         #region Events
             
-        public delegate void ValuesUpdatedDelegate(object sender);
+        public event EventHandler ValuesUpdated;
 
-        public delegate void IsConnectedChangedDelegate(object sender, bool connected);
-
-        public event ValuesUpdatedDelegate ValuesUpdated;
-
-        public event IsConnectedChangedDelegate IsConnectedChanged;
+        public event EventHandler<bool> IsConnectedChanged;
 
         #endregion
 
@@ -137,9 +133,14 @@ namespace FarmingGPSLib.Equipment.BogBalle
             return WriteValue(STOP_COMMAND, string.Empty);
         }
         
-        public bool SetWidth(float width)
+        public bool ChangeWidth(float width)
         {
             return WriteValue(SPREAD_WIDTH_COMMAND, (width * 10).ToString("000"));
+        }
+
+        public bool ChangeSpreadingRate(int rate)
+        {
+            return WriteValue(RATE_COMMAND, rate.ToString("0000"));
         }
 
         #endregion
@@ -155,12 +156,12 @@ namespace FarmingGPSLib.Equipment.BogBalle
             }
         }
 
-        public int ActualValue
+        public int ActualSpreadingRate
         {
             get { return _actValue; }
         }
             
-        public int SetValue
+        public int SetSpreadingRate
         {
             get { return _setValue; }
         }
@@ -271,7 +272,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                 _pto = -1;
 
             if (ValuesUpdated != null)
-                ValuesUpdated.Invoke(this);
+                ValuesUpdated.Invoke(this, new EventArgs());
 
             if (isConnected != IsConnected)
                 if (IsConnectedChanged != null)

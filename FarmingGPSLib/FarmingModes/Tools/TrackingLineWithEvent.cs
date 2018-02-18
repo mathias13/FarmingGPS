@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using DotSpatial.Topology;
-using DotSpatial.Topology.Algorithm;
+﻿using DotSpatial.Topology;
+using DotSpatial.Positioning;
 
 namespace FarmingGPSLib.FarmingModes.Tools
-{                                                                    
+{
     public class TrackingLineWithEvent : TrackingLine, IFarmingEvent
     {
         #region Private Variables
@@ -27,7 +25,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
             get { return _eventMessage; }
         }
 
-        public bool EventFired(Angle angle, Coordinate coord)
+        public bool EventFired(Azimuth directionOfTravel, Coordinate coord)
         {
             return false;
         }

@@ -26,7 +26,7 @@ namespace FarmingGPS.Visualization
 
         private const double FIELD_TRACK_HOLES_Z_INDEX = -0.05;
         
-        private const double FIELD_TRACK_Z_INDEX = -0.10;
+        private const double FIELD_TRACK_Z_INDEX = -0.1;
 
         private const double FIELD_Z_INDEX = -0.15;
 
@@ -50,7 +50,7 @@ namespace FarmingGPS.Visualization
 
         private readonly double VIEW_BEHIND_NEAR_PLANE = 20.0;
 
-        private readonly double VIEW_BEHIND_FAR_PLANE = 220.0;
+        private readonly double VIEW_BEHIND_FAR_PLANE = 200.0;
 
         private readonly Point3D VIEW_TRACKLINE_POSITION = new Point3D(-308.0, 0.0, 88.0);
 
@@ -466,26 +466,23 @@ namespace FarmingGPS.Visualization
                     if (_trackMesh.Keys.Contains(e.ID))
                     {
                         MeshVisual3D mesh = _trackMesh[e.ID];
-                        if (mesh.Mesh.Vertices.Count != e.Polygon.Shell.Coordinates.Count - 1)
+                        GeometryModel3D geometry = mesh.Content as GeometryModel3D;
+                        Polygon3D polygon = new Polygon3D();
+                        Polygon polygon2D = new Polygon();
+                        IList<Vector3D> vectors = new List<Vector3D>();
+                        for (int i = 0; i < e.Polygon.Shell.Coordinates.Count - 1; i++)
                         {
-                            GeometryModel3D geometry = mesh.Content as GeometryModel3D;
-                            Polygon3D polygon = new Polygon3D();
-                            Polygon polygon2D = new Polygon();
-                            IList<Vector3D> vectors = new List<Vector3D>();
-                            for (int i = 0; i < e.Polygon.Shell.Coordinates.Count - 1; i++)
-                            {
-                                polygon.Points.Add(new Point3D(e.Polygon.Shell.Coordinates[i].X - _minPoint.X, e.Polygon.Shell.Coordinates[i].Y - _minPoint.Y, FIELD_TRACK_Z_INDEX));
-                                polygon2D.Points.Add(new Point(e.Polygon.Shell.Coordinates[i].X - _minPoint.X, e.Polygon.Shell.Coordinates[i].Y - _minPoint.Y));
-                                vectors.Add(new Vector3D(0.0, 0.0, 1.0));
-                            }
-                            Mesh3D mesh3D = new Mesh3D(polygon.Points, polygon2D.Triangulate());
-                            mesh.Mesh = mesh3D;
+                            polygon.Points.Add(new Point3D(e.Polygon.Shell.Coordinates[i].X - _minPoint.X, e.Polygon.Shell.Coordinates[i].Y - _minPoint.Y, FIELD_TRACK_Z_INDEX));
+                            polygon2D.Points.Add(new Point(e.Polygon.Shell.Coordinates[i].X - _minPoint.X, e.Polygon.Shell.Coordinates[i].Y - _minPoint.Y));
+                            vectors.Add(new Vector3D(0.0, 0.0, 1.0));
                         }
+                        Mesh3D mesh3D = new Mesh3D(polygon.Points, CuttingEarsTriangulator.Triangulate(polygon2D.Points));
+                        mesh.Mesh = mesh3D;
 
-                        for(int i = 0; i < e.Polygon.Holes.Length; i++)
+                        for (int i = 0; i < e.Polygon.Holes.Length; i++)
                         {
                             //Check if the number of hole has been added else add it
-                            if(i < _trackMeshHoles[e.ID].Count)
+                            if (i < _trackMeshHoles[e.ID].Count)
                             {
                                 if (_trackMeshHoles[e.ID][i].Mesh.Vertices.Count != e.Polygon.Holes[i].Coordinates.Count - 1)
                                 {
@@ -497,7 +494,7 @@ namespace FarmingGPS.Visualization
                                         holePolygon.Points.Add(new Point3D(e.Polygon.Holes[i].Coordinates[j].X - _minPoint.X, e.Polygon.Holes[i].Coordinates[j].Y - _minPoint.Y, FIELD_TRACK_HOLES_Z_INDEX));
                                         holePolygon2D.Points.Add(new Point(e.Polygon.Holes[i].Coordinates[j].X - _minPoint.X, e.Polygon.Holes[i].Coordinates[j].Y - _minPoint.Y));
                                     }
-                                    Mesh3D holeMesh3D = new Mesh3D(holePolygon.Points, holePolygon2D.Triangulate());
+                                    Mesh3D holeMesh3D = new Mesh3D(holePolygon.Points, CuttingEarsTriangulator.Triangulate(holePolygon2D.Points));
                                     _trackMeshHoles[e.ID][i].FaceMaterial = area > FIELD_TRACK_HOLE_RED_MAX_AREA ? _fieldFillMaterial : _fieldTrackHoleMaterial;
                                     _trackMeshHoles[e.ID][i].Mesh = holeMesh3D;
                                 }
@@ -512,7 +509,7 @@ namespace FarmingGPS.Visualization
                                     holePolygon.Points.Add(new Point3D(e.Polygon.Holes[i].Coordinates[j].X - _minPoint.X, e.Polygon.Holes[i].Coordinates[j].Y - _minPoint.Y, FIELD_TRACK_HOLES_Z_INDEX));
                                     holePolygon2D.Points.Add(new Point(e.Polygon.Holes[i].Coordinates[j].X - _minPoint.X, e.Polygon.Holes[i].Coordinates[j].Y - _minPoint.Y));
                                 }
-                                Mesh3D holeMesh3D = new Mesh3D(holePolygon.Points, holePolygon2D.Triangulate());
+                                Mesh3D holeMesh3D = new Mesh3D(holePolygon.Points, CuttingEarsTriangulator.Triangulate(holePolygon2D.Points));
                                 MeshVisual3D holeMesh = new MeshVisual3D();
                                 holeMesh.FaceMaterial = area > FIELD_TRACK_HOLE_RED_MAX_AREA ? _fieldFillMaterial : _fieldTrackHoleMaterial;
                                 holeMesh.EdgeDiameter = 0;
@@ -541,7 +538,7 @@ namespace FarmingGPS.Visualization
                             polygon2D.Points.Add(new Point(e.Polygon.Shell.Coordinates[i].X - _minPoint.X, e.Polygon.Shell.Coordinates[i].Y - _minPoint.Y));
                             vectors.Add(new Vector3D(0.0, 0.0, 1.0));
                         }
-                        Mesh3D mesh3D = new Mesh3D(polygon.Points, polygon2D.Triangulate());
+                        Mesh3D mesh3D = new Mesh3D(polygon.Points, CuttingEarsTriangulator.Triangulate(polygon2D.Points));
                         MeshVisual3D mesh = new MeshVisual3D();
                         mesh.FaceMaterial = _fieldTrackMaterial;
                         mesh.EdgeDiameter = 0;
@@ -559,7 +556,7 @@ namespace FarmingGPS.Visualization
                                 holePolygon.Points.Add(new Point3D(hole.Coordinates[i].X - _minPoint.X, hole.Coordinates[i].Y - _minPoint.Y, FIELD_TRACK_HOLES_Z_INDEX));
                                 holePolygon2D.Points.Add(new Point(hole.Coordinates[i].X - _minPoint.X, hole.Coordinates[i].Y - _minPoint.Y));
                             }
-                            Mesh3D holeMesh3D = new Mesh3D(holePolygon.Points, holePolygon2D.Triangulate());
+                            Mesh3D holeMesh3D = new Mesh3D(holePolygon.Points, CuttingEarsTriangulator.Triangulate(holePolygon2D.Points));
                             MeshVisual3D holeMesh = new MeshVisual3D();
                             holeMesh.FaceMaterial = area > FIELD_TRACK_HOLE_RED_MAX_AREA ? _fieldFillMaterial : _fieldTrackHoleMaterial;
                             holeMesh.EdgeDiameter = 0;
@@ -567,7 +564,7 @@ namespace FarmingGPS.Visualization
                             holeMesh.Mesh = holeMesh3D;
                             holes.Add(holeMesh);
                         }
-                        
+
                         _trackMesh.Add(e.ID, mesh);
                         _viewPort.Children.Add(mesh);
                         _trackMeshHoles.Add(e.ID, holes);

@@ -1,16 +1,17 @@
 ﻿using System;
 using DotSpatial.Topology;
+using DotSpatial.Positioning;
 
 namespace FarmingGPSLib.FarmingModes.Tools
 {
-    interface IFarmingEvent
+    public interface IFarmingEvent
     {
         string Message
         { 
             get; 
         }
 
-        bool EventFired(Angle angle, Coordinate coord);
+        bool EventFired(Azimuth directionOfTravel, Coordinate coord);
 
     }
 }

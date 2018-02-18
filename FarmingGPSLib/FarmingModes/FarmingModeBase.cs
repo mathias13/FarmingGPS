@@ -28,7 +28,7 @@ namespace FarmingGPSLib.FarmingModes
         protected IList<TrackingLine> _trackingLinesHeadLand = new List<TrackingLine>();
 
         protected IList<TrackingLine> _trackingLines = new List<TrackingLine>();
-
+        
         #endregion
 
         public FarmingModeBase()
@@ -135,6 +135,12 @@ namespace FarmingGPSLib.FarmingModes
             return (IList<Coordinate>)list[0];
         }
 
+        protected void OnFarmingEvent(string message)
+        {
+            if (FarmingEvent != null)
+                FarmingEvent.Invoke(this, message);
+        }
+
         #endregion
 
         #region IFarmingMode Implementation
@@ -181,6 +187,28 @@ namespace FarmingGPSLib.FarmingModes
 
             return closestLine;
         }
+
+        public virtual void CreateTrackingLines(Coordinate aCoord, Angle direction)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void CreateTrackingLines(Coordinate aCoord, Coordinate bCoord)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void CreateTrackingLines(TrackingLine headLine)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction)
+        {
+            throw new NotImplementedException();
+        }
+
+        public event EventHandler<string> FarmingEvent;
 
         #endregion
     }

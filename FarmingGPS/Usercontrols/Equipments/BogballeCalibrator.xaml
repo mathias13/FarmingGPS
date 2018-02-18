@@ -1,0 +1,61 @@
+﻿<UserControl x:Class="FarmingGPS.Usercontrols.Equipments.BogballeCalibrator"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:FarmingGPS.Usercontrols.Equipments"
+             xmlns:extended="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
+             xmlns:local2="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
+             xmlns:themes="clr-namespace:Xceed.Wpf.Toolkit.Themes;assembly=Xceed.Wpf.Toolkit"
+             xmlns:prim="clr-namespace:Xceed.Wpf.Toolkit.Primitives;assembly=Xceed.Wpf.Toolkit"
+             mc:Ignorable="d" 
+             d:DesignHeight="500" d:DesignWidth="500">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Visualization/Buttons.xaml" />
+                <ResourceDictionary Source="/Visualization/VisualizationDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Width="350" Height="250">
+        <StackPanel Orientation="Vertical">
+            <Grid>
+                <Border Background="Red" ClipToBounds="True" BorderBrush="Black" BorderThickness="2" CornerRadius="5" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="13">
+                    <Grid>
+                        <Rectangle Fill="Green" Visibility="{Binding Path=ConnectedState, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}, Converter={StaticResource BoolToVis}}"/>
+                        <TextBlock Background="Transparent" Padding="5" FontSize="14">Ansluten</TextBlock>
+                    </Grid>
+                </Border>
+                <Border Background="WhiteSmoke" ClipToBounds="True" BorderBrush="Black" BorderThickness="2" CornerRadius="5" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="13">
+                    <Grid>
+                        <Rectangle Fill="Green" Visibility="{Binding Path=Started, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}, Converter={StaticResource BoolToVis}}"/>
+                        <TextBlock Background="Transparent" Padding="5" FontSize="14">Startad</TextBlock>
+                    </Grid>
+                </Border>
+            </Grid>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Aktuell giva</TextBlock>
+                    <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg/ha" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=ActualSpreadingRate, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
+                    <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">PTO</TextBlock>
+                    <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 varv" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=PTO, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
+                    <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Tara</TextBlock>
+                    <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=Tara, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                    <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Inställd giva</TextBlock>
+                    <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg/ha" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=SetSpreadingRate, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
+                    <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Hastighet</TextBlock>
+                    <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="50" AllowSpin="False" IsReadOnly="True" FormatString="0.0 km/h" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=PTO, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
+                    <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Vikt</TextBlock>
+                    <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=HopperContents, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</UserControl>
