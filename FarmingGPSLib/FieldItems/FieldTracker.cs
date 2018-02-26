@@ -21,7 +21,7 @@ namespace FarmingGPSLib.FieldItems
 
         #region Consts
 
-        private const int SIMPLIFIER_COUNT_LIMIT = 100;
+        private const int SIMPLIFIER_COUNT_LIMIT = 50;
 
         #endregion
 
@@ -126,7 +126,7 @@ namespace FarmingGPSLib.FieldItems
 
                             if (_polygons[_currentPolygonIndex].Coordinates.Count > _polygonSimplifierCount[_currentPolygonIndex])
                             {
-                                IGeometry geometry = DotSpatial.Topology.Simplify.TopologyPreservingSimplifier.Simplify(_polygons[_currentPolygonIndex], 0.03);
+                                IGeometry geometry = DotSpatial.Topology.Simplify.TopologyPreservingSimplifier.Simplify(_polygons[_currentPolygonIndex], 0.04);
                                 if (geometry is Polygon)
                                 {
                                     _polygons[_currentPolygonIndex] = geometry as Polygon;
@@ -172,8 +172,13 @@ namespace FarmingGPSLib.FieldItems
                         OnPolygonUpdated(_currentPolygonIndex);
                         OnAreaChanged();
                     }
-                    _prevLeftPoint = leftPoint;
-                    _prevRightPoint = rightPoint;
+                    //Make sure we are a little bit behind and to the middle so that .Union doesn't throw an exception next update
+                    LineSegment line = new LineSegment(leftPoint, rightPoint);
+                    Angle angle = new Angle(line.Angle);
+                    angle -= new Angle(Angle.PI / 4.0);
+                    _prevLeftPoint = HelperClassCoordinate.ComputePoint(leftPoint, angle.Radians, 0.02);
+                    angle -= new Angle(Angle.PI / 2.0);
+                    _prevRightPoint = HelperClassCoordinate.ComputePoint(rightPoint, angle.Radians, 0.02);
                 }
                 catch (Exception e)
                 {

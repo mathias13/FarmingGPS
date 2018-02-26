@@ -153,8 +153,9 @@ namespace FarmingGPS
                     (_camera as IDisposable).Dispose();
             if(_ntripClient != null)
                 _ntripClient.Dispose();
-            if(_receiver != null)
-                _receiver.Dispose();
+            if (_receiver != null)
+                if (_receiver is IDisposable)
+                    (_receiver as IDisposable).Dispose();
             if(_sbpReceiverSender != null)
                 _sbpReceiverSender.Dispose();
             if(_database != null)
@@ -244,7 +245,6 @@ namespace FarmingGPS
 
         private void FarmingEvent(object sender, string e)
         {
-            TestEventText(e);
             if(e.Contains("EQUIPMENT"))
             {
                 if (_equipment is IEquipmentControl && _startStopAuto)
@@ -468,6 +468,7 @@ namespace FarmingGPS
             else
                 actualCoordinate = _field.GetPositionInField(_equipment.GetCenter(actualPosition, receiver.CurrentBearing));
 
+
             Azimuth actualHeading = receiver.CurrentBearing;
             _visualization.UpdatePosition(actualCoordinate, actualHeading);
             _farmingMode.UpdateEvents(actualCoordinate, actualHeading);
@@ -522,17 +523,7 @@ namespace FarmingGPS
                 _lightBar.SetDistance(Distance.FromMeters(orientationToLine.DistanceTo), lightBarDirection);
             }
         }
-
-        private void TestEventText(string message)
-        {
-            if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
-            {
-                testEvent.Text = message;
-            }
-            else
-                Dispatcher.Invoke(new Action<string>(TestEventText), System.Windows.Threading.DispatcherPriority.Render, message);
-        }
-
+        
         private void _receiver_BearingUpdate(object sender, Azimuth actualBearing)
         {
         }
@@ -765,7 +756,8 @@ namespace FarmingGPS
         {
             if (_equipmentChoosen == null)
                 return;
-            FarmingGPSLib.Equipment.Harrow harrow = new FarmingGPSLib.Equipment.Harrow(Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(0.0), new Azimuth(180), Distance.FromCentimeters(userControl.Overlap));
+
+            Harrow harrow = new Harrow(Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromCentimeters(userControl.Overlap));
             _equipment = harrow;
 
             _visualization.SetEquipmentWidth(harrow.Width);
@@ -793,6 +785,11 @@ namespace FarmingGPS
         private void GetVechileEquipment(GetVechileEquipment userControl)
         {
             _equipmentChoosen = userControl.Equipment;
+            if (_receiver != null)
+            {
+                _receiver.OffsetDirection = new Azimuth(userControl.Vechile.ReceiverAngleFromCenter);
+                _receiver.OffsetDistance = Distance.FromMeters(userControl.Vechile.ReceiverDistFromCenter);
+            }
         }
 
         private void GetFieldChanged(GetField userControl, string eventName)

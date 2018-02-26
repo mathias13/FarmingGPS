@@ -64,7 +64,6 @@
                 </Grid>
             </StackPanel>
         </Border>
-        <TextBlock Grid.Row="1" FontSize="28" Background="Green" x:Name="testEvent" x:FieldModifier="private" Width="Auto" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
         <Grid Grid.Row="1" x:Name="_equipmentControlGrid" x:FieldModifier="private" Visibility="Hidden" VerticalAlignment="Center" HorizontalAlignment="Left" Width="Auto" Margin="10">
             <ContentControl Template="{StaticResource MenuBorder}"/>
         </Grid>
