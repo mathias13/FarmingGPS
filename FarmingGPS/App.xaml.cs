@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
+[assembly: log4net.Config.XmlConfigurator(Watch = true)]
 namespace FarmingGPS
 {
     /// <summary>

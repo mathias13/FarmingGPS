@@ -90,6 +90,10 @@
       <HintPath>..\packages\HelixToolkit.Wpf.2015.1.715\lib\net45\HelixToolkit.Wpf.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="MjpegProcessor, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MJPEG-Decoder.1.2\lib\net35\MjpegProcessor.dll</HintPath>
       <Private>True</Private>
@@ -306,10 +310,6 @@
     <ProjectReference Include="..\..\SwiftBinaryProtocol\SwiftBinaryProtocol\SwiftBinaryProtocol.csproj">
       <Project>{cab096cd-070d-45db-8340-8b4efb073bb9}</Project>
       <Name>SwiftBinaryProtocol</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Utilities\Utilities\Utilities.csproj">
-      <Project>{7b42a768-a977-4e3f-936a-4f3b72ecb6e1}</Project>
-      <Name>Utilities</Name>
     </ProjectReference>
     <ProjectReference Include="..\Database\FarmingGPS.Database.csproj">
       <Project>{d73db0c0-d9d1-489e-b6bc-7ef3203afdc0}</Project>

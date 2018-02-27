@@ -4,16 +4,17 @@ using FarmingGPS.Camera;
 using FarmingGPS.Camera.Axis;
 using FarmingGPS.Dialogs;
 using FarmingGPS.Settings;
-using FarmingGPS.Settings.NTRIP;
 using FarmingGPS.Settings.Database;
+using FarmingGPS.Settings.NTRIP;
 using FarmingGPS.Settings.Receiver;
 using FarmingGPS.Usercontrols;
 using FarmingGPS.Visualization;
+using FarmingGPSLib.Equipment;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
-using FarmingGPSLib.Equipment;
 using GpsUtilities.Filter;
 using GpsUtilities.Reciever;
+using log4net;
 using NTRIP;
 using NTRIP.Settings;
 using SwiftBinaryProtocol;
@@ -35,6 +36,8 @@ namespace FarmingGPS
     /// </summary>
     public partial class MainWindow : Window
     {
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         #region Constants
 
         protected const double MINIMUM_DISTANCE_BETWEEN_POINTS = 0.5;
@@ -51,7 +54,7 @@ namespace FarmingGPS
 
         Configuration _config;
 
-        private FarmingGPSLib.FieldItems.Field _field;
+        private Field _field;
 
         private Database.DatabaseHandler _database;
         
@@ -114,14 +117,13 @@ namespace FarmingGPS
             _camera.CameraConnectedChangedEvent += _camera_CameraConnectedChangedEvent;
             _camera.CameraImageEvent += _camera_CameraImageEvent;
             SetValue(CameraUnavilableProperty, Visibility.Visible);
-
-
+                        
             _distanceTriggerFieldTracker = new DistanceTrigger(MINIMUM_DISTANCE_BETWEEN_POINTS, MAXIMUM_DISTANCE_BETWEEN_POINTS, MINIMUM_CHANGE_DIRECTION, MAXIMUM_CHANGE_DIRECTION);
         }
 
         private void Current_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            Utilities.Log.Log.Error(e.Exception);
+            Log.Fatal("Unhandled exception", e.Exception);
         }
 
         #region DependencyProperties
@@ -205,7 +207,7 @@ namespace FarmingGPS
 
         private void _sbpReceiverSender_ReadExceptionEvent(object sender, SBPReadExceptionEventArgs e)
         {
-            Utilities.Log.Log.Error(e.Exception);
+            Log.Error("SBPReaderException", e.Exception);
         }
         
         #region Private Methods

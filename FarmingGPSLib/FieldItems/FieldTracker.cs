@@ -2,6 +2,7 @@
 using DotSpatial.Topology.Algorithm;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.HelperClasses;
+using log4net;
 using System;
 using System.Collections.Generic;
 
@@ -9,6 +10,8 @@ namespace FarmingGPSLib.FieldItems
 {
     public class FieldTracker
     {
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         #region Events
 
         public event EventHandler<PolygonUpdatedEventArgs> PolygonUpdated;
@@ -182,7 +185,7 @@ namespace FarmingGPSLib.FieldItems
                 }
                 catch (Exception e)
                 {
-                    ;
+                    Log.Error("Failed add new trackingpoint", e);
                 }
             }
         }

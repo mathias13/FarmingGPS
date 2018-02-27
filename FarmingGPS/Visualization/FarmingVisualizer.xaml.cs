@@ -2,6 +2,7 @@
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
 using HelixToolkit.Wpf;
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -18,6 +19,8 @@ namespace FarmingGPS.Visualization
     /// </summary>
     public partial class FarmingVisualizer : UserControl
     {
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         #region Consts
 
         private const double LINE_THICKNESS = 0.1;
@@ -574,7 +577,7 @@ namespace FarmingGPS.Visualization
                 }
                 catch (Exception exception)
                 {
-                    Utilities.Log.Log.Error(exception);
+                    Log.Error("Failed to draw fieldtrack", exception);
                 }
             }
             else
