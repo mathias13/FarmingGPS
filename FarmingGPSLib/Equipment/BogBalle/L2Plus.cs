@@ -3,7 +3,7 @@ using DotSpatial.Positioning;
 
 namespace FarmingGPSLib.Equipment.BogBalle
 {
-    public class L2Plus : EquipmentBase , IEquipmentControl
+    public class L2Plus : EquipmentBase , IEquipmentControl, IDisposable
     {
         private readonly double[,] STOP_START_DISTANCES = new double[2, 3] { { 12, 0, 10 }, { 24, -6, 10 } };
 
@@ -44,6 +44,14 @@ namespace FarmingGPSLib.Equipment.BogBalle
             }                
         }
 
+        #region IDisposable interface
+
+        public void Dispose()
+        {
+            _calibrator.Dispose();
+        }
+
+        #endregion
 
         #region IEquipmentControl interface
 
@@ -72,7 +80,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
         {
             _calibrator.Stop();
         }
-
+        
         #endregion
 
     }

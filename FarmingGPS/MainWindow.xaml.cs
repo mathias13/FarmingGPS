@@ -150,6 +150,9 @@ namespace FarmingGPS
 
         void Current_Exit(object sender, ExitEventArgs e)
         {
+            if (_equipment != null)
+                if (_equipment is IDisposable)
+                    (_equipment as IDisposable).Dispose();
             if (_camera != null)
                 if (_camera is IDisposable)
                     (_camera as IDisposable).Dispose();
@@ -759,11 +762,6 @@ namespace FarmingGPS
             if (_equipmentChoosen == null)
                 return;
 
-            Harrow harrow = new Harrow(Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromCentimeters(userControl.Overlap));
-            _equipment = harrow;
-
-            _visualization.SetEquipmentWidth(harrow.Width);
-
             if (_farmingMode != null)
             {
                 foreach (TrackingLine trackingLine in _farmingMode.TrackingLines)
@@ -771,8 +769,31 @@ namespace FarmingGPS
                 foreach (TrackingLine trackingLine in _farmingMode.TrackingLinesHeadLand)
                     _visualization.DeleteLine(trackingLine);
             }
+
+            //TODO make this better
+            if (_equipmentChoosen.EquipmentId == 1)
+            {
+                FarmingGPSLib.Equipment.BogBalle.Calibrator calibrator = new FarmingGPSLib.Equipment.BogBalle.Calibrator("COM1", 1000);
+                FarmingGPSLib.Equipment.BogBalle.L2Plus fertilizer = new FarmingGPSLib.Equipment.BogBalle.L2Plus(Distance.FromMeters(_equipmentChoosen.WorkWidth), 
+                    Distance.FromMeters(_equipmentChoosen.DistFromAttach),
+                    new Azimuth(_equipmentChoosen.AngleFromAttach),
+                    Distance.FromCentimeters(userControl.Overlap),
+                    calibrator);
+                _equipment = fertilizer;
+                _farmingMode = new FarmingGPSLib.FarmingModes.FertilizingMode(_field, _equipment, 1);
+                _farmingMode.FarmingEvent += FarmingEvent;
+                _equipmentControlGrid.Children.Add(new FarmingGPS.Usercontrols.Equipments.BogballeCalibrator(calibrator));
+            }
+            else
+            {
+                Harrow harrow = new Harrow(Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromCentimeters(userControl.Overlap));
+                _equipment = harrow;
+                _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, userControl.Headlands);
+            }
+
+            _visualization.SetEquipmentWidth(_equipment.Width);
             
-            _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, userControl.Headlands);
+
             foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
                 _visualization.AddLine(line);
 
