@@ -53,13 +53,15 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         private const string STATUS_READ = "S";
 
+        private const int DISCONNECTED_COUNT = 10;
+
         private SerialPort _serialPort;
 
         private object _syncObject = new object();
 
         private Timer _readTimer;
 
-        private int _noAnswerCount = 0;
+        private int _noAnswerCount = DISCONNECTED_COUNT;
 
         private int _setValue = -1;
 
@@ -152,7 +154,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
             get
             {
                 lock (_syncObject)
-                    return _serialPort.IsOpen && _noAnswerCount < 10;
+                    return _serialPort.IsOpen && _noAnswerCount < DISCONNECTED_COUNT;
             }
         }
 

@@ -773,7 +773,7 @@ namespace FarmingGPS
             //TODO make this better
             if (_equipmentChoosen.EquipmentId == 1)
             {
-                FarmingGPSLib.Equipment.BogBalle.Calibrator calibrator = new FarmingGPSLib.Equipment.BogBalle.Calibrator("COM1", 1000);
+                FarmingGPSLib.Equipment.BogBalle.Calibrator calibrator = new FarmingGPSLib.Equipment.BogBalle.Calibrator("COM5", 1000);
                 FarmingGPSLib.Equipment.BogBalle.L2Plus fertilizer = new FarmingGPSLib.Equipment.BogBalle.L2Plus(Distance.FromMeters(_equipmentChoosen.WorkWidth), 
                     Distance.FromMeters(_equipmentChoosen.DistFromAttach),
                     new Azimuth(_equipmentChoosen.AngleFromAttach),
