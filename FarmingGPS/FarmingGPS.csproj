@@ -169,6 +169,8 @@
     <Compile Include="Settings\Setting.cs" />
     <Compile Include="Settings\SettingGroup.cs" />
     <Compile Include="Settings\SettingsCollection.cs" />
+    <Compile Include="StateRecovery\IStateObject.cs" />
+    <Compile Include="StateRecovery\StateRecoveryManager.cs" />
     <Compile Include="Usercontrols\Equipments\BogballeCalibrator.xaml.cs">
       <DependentUpon>BogballeCalibrator.xaml</DependentUpon>
     </Compile>
