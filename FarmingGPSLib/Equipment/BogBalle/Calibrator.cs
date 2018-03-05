@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO.Ports;
 using System.Threading;
+using log4net;
 
 namespace FarmingGPSLib.Equipment.BogBalle
 {
     public class Calibrator : IDisposable
     {
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         #region Private Variables
 
         //Message constants
@@ -368,6 +371,8 @@ namespace FarmingGPSLib.Equipment.BogBalle
                 }
                 catch(Exception e)
                 {
+                    Log.Error("Failed to read value with command: " + command, e);
+                    _noAnswerCount++;
                     return string.Empty;
                 }
             }
@@ -422,7 +427,9 @@ namespace FarmingGPSLib.Equipment.BogBalle
                     }
                 }
                 catch(Exception e)
-                {                        
+                {
+                    Log.Error("Failed to write value with command: " + command, e);
+                    _noAnswerCount++;
                     return false;
                 }
             }
