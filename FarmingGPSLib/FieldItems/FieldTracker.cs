@@ -5,12 +5,52 @@ using FarmingGPSLib.HelperClasses;
 using log4net;
 using System;
 using System.Collections.Generic;
+using FarmingGPSLib.StateRecovery;
+using System.Xml.Serialization;
 
 namespace FarmingGPSLib.FieldItems
 {
-    public class FieldTracker
+    public class FieldTracker: IStateObject
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
+        [Serializable]
+        public struct SimpleCoordinateArray
+        {
+            public int PolygonIndex;
+            
+            public List<Coordinate> Coordinates;
+
+            public SimpleCoordinateArray(int polygonIndex, List<Coordinate> coordinates)
+            {
+                PolygonIndex = polygonIndex;
+                Coordinates = coordinates;
+            }
+
+        }
+
+        [Serializable]
+        public struct FieldTrackerState
+        {
+            public List<SimpleCoordinateArray> Polygons;
+            
+            public List<SimpleCoordinateArray> Holes;
+
+            public Coordinate LeftPoint;
+
+            public Coordinate RightPoint;
+
+            public int Index;
+
+            public FieldTrackerState(List<SimpleCoordinateArray> polygons, List<SimpleCoordinateArray> holes, Coordinate leftPoint, Coordinate rightPoint, int index)
+            {
+                Polygons = polygons;
+                Holes = holes;
+                LeftPoint = leftPoint;
+                RightPoint = rightPoint;
+                Index = index;
+            }
+        }
 
         #region Events
 
@@ -31,7 +71,7 @@ namespace FarmingGPSLib.FieldItems
         #region Private Variables
 
         private IField _fieldToCalculateAreaWithin = null;
-
+        
         private IDictionary<int, Polygon> _polygons = new Dictionary<int, Polygon>();
 
         private IDictionary<int, int> _polygonSimplifierCount = new Dictionary<int, int>();
@@ -256,12 +296,6 @@ namespace FarmingGPSLib.FieldItems
             }
         }
 
-        public IField FieldToCalculateAreaWithin
-        {
-            set { _fieldToCalculateAreaWithin = value; }
-            get { return _fieldToCalculateAreaWithin; }
-        }
-
         #endregion
 
         #region Public Properties
@@ -314,7 +348,13 @@ namespace FarmingGPSLib.FieldItems
                 }
             }
         }
-        
+
+        public IField FieldToCalculateAreaWithin
+        {
+            set { _fieldToCalculateAreaWithin = value; }
+            get { return _fieldToCalculateAreaWithin; }
+        }
+
         #endregion
 
         #region Protected Methods
@@ -357,7 +397,63 @@ namespace FarmingGPSLib.FieldItems
                 coords.Add(HelperClassCoordinate.CoordinateRoundedmm(coord));
             return new LinearRing(coords);
         }
-        
+
+        #endregion
+
+        #region IStateObjects
+
+        public void RestoreObject(object restoredState)
+        {
+            lock (_syncObject)
+            {
+                FieldTrackerState state = (FieldTrackerState)restoredState;
+                foreach (SimpleCoordinateArray polygon in state.Polygons)
+                {
+                    List<ILinearRing> holes = new List<ILinearRing>();
+                    foreach (SimpleCoordinateArray hole in state.Holes)
+                        if (hole.PolygonIndex == polygon.PolygonIndex)
+                            holes.Add(new LinearRing(hole.Coordinates));
+                    Polygon newPolygon = new Polygon(new LinearRing(polygon.Coordinates), holes.ToArray());
+                    _polygons.Add(polygon.PolygonIndex, newPolygon);
+                }
+                _prevLeftPoint = state.LeftPoint;
+                _prevRightPoint = state.RightPoint;
+                _currentPolygonIndex = state.Index;
+                foreach (int index in _polygons.Keys)
+                    OnPolygonUpdated(index);
+                OnAreaChanged();
+            }
+        }
+
+        public object StateObject
+        {
+            get
+            {
+                lock(_syncObject)
+                {
+                    List<SimpleCoordinateArray> polygons = new List<SimpleCoordinateArray>();
+                    List<SimpleCoordinateArray> holes = new List<SimpleCoordinateArray>();
+                    foreach (KeyValuePair<int, Polygon> polygon in _polygons)
+                    {
+                        polygons.Add(new SimpleCoordinateArray(polygon.Key, new List<Coordinate>(polygon.Value.Shell.Coordinates)));
+
+                        foreach (ILinearRing hole in polygon.Value.Holes)
+                        {
+                            holes.Add(new SimpleCoordinateArray(polygon.Key, new List<Coordinate>(hole.Coordinates)));
+                        }                        
+                    }
+
+                    FieldTrackerState state = new FieldTrackerState(polygons, holes, _prevLeftPoint, _prevRightPoint, _currentPolygonIndex);
+                    return state;
+                }
+            }
+        }
+
+        public Type StateType
+        {
+            get { return typeof(FieldTrackerState); }
+        }
+
         #endregion
     }
 }

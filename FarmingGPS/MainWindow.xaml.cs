@@ -12,6 +12,7 @@ using FarmingGPS.Visualization;
 using FarmingGPSLib.Equipment;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
+using FarmingGPSLib.StateRecovery;
 using GpsUtilities.Filter;
 using GpsUtilities.Reciever;
 using log4net;
@@ -53,6 +54,8 @@ namespace FarmingGPS
         #region Private Variables
 
         Configuration _config;
+
+        private StateRecoveryManager stateRecovery;
 
         private Field _field;
 
@@ -165,6 +168,9 @@ namespace FarmingGPS
                 _sbpReceiverSender.Dispose();
             if(_database != null)
                 _database.Dispose();
+
+            if (stateRecovery != null)
+                stateRecovery.Dispose();
         }
 
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -179,7 +185,13 @@ namespace FarmingGPS
             _workedAreaBar.Unit = AreaUnit.SquareKilometers;
             _fieldTracker.AreaChanged += _fieldTracker_AreaChanged;
             _visualization.AddFieldTracker(_fieldTracker);
-
+            stateRecovery = new StateRecoveryManager(TimeSpan.FromMinutes(0.5));
+            foreach(KeyValuePair<Type, object> recoveredObject in stateRecovery.ObjectsRecovered)
+            {
+                if (recoveredObject.Key == typeof(FieldTracker))
+                    _fieldTracker.RestoreObject(recoveredObject.Value);
+            }
+            stateRecovery.AddStateObject(_fieldTracker);
 #if DEBUG
             _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8531152), new Latitude(58.50953)), false);
             _receiver.BearingUpdate += _receiver_BearingUpdate;
