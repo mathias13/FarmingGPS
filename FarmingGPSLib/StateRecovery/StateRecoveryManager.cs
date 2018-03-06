@@ -118,6 +118,7 @@ namespace FarmingGPSLib.StateRecovery
                                 XmlSerializer serializer = new XmlSerializer(stateObject.StateType);
                                 writer = new StreamWriter(_folderPath + objectName + ".xml", false);
                                 serializer.Serialize(writer, stateObject.StateObject);
+                                File.Delete(_folderPath + objectName + ".old");
                             }
                             catch (Exception e)
                             {

@@ -187,21 +187,28 @@ namespace FarmingGPS
             _visualization.AddFieldTracker(_fieldTracker);
             stateRecovery = new StateRecoveryManager(TimeSpan.FromMinutes(0.5));
 
-            foreach (KeyValuePair<Type, object> recoveredObject in stateRecovery.ObjectsRecovered)
+            if (stateRecovery.ObjectsRecovered.Count > 0)
             {
-                if (recoveredObject.Key == typeof(Field))
+                YesNoDialog dialog = new YesNoDialog("Vill du återställa tidigare tillstånd?");
+                if (dialog.ShowDialog().Value)
                 {
-                    _field = new Field();
-                    _field.RestoreObject(recoveredObject.Value);
-                    _fieldTracker.FieldToCalculateAreaWithin = _field;
-                    _workedAreaBar.SetField(_field);
-                    _visualization.AddField(_field);
-                    stateRecovery.AddStateObject(_field);
-                }
-                if (recoveredObject.Key == typeof(FieldTracker))
-                {
-                    _fieldTracker.RestoreObject(recoveredObject.Value);
-                    stateRecovery.AddStateObject(_fieldTracker);
+                    foreach (KeyValuePair<Type, object> recoveredObject in stateRecovery.ObjectsRecovered)
+                    {
+                        if (recoveredObject.Key == typeof(Field))
+                        {
+                            _field = new Field();
+                            _field.RestoreObject(recoveredObject.Value);
+                            _fieldTracker.FieldToCalculateAreaWithin = _field;
+                            _workedAreaBar.SetField(_field);
+                            _visualization.AddField(_field);
+                            stateRecovery.AddStateObject(_field);
+                        }
+                        if (recoveredObject.Key == typeof(FieldTracker))
+                        {
+                            _fieldTracker.RestoreObject(recoveredObject.Value);
+                            stateRecovery.AddStateObject(_fieldTracker);
+                        }
+                    }
                 }
             }
 #if DEBUG
