@@ -41,7 +41,7 @@ namespace FarmingGPSLib.StateRecovery
                 {
                     FileInfo fileInfo = new FileInfo(file);
                     if (fileInfo.Name.Contains(".old"))
-                        if (fileInfo.Name.Contains(fileInfo.Name.Replace(".old", ".xml")))
+                        if (files.Contains(file.Replace(".old", ".xml")))
                             continue;
 
                     Type restoredType = Type.GetType(fileInfo.Name.Remove(fileInfo.Name.Length - 4, 4));

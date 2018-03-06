@@ -112,8 +112,8 @@ namespace FarmingGPS
             WindowState = WindowState.Maximized;
 
             _config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
-            this.Loaded += MainWindow_Loaded;
+            
+            ContentRendered += MainWindow_ContentRendered;
 
             //_camera = new AxisCamera("AxisCase");
             _camera = new AxisCamera(System.Net.IPAddress.Parse("192.168.43.132"));
@@ -123,7 +123,7 @@ namespace FarmingGPS
                         
             _distanceTriggerFieldTracker = new DistanceTrigger(MINIMUM_DISTANCE_BETWEEN_POINTS, MAXIMUM_DISTANCE_BETWEEN_POINTS, MINIMUM_CHANGE_DIRECTION, MAXIMUM_CHANGE_DIRECTION);
         }
-
+        
         private void Current_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             Log.Fatal("Unhandled exception", e.Exception);
@@ -173,7 +173,7 @@ namespace FarmingGPS
                 stateRecovery.Dispose();
         }
 
-        void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private void MainWindow_ContentRendered(object sender, EventArgs e)
         {   
             SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
             SetValue(CameraSizeProperty, (Style)this.FindResource("PiPvideo"));
@@ -186,25 +186,40 @@ namespace FarmingGPS
             _fieldTracker.AreaChanged += _fieldTracker_AreaChanged;
             _visualization.AddFieldTracker(_fieldTracker);
             stateRecovery = new StateRecoveryManager(TimeSpan.FromMinutes(0.5));
-            foreach(KeyValuePair<Type, object> recoveredObject in stateRecovery.ObjectsRecovered)
+
+            foreach (KeyValuePair<Type, object> recoveredObject in stateRecovery.ObjectsRecovered)
             {
+                if (recoveredObject.Key == typeof(Field))
+                {
+                    _field = new Field();
+                    _field.RestoreObject(recoveredObject.Value);
+                    _fieldTracker.FieldToCalculateAreaWithin = _field;
+                    _workedAreaBar.SetField(_field);
+                    _visualization.AddField(_field);
+                    stateRecovery.AddStateObject(_field);
+                }
                 if (recoveredObject.Key == typeof(FieldTracker))
+                {
                     _fieldTracker.RestoreObject(recoveredObject.Value);
+                    stateRecovery.AddStateObject(_fieldTracker);
+                }
             }
-            stateRecovery.AddStateObject(_fieldTracker);
 #if DEBUG
             _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8531152), new Latitude(58.50953)), false);
             _receiver.BearingUpdate += _receiver_BearingUpdate;
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
             _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
-            List<Position> positions = new List<Position>();
-            positions.Add(new Position(new Latitude(58.51114), new Longitude(13.8537299)));
-            positions.Add(new Position(new Latitude(58.509705), new Longitude(13.8532929)));
-            positions.Add(new Position(new Latitude(58.509073), new Longitude(13.8606883)));
-            positions.Add(new Position(new Latitude(58.510477), new Longitude(13.8611945)));
-            positions.Add(new Position(new Latitude(58.51114), new Longitude(13.8537299)));
-            FieldChoosen(positions);
+            if (_field == null)
+            {
+                List<Position> positions = new List<Position>();
+                positions.Add(new Position(new Latitude(58.51114), new Longitude(13.8537299)));
+                positions.Add(new Position(new Latitude(58.509705), new Longitude(13.8532929)));
+                positions.Add(new Position(new Latitude(58.509073), new Longitude(13.8606883)));
+                positions.Add(new Position(new Latitude(58.510477), new Longitude(13.8611945)));
+                positions.Add(new Position(new Latitude(58.51114), new Longitude(13.8537299)));
+                FieldChoosen(positions);
+            }
             
             FarmingGPSLib.Equipment.BogBalle.L2Plus fertilizer = new FarmingGPSLib.Equipment.BogBalle.L2Plus(Distance.FromMeters(5.0), Distance.FromMeters(0.0), new Azimuth(180), new FarmingGPSLib.Equipment.BogBalle.Calibrator("COM1", 1000));
             _equipment = fertilizer;
@@ -295,6 +310,8 @@ namespace FarmingGPS
             _visualization.AddField(_field);
             
             _settingsGrid.Visibility = Visibility.Hidden;
+            stateRecovery.AddStateObject(_field);
+            stateRecovery.AddStateObject(_fieldTracker);
         }
 
         private void _fieldTracker_AreaChanged(object sender, AreaChanged e)

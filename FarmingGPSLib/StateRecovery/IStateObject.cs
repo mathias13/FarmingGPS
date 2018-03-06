@@ -14,6 +14,6 @@ namespace FarmingGPSLib.StateRecovery
         Type StateType
         {
             get;
-        }
+        }        
     }
 }

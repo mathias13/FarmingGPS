@@ -4,11 +4,25 @@ using DotSpatial.Projections;
 using DotSpatial.Positioning;
 using DotSpatial.Topology;
 using DotSpatial.Topology.Algorithm;
+using FarmingGPSLib.StateRecovery;
 
 namespace FarmingGPSLib.FieldItems
 {
-    public class FieldBase :IField
+    public class FieldBase :IField, IStateObject
     {
+        public struct FieldState
+        {
+            public List<Position> Positions;
+
+            public string Proj4String;
+
+            public FieldState(List<Position> positions, string proj4String)
+            {
+                Positions = positions;
+                Proj4String = proj4String;
+            }
+        }
+
         #region Private Variables
 
         protected IList<Position> _positions;
@@ -158,6 +172,34 @@ namespace FarmingGPSLib.FieldItems
         public ProjectionInfo Projection
         {
             get { return _proj; }
+        }
+
+        #endregion
+
+        #region IStateObjectImplementation
+
+        public void RestoreObject(object restoredState)
+        {
+            FieldState fieldState = (FieldState)restoredState;
+            _positions = fieldState.Positions;
+            _proj = ProjectionInfo.FromProj4String(fieldState.Proj4String);
+            ReloadPolygon();
+        }
+        
+        public object StateObject
+        {
+            get
+            {
+                return new FieldState(new List<Position>(_positions), _proj.ToProj4String());
+            }
+        }
+
+        public Type StateType
+        {
+            get
+            {
+                return typeof(FieldState);
+            }
         }
 
         #endregion

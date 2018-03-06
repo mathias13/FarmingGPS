@@ -35,20 +35,12 @@ namespace FarmingGPSLib.FieldItems
             public List<SimpleCoordinateArray> Polygons;
             
             public List<SimpleCoordinateArray> Holes;
+            
 
-            public Coordinate LeftPoint;
-
-            public Coordinate RightPoint;
-
-            public int Index;
-
-            public FieldTrackerState(List<SimpleCoordinateArray> polygons, List<SimpleCoordinateArray> holes, Coordinate leftPoint, Coordinate rightPoint, int index)
+            public FieldTrackerState(List<SimpleCoordinateArray> polygons, List<SimpleCoordinateArray> holes)
             {
                 Polygons = polygons;
                 Holes = holes;
-                LeftPoint = leftPoint;
-                RightPoint = rightPoint;
-                Index = index;
             }
         }
 
@@ -400,7 +392,7 @@ namespace FarmingGPSLib.FieldItems
 
         #endregion
 
-        #region IStateObjects
+        #region IStateObject
 
         public void RestoreObject(object restoredState)
         {
@@ -416,9 +408,6 @@ namespace FarmingGPSLib.FieldItems
                     Polygon newPolygon = new Polygon(new LinearRing(polygon.Coordinates), holes.ToArray());
                     _polygons.Add(polygon.PolygonIndex, newPolygon);
                 }
-                _prevLeftPoint = state.LeftPoint;
-                _prevRightPoint = state.RightPoint;
-                _currentPolygonIndex = state.Index;
                 foreach (int index in _polygons.Keys)
                     OnPolygonUpdated(index);
                 OnAreaChanged();
@@ -443,7 +432,7 @@ namespace FarmingGPSLib.FieldItems
                         }                        
                     }
 
-                    FieldTrackerState state = new FieldTrackerState(polygons, holes, _prevLeftPoint, _prevRightPoint, _currentPolygonIndex);
+                    FieldTrackerState state = new FieldTrackerState(polygons, holes);
                     return state;
                 }
             }
