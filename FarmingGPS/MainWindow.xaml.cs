@@ -106,6 +106,7 @@ namespace FarmingGPS
 
             Application.Current.Exit += Current_Exit;
             Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             WindowState = WindowState.Maximized;
 
             _config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
@@ -119,6 +120,11 @@ namespace FarmingGPS
             SetValue(CameraUnavilableProperty, Visibility.Visible);
                         
             _distanceTriggerFieldTracker = new DistanceTrigger(MINIMUM_DISTANCE_BETWEEN_POINTS, MAXIMUM_DISTANCE_BETWEEN_POINTS, MINIMUM_CHANGE_DIRECTION, MAXIMUM_CHANGE_DIRECTION);
+        }
+
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Log.Fatal("Unhandled exception", (Exception)e.ExceptionObject);
         }
 
         private void Current_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
