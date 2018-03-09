@@ -8,7 +8,7 @@ using FarmingGPSLib.StateRecovery;
 
 namespace FarmingGPSLib.FieldItems
 {
-    public class FieldBase :IField, IStateObject
+    public class FieldBase : IField
     {
         public struct FieldState
         {
@@ -32,6 +32,8 @@ namespace FarmingGPSLib.FieldItems
         protected ProjectionInfo _proj;
 
         protected object _syncObject = new object();
+
+        private bool _hasChanged = true;
 
         #endregion
 
@@ -60,6 +62,7 @@ namespace FarmingGPSLib.FieldItems
         {
             lock (_syncObject)
             {
+                _hasChanged = true;
                 if (_positions.Count > 2)
                 {
                     IList<Coordinate> coords = ReprojectBoundary();
@@ -190,8 +193,14 @@ namespace FarmingGPSLib.FieldItems
         {
             get
             {
-                return new FieldState(new List<Position>(_positions), _proj.ToProj4String());
+                lock(_syncObject)
+                    return new FieldState(new List<Position>(_positions), _proj.ToProj4String());
             }
+        }
+
+        public bool HasChanged
+        {
+            get { return _hasChanged; }
         }
 
         public Type StateType

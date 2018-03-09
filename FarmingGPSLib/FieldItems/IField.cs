@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using DotSpatial.Positioning;
 using DotSpatial.Topology;
 using DotSpatial.Projections;
+using FarmingGPSLib.StateRecovery;
 
 namespace FarmingGPSLib.FieldItems
 {
-    public interface IField
+    public interface IField: IStateObject
     {
         bool IsPointInField(Coordinate pointToCheck);
 

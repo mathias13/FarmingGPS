@@ -76,7 +76,9 @@ namespace FarmingGPSLib.StateRecovery
         {
             lock (_syncobject)
             {
-                string objectName = stateObject.GetType().Name;
+                if (stateObject == null)
+                    return;
+                string objectName = stateObject.GetType().FullName;
                 try
                 {
                     File.Delete(_folderPath + objectName + ".old");
@@ -90,9 +92,27 @@ namespace FarmingGPSLib.StateRecovery
             }
         }
 
+        public void Clear()
+        {
+            lock (_syncobject)
+                while (_objectsToPreserve.Count > 0)
+                    RemoveStateObject(_objectsToPreserve[0]);
+
+            foreach (string file in Directory.GetFiles(_folderPath))
+                File.Delete(file);
+        }
+
         public IDictionary<Type, object> ObjectsRecovered
         {
             get { return _objectsRecovered; }
+        }
+
+        public KeyValuePair<Type, object>? GetRecoveredObjectDerivedFrom(Type type)
+        {
+            foreach (KeyValuePair<Type, object> objectRecovered in _objectsRecovered)
+                if (type.IsAssignableFrom(objectRecovered.Key))
+                    return objectRecovered;
+            return null;
         }
 
         private void PreserveThread()
@@ -106,8 +126,9 @@ namespace FarmingGPSLib.StateRecovery
                     {
                         foreach (IStateObject stateObject in _objectsToPreserve)
                         {
-                            Type stateType = stateObject.GetType();
-                            string objectName = stateType.FullName;
+                            if (!stateObject.HasChanged)
+                                continue;
+                            string objectName = stateObject.GetType().FullName;
                             TextWriter writer = null;
                             try
                             {

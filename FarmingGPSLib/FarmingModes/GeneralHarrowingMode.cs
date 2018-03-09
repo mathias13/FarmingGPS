@@ -19,6 +19,9 @@ namespace FarmingGPSLib.FarmingModes
 
         protected int _headlandTurns;
 
+        public GeneralHarrowingMode() : base()
+        { }
+
         public GeneralHarrowingMode(IField field)
             : base(field)
         {
@@ -45,11 +48,12 @@ namespace FarmingGPSLib.FarmingModes
                 distanceFromShell += _equipment.WidthExclOverlap.ToMeters().Value;
             }
             foreach (LineString line in trackingLines)
-                _trackingLinesHeadLand.Add(new TrackingLine(line));
+                _trackingLinesHeadland.Add(new TrackingLine(line));
         }
 
         public override void CreateTrackingLines(Coordinate aCoord, DotSpatial.Topology.Angle direction)
         {
+            base.CreateTrackingLines(aCoord, direction);
             direction.DegreesPos += 90;
             direction.Radians = direction.Radians * -1;
             FillFieldWithTrackingLines(HelperClassLines.CreateLine(aCoord, direction, 5.0));
@@ -57,11 +61,13 @@ namespace FarmingGPSLib.FarmingModes
 
         public override void CreateTrackingLines(Coordinate aCoord, Coordinate bCoord)
         {
+            base.CreateTrackingLines(aCoord, bCoord);
             FillFieldWithTrackingLines(new LineSegment(aCoord, bCoord));
         }
 
         public override void CreateTrackingLines(TrackingLine headLine)
         {
+            base.CreateTrackingLines(headLine);
             IList<LineSegment> lines = HelperClassLines.CreateLines(headLine.Points);
             LineSegment baseLine = lines[0];
             for (int i = 1; i < lines.Count; i++)

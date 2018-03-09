@@ -11,6 +11,11 @@ namespace FarmingGPSLib.StateRecovery
             get;
         }
 
+        bool HasChanged
+        {
+            get;
+        }
+
         Type StateType
         {
             get;

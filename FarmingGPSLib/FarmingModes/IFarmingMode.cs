@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using DotSpatial.Topology;
 using FarmingGPSLib.FarmingModes.Tools;
+using FarmingGPSLib.StateRecovery;
 
 namespace FarmingGPSLib.FarmingModes
 {
-    public interface IFarmingMode
+    public interface IFarmingMode : IStateObject
     {
         void CreateTrackingLines(Coordinate aCoord, Angle direction);
 
@@ -15,7 +16,7 @@ namespace FarmingGPSLib.FarmingModes
 
         void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction);
 
-        IList<TrackingLine> TrackingLinesHeadLand
+        IList<TrackingLine> TrackingLinesHeadland
         {
             get;
         }

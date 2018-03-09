@@ -76,6 +76,8 @@ namespace FarmingGPSLib.FieldItems
 
         private object _syncObject = new object();
 
+        private bool _hasChanged = true;
+
         #endregion
 
         public FieldTracker()
@@ -353,12 +355,14 @@ namespace FarmingGPSLib.FieldItems
 
         protected void OnPolygonUpdated(int id)
         {
+            _hasChanged = true;
             if (PolygonUpdated != null)
                 PolygonUpdated.Invoke(this, new PolygonUpdatedEventArgs(id, _polygons[id]));
         }
 
         protected void OnPolygonDeleted(int id)
         {
+            _hasChanged = true;
             if (PolygonDeleted != null)
                 PolygonDeleted.Invoke(this, new PolygonDeletedEventArgs(id));
         }
@@ -420,6 +424,7 @@ namespace FarmingGPSLib.FieldItems
             {
                 lock(_syncObject)
                 {
+                    _hasChanged = false;
                     List<SimpleCoordinateArray> polygons = new List<SimpleCoordinateArray>();
                     List<SimpleCoordinateArray> holes = new List<SimpleCoordinateArray>();
                     foreach (KeyValuePair<int, Polygon> polygon in _polygons)
@@ -436,6 +441,11 @@ namespace FarmingGPSLib.FieldItems
                     return state;
                 }
             }
+        }
+
+        public bool HasChanged
+        {
+            get { return _hasChanged; }
         }
 
         public Type StateType
