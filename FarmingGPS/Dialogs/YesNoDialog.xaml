@@ -20,7 +20,7 @@
     <Grid>
         <Border BorderBrush="Black" Background="White" BorderThickness="3" CornerRadius="5"/>
         <StackPanel Orientation="Vertical" VerticalAlignment="Top">
-            <TextBlock x:Name="TEXT_MESSAGE" x:FieldModifier="private" HorizontalAlignment="Center" FontStretch="Normal" Margin="10,10,10,5" TextWrapping="Wrap" TextAlignment="Center" Style="{StaticResource SUBJECT_HEADER_TEXT}">sdfsdsdfsdfsdfsdfsdfsdfsdfsdfsdfsff</TextBlock>
+            <TextBlock x:Name="TEXT_MESSAGE" x:FieldModifier="private" HorizontalAlignment="Center" FontStretch="Normal" Margin="10,10,10,5" TextWrapping="Wrap" TextAlignment="Center" Style="{StaticResource SUBJECT_HEADER_TEXT}">This text is only displayed design purposes</TextBlock>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button x:Name="BTN_YES" x:FieldModifier="private" Click="BTN_YES_Click" Margin="10,10,10,10" Width="100" Height="40" Style="{StaticResource GENERAL_BUTTON}">Ja</Button>
                 <Button x:Name="BTN_NO" x:FieldModifier="private" Click="BTN_NO_Click" Margin="10,10,10,10" Width="100" Height="40" Style="{StaticResource GENERAL_BUTTON}">Nej</Button>
