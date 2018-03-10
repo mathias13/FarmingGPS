@@ -181,9 +181,20 @@ namespace FarmingGPS.Database
             _databaseContext.Vechiles.InsertOnSubmit(vechile);
         }
 
+
         public void DeleteVechile(Vechile vechile)
         {
             _databaseContext.Vechiles.DeleteOnSubmit(vechile);
+        }
+
+        public void AddVechileAttach(VechileAttach attach)
+        {
+            _databaseContext.VechileAttaches.InsertOnSubmit(attach);
+        }
+
+        public void DeleteVechileAttach(VechileAttach attach)
+        {
+            _databaseContext.VechileAttaches.DeleteOnSubmit(attach);
         }
 
         public void AddEquipment(Equipment equipment)

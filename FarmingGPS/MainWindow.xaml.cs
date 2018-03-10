@@ -59,9 +59,7 @@ namespace FarmingGPS
         private Database.DatabaseHandler _database;
         
         private string _cameraIp = String.Empty;
-
-        private MjpegProcessor.MjpegDecoder _decoder;
-
+        
         private ClientService _ntripClient;
 
         private SBPReceiverSender _sbpReceiverSender;
@@ -816,8 +814,12 @@ namespace FarmingGPS
             _equipmentChoosen = userControl.Equipment;
             if (_receiver != null)
             {
-                _receiver.OffsetDirection = new Azimuth(userControl.Vechile.ReceiverAngleFromCenter);
-                _receiver.OffsetDistance = Distance.FromMeters(userControl.Vechile.ReceiverDistFromCenter);
+                Position originPosition = new Position( new Latitude(0.0), new Longitude(0.0));
+                Position newPosition = originPosition.TranslateTo(new Azimuth(userControl.Vechile.ReceiverAngleFromCenter), Distance.FromMeters(userControl.Vechile.ReceiverDistFromCenter), Ellipsoid.Wgs1984);
+                newPosition = newPosition.TranslateTo(new Azimuth(userControl.VechileAttach.AttachAngleFromCenter), Distance.FromMeters(userControl.Vechile.ReceiverDistFromCenter), Ellipsoid.Wgs1984);
+                newPosition = newPosition.TranslateTo(new Azimuth(userControl.Equipment.AngleFromAttach), Distance.FromMeters(userControl.Equipment.DistFromAttach), Ellipsoid.Wgs1984);
+                _receiver.OffsetDirection = originPosition.BearingTo(newPosition);
+                _receiver.OffsetDistance = originPosition.DistanceTo(newPosition);
             }
         }
 
@@ -830,7 +832,7 @@ namespace FarmingGPS
                     break;
             }
         }
-
+                
         #endregion
 
     }

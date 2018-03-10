@@ -13,10 +13,12 @@ namespace FarmingGPS.Usercontrols
     {
         private Vechile _vechile;
 
+        private VechileAttach _vechileAttach;
+
         private Equipment _equipment;
 
         private DatabaseHandler _database;
-
+        
         public static readonly string VECHILE_EQUIPMENT_CHOOSEN = "VECHILE_EQUIPMENT_CHOOSEN";
 
         public GetVechileEquipment()
@@ -33,6 +35,8 @@ namespace FarmingGPS.Usercontrols
                 foreach (Vechile vechile in vechiles)
                     ListBoxVechile.Items.Add(vechile);
             }
+
+            ListBoxAttach.Items.Clear();
 
             ListBoxEquipment.Items.Clear();
             Equipment[] equipments = _database.GetEquipments();
@@ -76,6 +80,40 @@ namespace FarmingGPS.Usercontrols
                 ReloadLists();
             }
         }
+        
+        private void ButtonAttachUpdate_Click(object sender, RoutedEventArgs e)
+        {
+            if (ListBoxEquipment.SelectedItem != null)
+            {
+                VechileAttach attach = ListBoxAttach.SelectedItem as VechileAttach;
+                attach.Name = TextBoxAttachName.Text;
+                attach.AttachAngleFromCenter = (float)NumericAttachAngleFromCenter.Value.Value;
+                attach.AttachDistFromCenter = (float)NumericAttachDistFromCenter.Value.Value;
+                _database.SubmitToDatabase();
+                ReloadLists();
+            }
+        }
+
+        private void ButtonAttachAdd_Click(object sender, RoutedEventArgs e)
+        {
+            VechileAttach attach = new VechileAttach();
+            attach.Name = TextBoxAttachName.Text;
+            attach.AttachAngleFromCenter = (float)NumericAttachAngleFromCenter.Value.Value;
+            attach.AttachDistFromCenter = (float)NumericAttachDistFromCenter.Value.Value;
+            _database.AddVechileAttach(attach);
+            _database.SubmitToDatabase();
+            ReloadLists();
+        }
+
+        private void ButtonAttachDelete_Click(object sender, RoutedEventArgs e)
+        {
+            if (ListBoxAttach.SelectedItem != null)
+            {
+                _database.DeleteVechileAttach(ListBoxAttach.SelectedItem as VechileAttach);
+                _database.SubmitToDatabase();
+                ReloadLists();
+            }
+        }
 
         private void ButtonEquipmentUpdate_Click(object sender, RoutedEventArgs e)
         {
@@ -115,13 +153,15 @@ namespace FarmingGPS.Usercontrols
 
         private void ButtonChoose_Click(object sender, RoutedEventArgs e)
         {
-            if(ListBoxEquipment.SelectedItem != null && ListBoxVechile.SelectedItem != null)
+            if(ListBoxEquipment.SelectedItem != null && ListBoxVechile.SelectedItem != null && ListBoxAttach.SelectedItem != null)
             {
                 _vechile = ListBoxVechile.SelectedItem as Vechile;
+                _vechileAttach = ListBoxAttach.SelectedItem as VechileAttach;
                 _equipment = ListBoxEquipment.SelectedItem as Equipment;
                 if (SettingChanged != null)
                     SettingChanged.Invoke(this, VECHILE_EQUIPMENT_CHOOSEN);
             }
+            //TODO prompt that you have to choose
         }
 
         #endregion
@@ -131,6 +171,11 @@ namespace FarmingGPS.Usercontrols
         public Vechile Vechile
         {
             get { return _vechile; }
+        }
+
+        public VechileAttach VechileAttach
+        {
+            get { return _vechileAttach; }
         }
 
         public Equipment Equipment
@@ -177,6 +222,24 @@ namespace FarmingGPS.Usercontrols
                 Vechile vechile = ListBoxVechile.SelectedItem as Vechile;
                 TextBoxVechileManufacturer.Text = vechile.Manufacturer;
                 TextBoxVechileModel.Text = vechile.Model;
+
+                VechileAttach[] attachPoints = _database.GetAttachPoints(vechile.VechileId);
+                if (attachPoints != null)
+                {
+                    foreach (VechileAttach attachPoint in attachPoints)
+                        ListBoxAttach.Items.Add(attachPoint);
+                }
+            }
+        }
+
+        private void ListBoxAttach_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ListBoxAttach.SelectedItem != null)
+            {
+                VechileAttach vechileAttach = ListBoxAttach.SelectedItem as VechileAttach;
+                TextBoxAttachName.Text = vechileAttach.Name;
+                NumericAttachAngleFromCenter.Value = vechileAttach.AttachAngleFromCenter;
+                NumericAttachDistFromCenter.Value = vechileAttach.AttachDistFromCenter;
             }
         }
     }
