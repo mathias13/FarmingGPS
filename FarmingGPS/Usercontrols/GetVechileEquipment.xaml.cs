@@ -54,6 +54,8 @@ namespace FarmingGPS.Usercontrols
             NumericEquipmentAngleFromAttach.Value = null;
             NumericEquipmentDistFromAttach.Value = null;
             NumericEquipmentWorkWidth.Value = null;
+            NumericVechileReceiverAngleToCenter.Value = null;
+            NumericVechileReceiverDistToCenter.Value = null;
         }
 
         #region Button Events
@@ -65,6 +67,8 @@ namespace FarmingGPS.Usercontrols
                 Vechile vechile = ListBoxVechile.SelectedItem as Vechile;
                 vechile.Manufacturer = TextBoxVechileManufacturer.Text;
                 vechile.Model = TextBoxVechileModel.Text;
+                vechile.ReceiverAngleFromCenter = (float)NumericVechileReceiverAngleToCenter.Value.Value;
+                vechile.ReceiverDistFromCenter = (float)NumericVechileReceiverDistToCenter.Value.Value;
                 _database.SubmitToDatabase();
                 ReloadLists();
             }
@@ -72,9 +76,13 @@ namespace FarmingGPS.Usercontrols
 
         private void ButtonVechileAdd_Click(object sender, RoutedEventArgs e)
         {
+            if (!NumericVechileReceiverAngleToCenter.Value.HasValue && !NumericVechileReceiverDistToCenter.Value.HasValue)
+                return;
             Vechile vechile = new Vechile();
             vechile.Manufacturer = TextBoxVechileManufacturer.Text;
             vechile.Model = TextBoxVechileModel.Text;
+            vechile.ReceiverAngleFromCenter = (float)NumericVechileReceiverAngleToCenter.Value.Value;
+            vechile.ReceiverDistFromCenter = (float)NumericVechileReceiverDistToCenter.Value.Value;
             _database.AddVechile(vechile);
             _database.SubmitToDatabase();
             ReloadLists();
@@ -92,7 +100,7 @@ namespace FarmingGPS.Usercontrols
         
         private void ButtonAttachUpdate_Click(object sender, RoutedEventArgs e)
         {
-            if (ListBoxEquipment.SelectedItem != null)
+            if (ListBoxAttach.SelectedItem != null)
             {
                 VechileAttach attach = ListBoxAttach.SelectedItem as VechileAttach;
                 attach.Name = TextBoxAttachName.Text;
@@ -236,6 +244,8 @@ namespace FarmingGPS.Usercontrols
                 Vechile vechile = ListBoxVechile.SelectedItem as Vechile;
                 TextBoxVechileManufacturer.Text = vechile.Manufacturer;
                 TextBoxVechileModel.Text = vechile.Model;
+                NumericVechileReceiverAngleToCenter.Value = vechile.ReceiverAngleFromCenter;
+                NumericVechileReceiverDistToCenter.Value = vechile.ReceiverDistFromCenter;
 
                 VechileAttach[] attachPoints = _database.GetAttachPoints(vechile.VechileId);
                 if (attachPoints != null)

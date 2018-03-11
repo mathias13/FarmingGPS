@@ -71,6 +71,10 @@
                 <TextBox x:FieldModifier="private" x:Name="TextBoxVechileModel" Style="{StaticResource TEXTBOX}"></TextBox>
                 <TextBlock Style="{StaticResource SETTING_HEADER}">Tillverkare</TextBlock>
                 <TextBox x:FieldModifier="private" x:Name="TextBoxVechileManufacturer" Style="{StaticResource TEXTBOX}"></TextBox>
+                <TextBlock Style="{StaticResource SETTING_HEADER}">Vinkel antenn till centrum</TextBlock>
+                <extended:DoubleUpDown Minimum="0" Maximum="360" AllowSpin="True" Increment="0.2" FormatString="0.0°" x:FieldModifier="private" x:Name="NumericVechileReceiverAngleToCenter" Style="{StaticResource DOUBLEUPDOWN}"/>
+                <TextBlock Style="{StaticResource SETTING_HEADER}">Mått antenn till centrum</TextBlock>
+                <extended:DoubleUpDown Minimum="0" Maximum="5" AllowSpin="True" Increment="0.01" FormatString="0.00m" x:FieldModifier="private" x:Name="NumericVechileReceiverDistToCenter" Style="{StaticResource DOUBLEUPDOWN}"/>
             </StackPanel>
             <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="1" Margin="10,10,10,10">
                 <Border Style="{StaticResource SUBJECT_HEADER_BORDER}">
@@ -81,7 +85,7 @@
                 <TextBlock Style="{StaticResource SETTING_HEADER}">Vinkel från centrum</TextBlock>
                 <extended:DoubleUpDown Minimum="0" Maximum="360" AllowSpin="True" Increment="0.2" FormatString="0.0°" x:FieldModifier="private" x:Name="NumericAttachAngleFromCenter" Style="{StaticResource DOUBLEUPDOWN}"/>
                 <TextBlock Style="{StaticResource SETTING_HEADER}">Mått från centrum</TextBlock>
-                <extended:DoubleUpDown Minimum="0" Maximum="5" AllowSpin="True" Increment="0.01" FormatString="0.00°" x:FieldModifier="private" x:Name="NumericAttachDistFromCenter" Style="{StaticResource DOUBLEUPDOWN}"/>
+                <extended:DoubleUpDown Minimum="0" Maximum="5" AllowSpin="True" Increment="0.01" FormatString="0.00m" x:FieldModifier="private" x:Name="NumericAttachDistFromCenter" Style="{StaticResource DOUBLEUPDOWN}"/>
             </StackPanel>
             <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="2" Margin="10,10,10,10">
                 <Border Style="{StaticResource SUBJECT_HEADER_BORDER}">
@@ -94,7 +98,7 @@
                 <TextBlock Style="{StaticResource SETTING_HEADER}">Vinkel från upphängning</TextBlock>
                 <extended:DoubleUpDown Minimum="0" Maximum="360" AllowSpin="True" Increment="0.2" FormatString="0.0°" x:FieldModifier="private" x:Name="NumericEquipmentAngleFromAttach" Style="{StaticResource DOUBLEUPDOWN}"/>
                 <TextBlock Style="{StaticResource SETTING_HEADER}">Mått från upphängning</TextBlock>
-                <extended:DoubleUpDown Minimum="0" Maximum="5" AllowSpin="True" Increment="0.01" FormatString="0.00°" x:FieldModifier="private" x:Name="NumericEquipmentDistFromAttach" Style="{StaticResource DOUBLEUPDOWN}"/>
+                <extended:DoubleUpDown Minimum="0" Maximum="5" AllowSpin="True" Increment="0.01" FormatString="0.00m" x:FieldModifier="private" x:Name="NumericEquipmentDistFromAttach" Style="{StaticResource DOUBLEUPDOWN}"/>
             </StackPanel>
         </Grid>
     </ScrollViewer>
