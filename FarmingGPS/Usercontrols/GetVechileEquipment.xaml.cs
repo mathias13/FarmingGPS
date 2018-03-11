@@ -35,9 +35,7 @@ namespace FarmingGPS.Usercontrols
                 foreach (Vechile vechile in vechiles)
                     ListBoxVechile.Items.Add(vechile);
             }
-
-            ListBoxAttach.Items.Clear();
-
+            
             ListBoxEquipment.Items.Clear();
             Equipment[] equipments = _database.GetEquipments();
             if (equipments != null)
@@ -45,6 +43,17 @@ namespace FarmingGPS.Usercontrols
                 foreach (Equipment equipment in equipments)
                     ListBoxEquipment.Items.Add(equipment);
             }
+
+            ListBoxAttach.Items.Clear();
+            TextBoxAttachName.Text = string.Empty;
+            TextBoxEquipmenName.Text = string.Empty;
+            TextBoxVechileManufacturer.Text = string.Empty;
+            TextBoxVechileModel.Text = string.Empty;
+            NumericAttachAngleFromCenter.Value = null;
+            NumericAttachDistFromCenter.Value = null;
+            NumericEquipmentAngleFromAttach.Value = null;
+            NumericEquipmentDistFromAttach.Value = null;
+            NumericEquipmentWorkWidth.Value = null;
         }
 
         #region Button Events
@@ -96,8 +105,10 @@ namespace FarmingGPS.Usercontrols
 
         private void ButtonAttachAdd_Click(object sender, RoutedEventArgs e)
         {
+            if (ListBoxVechile.SelectedItem == null || !NumericAttachAngleFromCenter.Value.HasValue && !NumericAttachDistFromCenter.Value.HasValue)
+                return;
             VechileAttach attach = new VechileAttach();
-            attach.VechileId = _vechile.VechileId;
+            attach.VechileId = (ListBoxVechile.SelectedItem as Vechile).VechileId;
             attach.Name = TextBoxAttachName.Text;
             attach.AttachAngleFromCenter = (float)NumericAttachAngleFromCenter.Value.Value;
             attach.AttachDistFromCenter = (float)NumericAttachDistFromCenter.Value.Value;
@@ -132,6 +143,8 @@ namespace FarmingGPS.Usercontrols
 
         private void ButtonEquipmentAdd_Click(object sender, RoutedEventArgs e)
         {
+            if (!NumericEquipmentAngleFromAttach.Value.HasValue || !NumericEquipmentDistFromAttach.Value.HasValue || !NumericEquipmentWorkWidth.Value.HasValue)
+                return;
             Equipment equipment = new Equipment();
             equipment.Name = TextBoxEquipmenName.Text;
             equipment.WorkWidth = NumericEquipmentWorkWidth.Value.Value;
