@@ -97,6 +97,7 @@ namespace FarmingGPS.Usercontrols
         private void ButtonAttachAdd_Click(object sender, RoutedEventArgs e)
         {
             VechileAttach attach = new VechileAttach();
+            attach.VechileId = _vechile.VechileId;
             attach.Name = TextBoxAttachName.Text;
             attach.AttachAngleFromCenter = (float)NumericAttachAngleFromCenter.Value.Value;
             attach.AttachDistFromCenter = (float)NumericAttachDistFromCenter.Value.Value;
