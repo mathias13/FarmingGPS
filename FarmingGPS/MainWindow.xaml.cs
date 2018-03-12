@@ -509,8 +509,6 @@ namespace FarmingGPS
                         //TODO change depleted limit to a setting
                         if (_fieldTracker.GetTrackingLineCoverage(_activeTrackingLine) > 0.97)
                             _activeTrackingLine.Depleted = true;
-                        else
-                            ;
 
                         _activeTrackingLine.Active = false;
                         _activeTrackingLine = newTrackingLine;

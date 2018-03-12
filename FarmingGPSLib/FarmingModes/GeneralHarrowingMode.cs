@@ -6,9 +6,6 @@ using FarmingGPSLib.Equipment;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
 using FarmingGPSLib.HelperClasses;
-using DotSpatial.Positioning;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace FarmingGPSLib.FarmingModes
