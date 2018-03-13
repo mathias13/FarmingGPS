@@ -184,6 +184,17 @@ namespace FarmingGPS
             _fieldTracker.AreaChanged += _fieldTracker_AreaChanged;
             _visualization.AddFieldTracker(_fieldTracker);
 
+            try
+            {
+                DotSpatial.Data.Shapefile shapeFile = DotSpatial.Data.Shapefile.OpenFile(@"C:\Users\Mathias\Downloads\Test\Test.Shp");
+                if (shapeFile.Attributes.Columns.Count > 0)
+                    ;
+            }
+            catch(Exception e1)
+            {
+                Log.Error("Shapefile", e1);
+            }
+
 #if DEBUG
             _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8531152), new Latitude(58.50953)), false);
             _receiver.BearingUpdate += _receiver_BearingUpdate;
