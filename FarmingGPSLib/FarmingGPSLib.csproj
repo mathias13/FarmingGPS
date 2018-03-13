@@ -119,6 +119,8 @@
     <Compile Include="HelperClasses\HelperClassCoordinate.cs" />
     <Compile Include="HelperClasses\HelperClassLines.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StateRecovery\IStateObject.cs" />
+    <Compile Include="StateRecovery\StateRecoveryManager.cs" />
     <Compile Include="Vechile\IVechile.cs" />
     <Compile Include="Vechile\PositionUpdateEventArgs.cs" />
   </ItemGroup>

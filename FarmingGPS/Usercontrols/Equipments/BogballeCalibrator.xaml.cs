@@ -63,7 +63,17 @@ namespace FarmingGPS.Usercontrols.Equipments
         protected static readonly DependencyProperty Tara = DependencyProperty.Register("Tara", typeof(int), typeof(BogballeCalibrator));
 
         protected static readonly DependencyProperty HopperContents = DependencyProperty.Register("HopperContents", typeof(int), typeof(BogballeCalibrator));
-        
+
         #endregion
+
+        private void BTN_START_Click(object sender, RoutedEventArgs e)
+        {
+            _calibrator.Start();
+        }
+
+        private void BTN_STOP_Click(object sender, RoutedEventArgs e)
+        {
+            _calibrator.Stop();
+        }
     }
 }

@@ -12,6 +12,7 @@ using FarmingGPS.Visualization;
 using FarmingGPSLib.Equipment;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
+using FarmingGPSLib.StateRecovery;
 using GpsUtilities.Filter;
 using GpsUtilities.Reciever;
 using log4net;
@@ -54,12 +55,14 @@ namespace FarmingGPS
 
         Configuration _config;
 
-        private Field _field;
+        private StateRecoveryManager _stateRecovery;
+
+        private IField _field;
 
         private Database.DatabaseHandler _database;
         
         private string _cameraIp = String.Empty;
-        
+
         private ClientService _ntripClient;
 
         private SBPReceiverSender _sbpReceiverSender;
@@ -109,7 +112,8 @@ namespace FarmingGPS
 
             _config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
-            this.Loaded += MainWindow_Loaded;
+            ContentRendered += MainWindow_ContentRendered;
+            Closing += MainWindow_Closing;
 
             //_camera = new AxisCamera("AxisCase");
             _camera = new AxisCamera(System.Net.IPAddress.Parse("192.168.43.132"));
@@ -169,9 +173,19 @@ namespace FarmingGPS
                 _sbpReceiverSender.Dispose();
             if(_database != null)
                 _database.Dispose();
+
+            if (_stateRecovery != null)
+                _stateRecovery.Dispose();
         }
 
-        void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {   
+            YesNoDialog dialog = new YesNoDialog("Vill du radera all sessions data?");
+            if (dialog.ShowDialog().Value)
+                _stateRecovery.Clear();
+        }
+
+        private void MainWindow_ContentRendered(object sender, EventArgs e)
         {   
             SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
             SetValue(CameraSizeProperty, (Style)this.FindResource("PiPvideo"));
@@ -183,13 +197,40 @@ namespace FarmingGPS
             _workedAreaBar.Unit = AreaUnit.SquareKilometers;
             _fieldTracker.AreaChanged += _fieldTracker_AreaChanged;
             _visualization.AddFieldTracker(_fieldTracker);
+            _stateRecovery = new StateRecoveryManager(TimeSpan.FromMinutes(0.5));
 
+            if (_stateRecovery.ObjectsRecovered.Count > 0)
+            {
+                YesNoDialog dialog = new YesNoDialog("Vill du återställa tidigare tillstånd?");
+                if (dialog.ShowDialog().Value)
+                {
+                    foreach (KeyValuePair<Type, object> recoveredObject in _stateRecovery.ObjectsRecovered)
+                    {
+                        if (recoveredObject.Key == typeof(Field))
+                        {
+                            _field = new Field();
+                            _field.RestoreObject(recoveredObject.Value);
+                            _fieldTracker.FieldToCalculateAreaWithin = _field;
+                            _workedAreaBar.SetField(_field);
+                            _visualization.AddField(_field);
+                            _stateRecovery.AddStateObject(_field);
+                        }
+                        if (recoveredObject.Key == typeof(FieldTracker))
+                        {
+                            _fieldTracker.RestoreObject(recoveredObject.Value);
+                            _stateRecovery.AddStateObject(_fieldTracker);
+                        }
+                    }
+                }
+            }
 #if DEBUG
             _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8531152), new Latitude(58.50953)), false);
             _receiver.BearingUpdate += _receiver_BearingUpdate;
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
             _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
+            if (_field == null)
+            {
             List<Position> positions = new List<Position>();
             positions.Add(new Position(new Latitude(58.51114), new Longitude(13.8537299)));
             positions.Add(new Position(new Latitude(58.509705), new Longitude(13.8532929)));
@@ -197,14 +238,26 @@ namespace FarmingGPS
             positions.Add(new Position(new Latitude(58.510477), new Longitude(13.8611945)));
             positions.Add(new Position(new Latitude(58.51114), new Longitude(13.8537299)));
             FieldChoosen(positions);
+            }
             
             FarmingGPSLib.Equipment.BogBalle.L2Plus fertilizer = new FarmingGPSLib.Equipment.BogBalle.L2Plus(Distance.FromMeters(5.0), Distance.FromMeters(0.0), new Azimuth(180), new FarmingGPSLib.Equipment.BogBalle.Calibrator("COM1", 1000));
             _equipment = fertilizer;
             _visualization.SetEquipmentWidth(fertilizer.Width);
             _farmingMode = new FarmingGPSLib.FarmingModes.FertilizingMode(_field, _equipment, 1);
+            KeyValuePair<Type, object>? state = _stateRecovery.GetRecoveredObjectDerivedFrom(typeof(FarmingGPSLib.FarmingModes.IFarmingMode));
+            if (state.HasValue)
+            {
+                YesNoDialog dialog = new YesNoDialog("Vill du återställa tidigare spårlinjer?");
+                if (dialog.ShowDialog().Value)
+                    _farmingMode.RestoreObject(state.Value.Value);
+            }
+            _stateRecovery.AddStateObject(_farmingMode);
             _farmingMode.FarmingEvent += FarmingEvent;
-            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
+            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadland)
                 _visualization.AddLine(line);
+            foreach (TrackingLine line in _farmingMode.TrackingLines)
+                _visualization.AddLine(line);
+            CheckAllTrackingLines();
             ShowTrackingLineSettings();
 
             _equipmentControlGrid.Children.Add(new FarmingGPS.Usercontrols.Equipments.BogballeCalibrator(new FarmingGPSLib.Equipment.BogBalle.Calibrator("COM1", 1000)));
@@ -275,18 +328,35 @@ namespace FarmingGPS
             }
         }
         
+        private void CheckAllTrackingLines()
+        {
+            if (_farmingMode == null)
+                return;
+            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadland)
+                if (_fieldTracker.GetTrackingLineCoverage(line) > 0.97)
+                    line.Depleted = true;
+
+            foreach (TrackingLine line in _farmingMode.TrackingLines)
+                if (_fieldTracker.GetTrackingLineCoverage(line) > 0.97)
+                    line.Depleted = true;
+        }
+        
         #endregion
 
         #region Field Events
 
         private void FieldChoosen(List<Position> e)
         {
+            _stateRecovery.RemoveStateObject(_field);
+            _stateRecovery.RemoveStateObject(_fieldTracker);
             _field = new Field(e, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
             _fieldTracker.FieldToCalculateAreaWithin = _field;
             _workedAreaBar.SetField(_field);
             _visualization.AddField(_field);
             
             _settingsGrid.Visibility = Visibility.Hidden;
+            _stateRecovery.AddStateObject(_field);
+            _stateRecovery.AddStateObject(_fieldTracker);
         }
 
         private void _fieldTracker_AreaChanged(object sender, AreaChanged e)
@@ -299,14 +369,6 @@ namespace FarmingGPS
             _field = e.Field;
             _fieldTracker.FieldToCalculateAreaWithin = _field;
             _workedAreaBar.SetField(_field);
-            _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, 1);
-            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
-            {
-                _visualization.AddLine(line);
-                if (_fieldTracker.GetTrackingLineCoverage(line) > 0.97)
-                    line.Depleted = true;
-            }
-            ShowTrackingLineSettings();
         }
 
         #endregion
@@ -585,14 +647,14 @@ namespace FarmingGPS
             if (_selectedTrackingLine > -1)
             {
                 _selectedTrackingLine += 1;
-                if (_selectedTrackingLine >= _farmingMode.TrackingLinesHeadLand.Count)
+                if (_selectedTrackingLine >= _farmingMode.TrackingLinesHeadland.Count)
                     _selectedTrackingLine = 0;
-                _visualization.FocusTrackingLine(_farmingMode.TrackingLinesHeadLand[_selectedTrackingLine]);
+                _visualization.FocusTrackingLine(_farmingMode.TrackingLinesHeadland[_selectedTrackingLine]);
             }
             else
         {
                 _selectedTrackingLine = 0;
-                _visualization.FocusTrackingLine(_farmingMode.TrackingLinesHeadLand[_selectedTrackingLine]);
+                _visualization.FocusTrackingLine(_farmingMode.TrackingLinesHeadland[_selectedTrackingLine]);
                 BTN_CHOOSE_TRACKLINE.Style = (Style)this.FindResource("BUTTON_MOVE_NEXT");
                 BTN_CONFIRM_TRACKLINE.Visibility = Visibility.Visible;
             }
@@ -603,7 +665,7 @@ namespace FarmingGPS
             BTN_CHOOSE_TRACKLINE.Style = (Style)this.FindResource("BUTTON_CHOOSE_TRACKLINE");
             BTN_CONFIRM_TRACKLINE.Visibility = Visibility.Collapsed;
             _trackLineGrid.Visibility = Visibility.Collapsed;
-            _farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadLand[_selectedTrackingLine]);
+            _farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadland[_selectedTrackingLine]);
             foreach (TrackingLine trackingLine in _farmingMode.TrackingLines)
                 _visualization.AddLine(trackingLine);
             _visualization.CancelFocus();
@@ -761,6 +823,7 @@ namespace FarmingGPS
 
         private void SetEquipmentAndFarmingMode(FarmingMode userControl)
         {
+            _stateRecovery.RemoveStateObject(_farmingMode);
             if (_equipmentChoosen == null)
                 return;
 
@@ -768,7 +831,7 @@ namespace FarmingGPS
             {
                 foreach (TrackingLine trackingLine in _farmingMode.TrackingLines)
                     _visualization.DeleteLine(trackingLine);
-                foreach (TrackingLine trackingLine in _farmingMode.TrackingLinesHeadLand)
+                foreach (TrackingLine trackingLine in _farmingMode.TrackingLinesHeadland)
                     _visualization.DeleteLine(trackingLine);
             }
 
@@ -796,12 +859,25 @@ namespace FarmingGPS
             _visualization.SetEquipmentWidth(_equipment.Width);
             
 
-            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
+            if (_stateRecovery.ObjectsRecovered.ContainsKey(typeof(FarmingGPSLib.FarmingModes.IFarmingMode)))
+            {
+                YesNoDialog dialog = new YesNoDialog("Vill du återställa tidigare spårlinjer?");
+                if (dialog.ShowDialog().Value)
+                    _farmingMode.RestoreObject(_stateRecovery.ObjectsRecovered[typeof(FarmingGPSLib.FarmingModes.IFarmingMode)]);
+            }
+            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadland)
                 _visualization.AddLine(line);
+
+            foreach(TrackingLine line in _farmingMode.TrackingLines)
+                _visualization.AddLine(line);
+
+            CheckAllTrackingLines();
 
             if (_fieldTrackerActive)
                 ToggleFieldTracker();
             _fieldTracker.ClearTrack();
+
+            _stateRecovery.AddStateObject(_farmingMode);
 
             _settingsGrid.Visibility = Visibility.Hidden;
             ShowTrackingLineSettings();
@@ -830,7 +906,7 @@ namespace FarmingGPS
                     break;
             }
         }
-                
+
         #endregion
 
     }

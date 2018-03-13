@@ -8,6 +8,7 @@ using FarmingGPSLib.HelperClasses;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using FarmingGPSLib.StateRecovery;
 
 namespace FarmingGPSLib.FarmingModes
 {
@@ -21,14 +22,41 @@ namespace FarmingGPSLib.FarmingModes
 
     public abstract class FarmingModeBase : IFarmingMode
     {
+        [Serializable]
+        public struct SimpleLine
+        {
+            public List<Coordinate> Line;
+
+            public SimpleLine(List<Coordinate> line)
+            {
+                Line = line;
+            }
+        }
+
+        [Serializable]
+        public struct FarmingModeState
+        {
+            public List<SimpleLine> TrackingLines;
+
+            public List<SimpleLine> TrackingLinesHeadLand;
+
+            public FarmingModeState(List<SimpleLine> trackingLines, List<SimpleLine> trackingLinesHeadLand)
+            {
+                TrackingLines = trackingLines;
+                TrackingLinesHeadLand = trackingLinesHeadLand;
+            }
+        }
+
         #region Private Variables
 
         protected Polygon _fieldPolygon;
 
-        protected IList<TrackingLine> _trackingLinesHeadLand = new List<TrackingLine>();
+        protected IList<TrackingLine> _trackingLinesHeadland = new List<TrackingLine>();
 
         protected IList<TrackingLine> _trackingLines = new List<TrackingLine>();
-        
+
+        private bool _hasChanged = true;
+
         #endregion
 
         public FarmingModeBase()
@@ -145,9 +173,9 @@ namespace FarmingGPSLib.FarmingModes
 
         #region IFarmingMode Implementation
 
-        public IList<TrackingLine> TrackingLinesHeadLand
+        public IList<TrackingLine> TrackingLinesHeadland
         {
-            get { return _trackingLinesHeadLand; }
+            get { return _trackingLinesHeadland; }
         }
 
         public IList<TrackingLine> TrackingLines
@@ -172,7 +200,7 @@ namespace FarmingGPSLib.FarmingModes
                 }
             }
 
-            foreach (TrackingLine trackingLine in _trackingLinesHeadLand)
+            foreach (TrackingLine trackingLine in _trackingLinesHeadland)
             {
                 if (trackingLine.Depleted)
                     continue;
@@ -190,17 +218,17 @@ namespace FarmingGPSLib.FarmingModes
 
         public virtual void CreateTrackingLines(Coordinate aCoord, Angle direction)
         {
-            throw new NotImplementedException();
+            _hasChanged = true;
         }
 
         public virtual void CreateTrackingLines(Coordinate aCoord, Coordinate bCoord)
         {
-            throw new NotImplementedException();
+            _hasChanged = true;
         }
 
         public virtual void CreateTrackingLines(TrackingLine headLine)
         {
-            throw new NotImplementedException();
+            _hasChanged = true;
         }
 
         public virtual void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction)
@@ -209,6 +237,43 @@ namespace FarmingGPSLib.FarmingModes
         }
 
         public event EventHandler<string> FarmingEvent;
+
+        #endregion
+
+        #region IStateObjectImplementation
+        
+        public object StateObject
+        {
+            get
+            {
+                List<SimpleLine> trackingLines = new List<SimpleLine>();
+                foreach (TrackingLine trackingLine in _trackingLines)
+                    trackingLines.Add(new SimpleLine(new List<Coordinate>(trackingLine.Line.Coordinates)));
+                List<SimpleLine> trackingLinesHeadland = new List<SimpleLine>();
+                foreach (TrackingLine trackingLineHeadland in _trackingLinesHeadland)
+                    trackingLinesHeadland.Add(new SimpleLine(new List<Coordinate>(trackingLineHeadland.Line.Coordinates)));
+                return new FarmingModeState(trackingLines, trackingLinesHeadland);
+            }
+        }
+
+        public Type StateType
+        {
+            get { return typeof(FarmingModeState); }
+        }
+
+        public bool HasChanged
+        {
+            get { return _hasChanged; }
+        }
+
+        public void RestoreObject(object restoredState)
+        {
+            FarmingModeState farmingModeState = (FarmingModeState)restoredState;
+            foreach (SimpleLine line in farmingModeState.TrackingLines)
+                _trackingLines.Add(new TrackingLine(new LineString(line.Line)));
+            foreach (SimpleLine line in farmingModeState.TrackingLinesHeadLand)
+                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line)));
+        }
 
         #endregion
     }

@@ -14,6 +14,9 @@ namespace FarmingGPSLib.FarmingModes
 
         private double _stopDistance = double.NaN;
 
+        public FertilizingMode() : base()
+        { }
+
         public FertilizingMode(IField field)
             : base(field)
         {
