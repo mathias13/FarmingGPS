@@ -1,7 +1,7 @@
 ﻿using DotSpatial.Positioning;
 using FarmingGPS.Database;
 using FarmingGPSLib.DatabaseHelper;
-using FarmingGPS.Settings;
+using FarmingGPSLib.Settings;
 using GMap.NET;
 using GMap.NET.MapProviders;
 using GMap.NET.WindowsPresentation;

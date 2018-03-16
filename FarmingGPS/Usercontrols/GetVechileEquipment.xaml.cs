@@ -1,5 +1,5 @@
 ﻿using FarmingGPS.Database;
-using FarmingGPS.Settings;
+using FarmingGPSLib.Settings;
 using System;
 using System.Windows;
 using System.Windows.Controls;

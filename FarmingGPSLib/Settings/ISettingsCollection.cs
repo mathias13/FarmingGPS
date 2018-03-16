@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace FarmingGPS.Settings
+namespace FarmingGPSLib.Settings
 {
     public interface ISettingsCollection : IEnumerable<ISetting>
     {

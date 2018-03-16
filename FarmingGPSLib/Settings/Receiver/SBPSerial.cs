@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 
-namespace FarmingGPS.Settings.Receiver
+namespace FarmingGPSLib.Settings.Receiver
 {
     public class SBPSerial : ConfigurationSection, ISettingsCollection
     {

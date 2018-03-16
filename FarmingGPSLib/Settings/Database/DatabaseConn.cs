@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 
-namespace FarmingGPS.Settings.Database
+namespace FarmingGPSLib.Settings.Database
 {
     public class DatabaseConn : ConfigurationSection, ISettingsCollection
     {

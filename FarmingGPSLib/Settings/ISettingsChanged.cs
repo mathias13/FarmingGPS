@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace FarmingGPS.Settings
+namespace FarmingGPSLib.Settings
 {
-    interface ISettingsChanged
+    public interface ISettingsChanged
     {
         event EventHandler<string> SettingChanged;
     }

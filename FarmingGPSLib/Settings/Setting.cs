@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FarmingGPS.Settings
+namespace FarmingGPSLib.Settings
 {
     public class Setting : ISetting
     {

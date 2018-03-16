@@ -162,16 +162,7 @@
       <DependentUpon>UserPasswordDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="GeometryUtilities\Lines.cs" />
-    <Compile Include="Settings\Database\DatabaseConn.cs" />
-    <Compile Include="Settings\IDatabaseSettings.cs" />
-    <Compile Include="Settings\ISetting.cs" />
-    <Compile Include="Settings\ISettingsChanged.cs" />
-    <Compile Include="Settings\ISettingsCollection.cs" />
-    <Compile Include="Settings\NTRIP\ClientSettingsExt.cs" />
-    <Compile Include="Settings\Receiver\SBPSerial.cs" />
-    <Compile Include="Settings\Setting.cs" />
     <Compile Include="Settings\SettingGroup.cs" />
-    <Compile Include="Settings\SettingsCollection.cs" />
     <Compile Include="Usercontrols\Equipments\BogballeCalibrator.xaml.cs">
       <DependentUpon>BogballeCalibrator.xaml</DependentUpon>
     </Compile>
