@@ -1,4 +1,5 @@
 ﻿using System;
+using FarmingGPSLib.Settings;
 
 namespace FarmingGPSLib.Equipment
 {
@@ -17,5 +18,12 @@ namespace FarmingGPSLib.Equipment
         {
             get;
         }
+
+        Type ControllerSettingsType
+        {
+            get;
+        }
+        
+        void RegisterController(object settings);
     }
 }

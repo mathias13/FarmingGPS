@@ -1,5 +1,6 @@
 ﻿using System;
 using DotSpatial.Positioning;
+using FarmingGPSLib.FarmingModes;
 
 namespace FarmingGPSLib.Equipment
 {
@@ -91,6 +92,11 @@ namespace FarmingGPSLib.Equipment
         public Distance CenterToTipWithOverlap
         {
             get { return CenterToTip.Subtract(Overlap); }
+        }
+
+        public virtual Type FarmingMode
+        {
+            get { return null; }
         }
 
         public Position GetLeftTip(Position attachedPosition, Azimuth directionOfTravel)

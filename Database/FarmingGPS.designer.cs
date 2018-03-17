@@ -200,6 +200,8 @@ namespace FarmingGPS.Database
 		
 		private double _WorkWidth;
 		
+		private string _EquipmentClass;
+		
 		private EntitySet<FieldRecording> _FieldRecordings;
 		
     #region Extensibility Method Definitions
@@ -216,6 +218,8 @@ namespace FarmingGPS.Database
     partial void OnAngleFromAttachChanged();
     partial void OnWorkWidthChanging(double value);
     partial void OnWorkWidthChanged();
+    partial void OnEquipmentClassChanging(string value);
+    partial void OnEquipmentClassChanged();
     #endregion
 		
 		public Equipment()
@@ -320,6 +324,26 @@ namespace FarmingGPS.Database
 					this._WorkWidth = value;
 					this.SendPropertyChanged("WorkWidth");
 					this.OnWorkWidthChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_EquipmentClass", DbType="VarChar(50)", CanBeNull=false)]
+		public string EquipmentClass
+		{
+			get
+			{
+				return this._EquipmentClass;
+			}
+			set
+			{
+				if ((this._EquipmentClass != value))
+				{
+					this.OnEquipmentClassChanging(value);
+					this.SendPropertyChanging();
+					this._EquipmentClass = value;
+					this.SendPropertyChanged("EquipmentClass");
+					this.OnEquipmentClassChanged();
 				}
 			}
 		}

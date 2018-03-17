@@ -10,7 +10,7 @@ namespace FarmingGPS.Settings
     {
         private string _name = String.Empty;
 
-        private ReadOnlyCollection<SettingGroup> _items;
+        private Collection<SettingGroup> _items;
 
         private UserControl _settingControl;
 
@@ -22,7 +22,7 @@ namespace FarmingGPS.Settings
                 foreach (SettingGroup setting in childs)
                     items.Add(setting);
             }
-            _items = new ReadOnlyCollection<SettingGroup>(items);
+            _items = new Collection<SettingGroup>(items);
             _name = name;
             _settingControl = settingControl;
         }
@@ -37,7 +37,7 @@ namespace FarmingGPS.Settings
             get { return _settingControl; }
         }
 
-        public ReadOnlyCollection<SettingGroup> Items
+        public Collection<SettingGroup> Items
         {
             get { return _items; }
         }

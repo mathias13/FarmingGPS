@@ -85,6 +85,7 @@
   <ItemGroup>
     <Compile Include="DatabaseHelper\DatabaseHelperClass.cs" />
     <Compile Include="Equipment\BogBalle\Calibrator.cs" />
+    <Compile Include="Settings\BogBalle\Calibrator.cs" />
     <Compile Include="Equipment\BogBalle\L2Plus.cs" />
     <Compile Include="Equipment\EquipmentBase.cs" />
     <Compile Include="Equipment\Harrow.cs" />

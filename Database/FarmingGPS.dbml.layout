@@ -2,10 +2,10 @@
 <ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11.75, 14.375" name="FarmingGPS">
   <DataContextMoniker Name="/FarmingGPSDataContext" />
   <nestedChildShapes>
-    <classShape Id="684c79fa-1f52-49e5-845f-5be2eb5317f5" absoluteBounds="0.75, 0.875, 2, 1.7708968098958331">
+    <classShape Id="684c79fa-1f52-49e5-845f-5be2eb5317f5" absoluteBounds="0.75, 0.875, 2, 1.9631982421875">
       <DataClassMoniker Name="/FarmingGPSDataContext/Equipment" />
       <nestedChildShapes>
-        <elementListCompartment Id="56f4f27e-c471-4b30-94d5-58ceca08742a" absoluteBounds="0.765, 1.335, 1.9700000000000002, 1.2108968098958333" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+        <elementListCompartment Id="56f4f27e-c471-4b30-94d5-58ceca08742a" absoluteBounds="0.765, 1.335, 1.9700000000000002, 1.4031982421875" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
     <classShape Id="f01f0d9a-93a0-4851-b8a1-76a81b0356e9" absoluteBounds="9.5, 4.125, 2, 1.7708968098958327">
@@ -131,7 +131,7 @@
         <classShapeMoniker Id="d045feaa-1b96-4b57-a4f1-26320c3816aa" />
       </nodes>
     </associationConnector>
-    <associationConnector edgePoints="[(1.06840602801983 : 5.2612939453125); (1.06840602801983 : 9.03929768880208); (3.5 : 9.03929768880208)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+    <associationConnector edgePoints="[(1.06840602801983 : 5.2612939453125); (1.06840602801983 : 9.03929768880208); (3.04166666666667 : 9.03929768880208 : JumpStart); (3.20833333333333 : 9.03929768880208 : JumpEnd); (3.5 : 9.03929768880208)]" fixedFrom="NotFixed" fixedTo="NotFixed">
       <AssociationMoniker Name="/FarmingGPSDataContext/Field/Field_SubFieldIntersect" />
       <nodes>
         <classShapeMoniker Id="efd62ec8-abc1-4363-a8e9-a2d993f07ac0" />

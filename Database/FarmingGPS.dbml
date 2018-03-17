@@ -7,6 +7,7 @@
       <Column Name="DistFromAttach" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
       <Column Name="AngleFromAttach" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
       <Column Name="WorkWidth" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="EquipmentClass" Type="System.String" DbType="VarChar(50)" CanBeNull="false" />
       <Association Name="Equipment_FieldRecording" Member="FieldRecordings" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="FieldRecording" />
     </Type>
   </Table>

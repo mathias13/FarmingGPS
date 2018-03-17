@@ -99,6 +99,8 @@
                 <extended:DoubleUpDown Minimum="0" Maximum="360" AllowSpin="True" Increment="0.2" FormatString="0.0°" x:FieldModifier="private" x:Name="NumericEquipmentAngleFromAttach" Style="{StaticResource DOUBLEUPDOWN}"/>
                 <TextBlock Style="{StaticResource SETTING_HEADER}">Mått från upphängning</TextBlock>
                 <extended:DoubleUpDown Minimum="0" Maximum="5" AllowSpin="True" Increment="0.01" FormatString="0.00m" x:FieldModifier="private" x:Name="NumericEquipmentDistFromAttach" Style="{StaticResource DOUBLEUPDOWN}"/>
+                <TextBlock Style="{StaticResource SETTING_HEADER}">Redskaps klass</TextBlock>
+                <TextBox x:FieldModifier="private" x:Name="TextBoxEquipmenClass" Style="{StaticResource TEXTBOX}"></TextBox>
             </StackPanel>
         </Grid>
     </ScrollViewer>

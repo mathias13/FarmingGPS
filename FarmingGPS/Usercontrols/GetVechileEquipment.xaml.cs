@@ -47,6 +47,7 @@ namespace FarmingGPS.Usercontrols
             ListBoxAttach.Items.Clear();
             TextBoxAttachName.Text = string.Empty;
             TextBoxEquipmenName.Text = string.Empty;
+            TextBoxEquipmenClass.Text = string.Empty;
             TextBoxVechileManufacturer.Text = string.Empty;
             TextBoxVechileModel.Text = string.Empty;
             NumericAttachAngleFromCenter.Value = null;
@@ -144,6 +145,7 @@ namespace FarmingGPS.Usercontrols
                 equipment.WorkWidth = NumericEquipmentWorkWidth.Value.Value;
                 equipment.AngleFromAttach = NumericEquipmentAngleFromAttach.Value.Value;
                 equipment.DistFromAttach = NumericEquipmentDistFromAttach.Value.Value;
+                equipment.EquipmentClass = TextBoxEquipmenClass.Text;
                 _database.SubmitToDatabase();
                 ReloadLists();
             }
@@ -158,6 +160,7 @@ namespace FarmingGPS.Usercontrols
             equipment.WorkWidth = NumericEquipmentWorkWidth.Value.Value;
             equipment.AngleFromAttach = NumericEquipmentAngleFromAttach.Value.Value;
             equipment.DistFromAttach = NumericEquipmentDistFromAttach.Value.Value;
+            equipment.EquipmentClass = TextBoxEquipmenClass.Text;
             _database.AddEquipment(equipment);
             _database.SubmitToDatabase();
             ReloadLists();
@@ -234,6 +237,7 @@ namespace FarmingGPS.Usercontrols
                 NumericEquipmentWorkWidth.Value = equipment.WorkWidth;
                 NumericEquipmentDistFromAttach.Value = equipment.DistFromAttach;
                 NumericEquipmentAngleFromAttach.Value = equipment.AngleFromAttach;
+                TextBoxEquipmenClass.Text = equipment.EquipmentClass;
             }
         }
 
