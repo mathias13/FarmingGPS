@@ -83,20 +83,25 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         public Type ControllerSettingsType
         {
-            get
-            {
-                return typeof(Settings.BogBalle.Calibrator);
-            }
+            get { return typeof(Settings.BogBalle.Calibrator); }
         }
 
-        public void RegisterController(object settings)
-        {            
-            if(settings is Settings.BogBalle.Calibrator)
+        public Type ControllerType
+        {
+            get { return typeof(Calibrator); }
+        }
+
+        public object RegisterController(object settings)
+        {
+            if (settings is Settings.BogBalle.Calibrator)
             {
                 Settings.BogBalle.Calibrator calibratorSettings = settings as Settings.BogBalle.Calibrator;
                 _calibrator = new Calibrator(calibratorSettings.COMPort, calibratorSettings.ReadInterval);
                 _calibrator.ChangeWidth((float)Width.ToMeters().Value);
+                return _calibrator;
             }
+            else
+                return null;
         }
 
         #endregion

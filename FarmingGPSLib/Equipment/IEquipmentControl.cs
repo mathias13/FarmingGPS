@@ -23,7 +23,12 @@ namespace FarmingGPSLib.Equipment
         {
             get;
         }
+
+        Type ControllerType
+        {
+            get;
+        }
         
-        void RegisterController(object settings);
+        object RegisterController(object settings);
     }
 }
