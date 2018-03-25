@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DatabaseHandler.cs" />
+    <Compile Include="DatabaseHelperClass.cs" />
     <Compile Include="FarmingGPS.cs">
       <DependentUpon>FarmingGPS.dbml</DependentUpon>
     </Compile>
