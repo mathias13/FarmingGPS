@@ -39,7 +39,7 @@ namespace FarmingGPSLib.Settings.Receiver
                 setting.SettingChanged += Setting_SettingChanged;
         }
 
-        public SBPSerial(SBPSerial sbpSettings)
+        public SBPSerial(SBPSerial sbpSettings) : this()
         {
             COMPort = sbpSettings.COMPort;
             Baudrate = sbpSettings.Baudrate;

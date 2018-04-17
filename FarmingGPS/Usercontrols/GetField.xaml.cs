@@ -1,6 +1,5 @@
 ﻿using DotSpatial.Positioning;
 using FarmingGPS.Database;
-using FarmingGPSLib.DatabaseHelper;
 using FarmingGPSLib.Settings;
 using GMap.NET;
 using GMap.NET.MapProviders;
@@ -60,6 +59,8 @@ namespace FarmingGPS.Usercontrols
             {
                 Field field = ListBoxFields.SelectedItem as Field;
                 SubFieldIntersect[] intersects = _database.GetIntersects(field.FieldId);
+                if (intersects == null)
+                    return;
                 foreach (SubFieldIntersect intersect in intersects)
                     ListBoxIntersects.Items.Add(intersect);
             }

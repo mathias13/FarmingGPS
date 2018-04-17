@@ -249,7 +249,7 @@ namespace FarmingGPS
             //positions.Add(new Position(new Latitude(58.51114), new Longitude(13.8537299)));
             //FieldChoosen(positions);
             //}
-            
+
 #endif
 
         }
@@ -531,7 +531,8 @@ namespace FarmingGPS
 
             Azimuth actualHeading = receiver.CurrentBearing;
             _visualization.UpdatePosition(actualCoordinate, actualHeading);
-            _farmingMode.UpdateEvents(actualCoordinate, actualHeading);
+            if(_farmingMode != null)
+                _farmingMode.UpdateEvents(actualCoordinate, actualHeading);
             if (_equipment != null)
             {
                 Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(actualPosition, actualHeading));
@@ -718,7 +719,7 @@ namespace FarmingGPS
 
         private void SetupSettingsPanel(SettingsCollection settings)
         {
-            ClientSettingsExt sectionNTRIP = (ClientSettingsExt)_config.Sections[typeof(SBPSerial).FullName];
+            ClientSettingsExt sectionNTRIP = (ClientSettingsExt)_config.Sections[typeof(ClientSettingsExt).FullName];
             ISettingsCollection ntripClient;
             if (sectionNTRIP != null)
             {
@@ -728,7 +729,7 @@ namespace FarmingGPS
             else
                 ntripClient = new ClientSettingsExt();
 
-            DatabaseConn sectionDatabase = (DatabaseConn)_config.Sections[typeof(SBPSerial).FullName];
+            DatabaseConn sectionDatabase = (DatabaseConn)_config.Sections[typeof(DatabaseConn).FullName];
             ISettingsCollection database;
             if (sectionDatabase != null)
             {

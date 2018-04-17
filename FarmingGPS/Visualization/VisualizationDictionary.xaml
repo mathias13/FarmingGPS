@@ -638,13 +638,13 @@
         <Setter Property="Height" Value="{Binding ActualWidth, RelativeSource={RelativeSource Self}}"/>
     </Style>
 
-    <SolidColorBrush x:Key="TRACK_LINE_INACTIVE">#FF0000FF</SolidColorBrush>
-    <SolidColorBrush x:Key="TRACK_LINE_DEPLETED">#FFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="TRACK_LINE_INACTIVE">#FFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="TRACK_LINE_DEPLETED">#FF0000FF</SolidColorBrush>
 
     <ColorAnimationUsingKeyFrames x:Key="TRACK_LINE_ANIMATION" BeginTime="0:0:0" Duration="0:0:4" RepeatBehavior="Forever">
         <ColorKeyFrameCollection>
             <DiscreteColorKeyFrame KeyTime="0:0:0" Value="Yellow"/>
-            <DiscreteColorKeyFrame KeyTime="0:0:2" Value="Blue"/>
+            <DiscreteColorKeyFrame KeyTime="0:0:2" Value="White"/>
         </ColorKeyFrameCollection>
     </ColorAnimationUsingKeyFrames>
 
