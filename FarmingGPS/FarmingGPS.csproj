@@ -170,6 +170,9 @@
     <Compile Include="Dialogs\ComPortDialog.xaml.cs">
       <DependentUpon>ComPortDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialogs\OKDialog.xaml.cs">
+      <DependentUpon>OKDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\YesNoDialog.xaml.cs">
       <DependentUpon>YesNoDialog.xaml</DependentUpon>
     </Compile>
@@ -208,6 +211,10 @@
     <Page Include="Dialogs\ComPortDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialogs\OKDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Dialogs\YesNoDialog.xaml">
       <Generator>MSBuild:Compile</Generator>

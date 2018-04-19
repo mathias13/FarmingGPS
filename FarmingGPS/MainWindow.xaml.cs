@@ -819,6 +819,13 @@ namespace FarmingGPS
 
         private void SetEquipmentAndFarmingMode(FarmingMode userControl)
         {
+            if(_field == null)
+            {
+                OKDialog dialog = new OKDialog("Du måste välja fält först");
+                dialog.Show();
+                return;
+            }
+            
             _stateRecovery.RemoveStateObject(_farmingMode);
             if (_equipmentChoosen == null)
                 return;
