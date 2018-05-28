@@ -234,21 +234,22 @@ namespace FarmingGPS
                 }
             }
 #if DEBUG
-            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8531152), new Latitude(58.50953)), false);
+            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.855032), new Latitude(58.512722)), false);
             _receiver.BearingUpdate += _receiver_BearingUpdate;
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
             _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
-            //if (_field == null)
-            //{
-            //List<Position> positions = new List<Position>();
-            //positions.Add(new Position(new Latitude(58.51114), new Longitude(13.8537299)));
-            //positions.Add(new Position(new Latitude(58.509705), new Longitude(13.8532929)));
-            //positions.Add(new Position(new Latitude(58.509073), new Longitude(13.8606883)));
-            //positions.Add(new Position(new Latitude(58.510477), new Longitude(13.8611945)));
-            //positions.Add(new Position(new Latitude(58.51114), new Longitude(13.8537299)));
-            //FieldChoosen(positions);
-            //}
+            //BogballeCalibrator calibrator = new BogballeCalibrator(new Calibrator("COM3", 20000));
+            if (_field == null)
+            {
+                List<Position> positions = new List<Position>();
+                positions.Add(new Position(new Latitude(58.512722), new Longitude(13.855032)));
+                positions.Add(new Position(new Latitude(58.513399), new Longitude(13.855150)));
+                positions.Add(new Position(new Latitude(58.513462), new Longitude(13.854345)));
+                positions.Add(new Position(new Latitude(58.512865), new Longitude(13.854194)));
+                positions.Add(new Position(new Latitude(58.512722), new Longitude(13.855032)));
+                FieldChoosen(positions);
+            }
 
 #endif
 
@@ -302,17 +303,17 @@ namespace FarmingGPS
                 {
                     IEquipmentControl equipmentControl = _equipment as IEquipmentControl;
                     if (e.Contains("START"))
-                    {
+                    //{
                         equipmentControl.Start();
-                        if (!_fieldTrackerActive)
-                            Dispatcher.Invoke(new Action(ToggleFieldTracker), DispatcherPriority.Normal);
-                    }
+                    //    //if (!_fieldTrackerActive)
+                    //    //    Dispatcher.Invoke(new Action(ToggleFieldTracker), DispatcherPriority.Normal);
+                    //}
                     else if (e.Contains("STOP"))
-                    {
-                        equipmentControl.Start();
-                        if (_fieldTrackerActive)
-                            Dispatcher.Invoke(new Action(ToggleFieldTracker), DispatcherPriority.Normal);
-                    }
+                    //{
+                        equipmentControl.Stop();
+                    //    if (_fieldTrackerActive)
+                    //        Dispatcher.Invoke(new Action(ToggleFieldTracker), DispatcherPriority.Normal);
+                    //}
                 }
             }
         }
@@ -914,14 +915,19 @@ namespace FarmingGPS
 
             CheckAllTrackingLines();
 
-            if (_fieldTrackerActive)
-                ToggleFieldTracker();
-            _fieldTracker.ClearTrack();
+            YesNoDialog dialogFieldTracker = new YesNoDialog("Vill du radera körd area?");
+            if (dialogFieldTracker.ShowDialog().Value)
+            {
+                if (_fieldTrackerActive)
+                    ToggleFieldTracker();
+                _fieldTracker.ClearTrack();
+            }
 
             _stateRecovery.AddStateObject(_farmingMode);
 
             _settingsGrid.Visibility = Visibility.Hidden;
             ShowTrackingLineSettings();
+            _farmingMode.FarmingEvent += FarmingEvent;
         }
 
         private void GetVechileEquipment(GetVechileEquipment userControl)

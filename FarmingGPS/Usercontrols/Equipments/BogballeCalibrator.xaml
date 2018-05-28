@@ -55,7 +55,7 @@
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Inställd giva</TextBlock>
                     <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg/ha" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=SetSpreadingRate, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Hastighet</TextBlock>
-                    <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="50" AllowSpin="False" IsReadOnly="True" FormatString="0.0 km/h" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=PTO, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
+                    <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="50" AllowSpin="False" IsReadOnly="True" FormatString="0.0 km/h" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=Speed, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Vikt</TextBlock>
                     <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=HopperContents, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
                 </StackPanel>

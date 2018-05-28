@@ -23,7 +23,7 @@ namespace FarmingGPS.Visualization
 
         #region Consts
 
-        private const double LINE_THICKNESS = 0.1;
+        private const double LINE_THICKNESS = 0.2;
 
         private const double LINE_Z_INDEX = 0.0;
 
