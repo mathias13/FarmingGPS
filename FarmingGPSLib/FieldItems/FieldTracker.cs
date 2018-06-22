@@ -213,9 +213,9 @@ namespace FarmingGPSLib.FieldItems
                     LineSegment line = new LineSegment(leftPoint, rightPoint);
                     Angle angle = new Angle(line.Angle);
                     angle -= new Angle(Angle.PI / 4.0);
-                    _prevLeftPoint = HelperClassCoordinate.ComputePoint(leftPoint, angle.Radians, 0.02);
+                    _prevLeftPoint = HelperClassCoordinate.ComputePoint(leftPoint, angle.Radians, 0.03);
                     angle -= new Angle(Angle.PI / 2.0);
-                    _prevRightPoint = HelperClassCoordinate.ComputePoint(rightPoint, angle.Radians, 0.02);
+                    _prevRightPoint = HelperClassCoordinate.ComputePoint(rightPoint, angle.Radians, 0.03);
                 }
                 catch (Exception e)
                 {

@@ -222,7 +222,7 @@ namespace FarmingGPS
                             _field.RestoreObject(recoveredObject.Value);
                             _fieldTracker.FieldToCalculateAreaWithin = _field;
                             _workedAreaBar.SetField(_field);
-                            _visualization.AddField(_field);
+                            _visualization.SetField(_field);
                             _stateRecovery.AddStateObject(_field);
                         }
                         if (recoveredObject.Key == typeof(FieldTracker))
@@ -342,7 +342,7 @@ namespace FarmingGPS
             _field = new Field(e, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
             _fieldTracker.FieldToCalculateAreaWithin = _field;
             _workedAreaBar.SetField(_field);
-            _visualization.AddField(_field);
+            _visualization.SetField(_field);
             
             _settingsGrid.Visibility = Visibility.Hidden;
             _stateRecovery.AddStateObject(_field);
