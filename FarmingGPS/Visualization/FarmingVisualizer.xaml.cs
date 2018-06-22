@@ -111,6 +111,8 @@ namespace FarmingGPS.Visualization
             
         private ModelVisual3D _outlineModel = new ModelVisual3D();
 
+        private MeshVisual3D _fieldMesh = new MeshVisual3D();
+
         private bool _viewTopActive = false;
 
         private bool _viewTrackLine = false;
@@ -318,7 +320,7 @@ namespace FarmingGPS.Visualization
                 Dispatcher.Invoke(new Action<TrackingLine>(DeleteLine), System.Windows.Threading.DispatcherPriority.Normal, trackingLine);
         }
         
-        public void AddField(IField field)
+        public void SetField(IField field)
         {
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
             {
@@ -328,7 +330,7 @@ namespace FarmingGPS.Visualization
                 DrawFieldMesh(field.Polygon.Coordinates);
             }
             else
-                Dispatcher.Invoke(new Action<IField>(AddField), System.Windows.Threading.DispatcherPriority.Normal, field);
+                Dispatcher.Invoke(new Action<IField>(SetField), System.Windows.Threading.DispatcherPriority.Normal, field);
         }
 
         public void AddFieldTracker(FieldTracker fieldTracker)
@@ -748,6 +750,7 @@ namespace FarmingGPS.Visualization
 
         private void DrawFieldMesh(IList<DotSpatial.Topology.Coordinate> coordinates)
         {
+            _viewPort.Children.Remove(_fieldMesh);
             Polygon3D polygon = new Polygon3D();
             Polygon polygon2D = new Polygon();
 
@@ -760,15 +763,15 @@ namespace FarmingGPS.Visualization
                 polygon2D.Points.Add(new Point(coordinates[i].X - _minPoint.X, coordinates[i].Y - _minPoint.Y));
             }
             Mesh3D mesh3D = new Mesh3D(polygon.Points, polygon2D.Triangulate());
-            MeshVisual3D mesh = new MeshVisual3D();
+            _fieldMesh = new MeshVisual3D();
             DiffuseMaterial material = _fieldFillMaterial;
             material.Freeze();
-            mesh.FaceMaterial = material;
-            mesh.EdgeDiameter = 0;
-            mesh.VertexRadius = 0;
-            mesh.Mesh = mesh3D;
+            _fieldMesh.FaceMaterial = material;
+            _fieldMesh.EdgeDiameter = 0;
+            _fieldMesh.VertexRadius = 0;
+            _fieldMesh.Mesh = mesh3D;
 
-            _viewPort.Children.Add(mesh);
+            _viewPort.Children.Add(_fieldMesh);
         }
 
         #endregion
