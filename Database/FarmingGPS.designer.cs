@@ -2126,6 +2126,8 @@ namespace FarmingGPS.Database
 		
 		private int _SecondPosId;
 		
+		private string _Name;
+		
 		private EntityRef<Field> _Field;
 		
 		private EntityRef<GpsCoordinate> _GpsCoordinateFirst;
@@ -2144,6 +2146,8 @@ namespace FarmingGPS.Database
     partial void OnFirstPosIdChanged();
     partial void OnSecondPosIdChanging(int value);
     partial void OnSecondPosIdChanged();
+    partial void OnNameChanging(string value);
+    partial void OnNameChanged();
     #endregion
 		
 		public SubFieldIntersect()
@@ -2242,6 +2246,26 @@ namespace FarmingGPS.Database
 					this._SecondPosId = value;
 					this.SendPropertyChanged("SecondPosId");
 					this.OnSecondPosIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Name", DbType="VarChar(30)")]
+		public string Name
+		{
+			get
+			{
+				return this._Name;
+			}
+			set
+			{
+				if ((this._Name != value))
+				{
+					this.OnNameChanging(value);
+					this.SendPropertyChanging();
+					this._Name = value;
+					this.SendPropertyChanged("Name");
+					this.OnNameChanged();
 				}
 			}
 		}

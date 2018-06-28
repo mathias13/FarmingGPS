@@ -99,6 +99,7 @@
       <Column Name="FieldId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="FirstPosId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="SecondPosId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
       <Association Name="Field_SubFieldIntersect" Member="Field" ThisKey="FieldId" OtherKey="FieldId" Type="Field" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
       <Association Name="GpsCoordinate_SubFieldIntersect" Member="GpsCoordinateFirst" ThisKey="FirstPosId" OtherKey="PosId" Type="GpsCoordinate" IsForeignKey="true" />
       <Association Name="GpsCoordinate_SubFieldIntersect1" Member="GpsCoordinateSecond" ThisKey="SecondPosId" OtherKey="PosId" Type="GpsCoordinate" IsForeignKey="true" />
