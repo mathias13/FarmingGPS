@@ -212,10 +212,10 @@ namespace FarmingGPSLib.FieldItems
                     //Make sure we are a little bit behind and to the middle so that .Union doesn't throw an exception next update
                     LineSegment line = new LineSegment(leftPoint, rightPoint);
                     Angle angle = new Angle(line.Angle);
-                    angle -= new Angle(Angle.PI / 4.0);
-                    _prevLeftPoint = HelperClassCoordinate.ComputePoint(leftPoint, angle.Radians, 0.03);
-                    angle -= new Angle(Angle.PI / 2.0);
-                    _prevRightPoint = HelperClassCoordinate.ComputePoint(rightPoint, angle.Radians, 0.03);
+                    angle -= new Angle(Angle.PI / 6.0);
+                    _prevLeftPoint = HelperClassCoordinate.ComputePoint(leftPoint, angle.Radians, 0.05);
+                    angle -= new Angle(Angle.PI / 1.5);
+                    _prevRightPoint = HelperClassCoordinate.ComputePoint(rightPoint, angle.Radians, 0.05);
                 }
                 catch (Exception e)
                 {
@@ -380,7 +380,7 @@ namespace FarmingGPSLib.FieldItems
         private bool CheckHoleValidity(ILinearRing hole)
         {
             double area = Math.Abs(CgAlgorithms.SignedArea(hole.Coordinates));
-            if (area < 0.1)
+            if (area < 0.25)
                 return false;
 
             return true;
