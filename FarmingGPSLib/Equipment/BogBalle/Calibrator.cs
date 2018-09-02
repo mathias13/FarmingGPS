@@ -387,7 +387,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                 }
                 catch(Exception e)
                 {
-                    Log.Error("Failed to read value with command: " + command, e);
+                    Log.Debug("Failed to read value with command: " + command, e);
                     _noAnswerCount++;
                     return string.Empty;
                 }

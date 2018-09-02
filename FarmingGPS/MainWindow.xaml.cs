@@ -303,17 +303,9 @@ namespace FarmingGPS
                 {
                     IEquipmentControl equipmentControl = _equipment as IEquipmentControl;
                     if (e.Contains("START"))
-                    //{
                         equipmentControl.Start();
-                    //    //if (!_fieldTrackerActive)
-                    //    //    Dispatcher.Invoke(new Action(ToggleFieldTracker), DispatcherPriority.Normal);
-                    //}
                     else if (e.Contains("STOP"))
-                    //{
                         equipmentControl.Stop();
-                    //    if (_fieldTrackerActive)
-                    //        Dispatcher.Invoke(new Action(ToggleFieldTracker), DispatcherPriority.Normal);
-                    //}
                 }
             }
         }
@@ -323,12 +315,14 @@ namespace FarmingGPS
             if (_farmingMode == null)
                 return;
             foreach (TrackingLine line in _farmingMode.TrackingLinesHeadland)
-                if (_fieldTracker.GetTrackingLineCoverage(line) > 0.97)
-                    line.Depleted = true;
+                if (!line.Depleted)
+                    if (_fieldTracker.GetTrackingLineCoverage(line) > 0.97)
+                        line.Depleted = true;
 
             foreach (TrackingLine line in _farmingMode.TrackingLines)
-                if (_fieldTracker.GetTrackingLineCoverage(line) > 0.97)
-                    line.Depleted = true;
+                if(!line.Depleted)
+                    if (_fieldTracker.GetTrackingLineCoverage(line) > 0.97)
+                        line.Depleted = true;
         }
         
         #endregion
