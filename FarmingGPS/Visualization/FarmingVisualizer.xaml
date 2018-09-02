@@ -89,14 +89,14 @@
                                 <DiffuseMaterial Brush="Brown"/>
                             </GeometryModel3D.Material>
                         </GeometryModel3D>
-                        <DirectionalLight Color="White" Direction="6,2,-6" >
-                            <DirectionalLight.Transform>
+                        <AmbientLight Color="White"> <!--Direction="6,2,-6"-->
+                            <!--<DirectionalLight.Transform>
                                 <Transform3DGroup>
                                     <TranslateTransform3D OffsetX="{Binding Path=ShiftX, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:FarmingVisualizer}}}"
                                                       OffsetY="{Binding Path=ShiftY, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:FarmingVisualizer}}}"/>
                                 </Transform3DGroup>
-                            </DirectionalLight.Transform>
-                        </DirectionalLight>
+                            </DirectionalLight.Transform>-->
+                        </AmbientLight>
                     </Model3DGroup>
                 </ModelVisual3D.Content>
             </ModelVisual3D>

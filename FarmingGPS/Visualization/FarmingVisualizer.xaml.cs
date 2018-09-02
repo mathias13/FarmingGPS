@@ -27,11 +27,11 @@ namespace FarmingGPS.Visualization
 
         private const double LINE_Z_INDEX = 0.0;
 
-        private const double FIELD_TRACK_HOLES_Z_INDEX = -0.05;
+        private const double FIELD_TRACK_HOLES_Z_INDEX = -0.03;
         
-        private const double FIELD_TRACK_Z_INDEX = -0.1;
+        private const double FIELD_TRACK_Z_INDEX = -0.06;
 
-        private const double FIELD_Z_INDEX = -0.15;
+        private const double FIELD_Z_INDEX = -0.09;
 
         private const double FIELD_TRACK_HOLE_RED_MAX_AREA = 100.0;
 
@@ -111,7 +111,7 @@ namespace FarmingGPS.Visualization
             
         private ModelVisual3D _outlineModel = new ModelVisual3D();
 
-        private MeshVisual3D _fieldMesh = new MeshVisual3D();
+        private MeshVisual3D _fieldMesh = null;
 
         private bool _viewTopActive = false;
 
@@ -128,6 +128,15 @@ namespace FarmingGPS.Visualization
         public FarmingVisualizer()
         {
             InitializeComponent();
+            //_lineNormalMaterial.Freeze();
+            //_lineDepletedMaterial.Freeze();
+            //_lineActiveMaterial.Freeze();
+            //_lineFocusMaterial.Freeze();
+            //_lineActiveColor.Freeze();
+            //_lineFocusColor.Freeze();
+            _fieldFillMaterial.Freeze();
+            _fieldTrackMaterial.Freeze();
+            _fieldTrackHoleMaterial.Freeze();
             this.Loaded += FarmingVisualizer_Loaded;
         }
 
@@ -471,6 +480,7 @@ namespace FarmingGPS.Visualization
                     if (_trackMesh.Keys.Contains(e.ID))
                     {
                         MeshVisual3D mesh = _trackMesh[e.ID];
+                        _viewPort.Children.Remove(mesh);
                         GeometryModel3D geometry = mesh.Content as GeometryModel3D;
                         Polygon3D polygon = new Polygon3D();
                         Polygon polygon2D = new Polygon();
@@ -484,6 +494,7 @@ namespace FarmingGPS.Visualization
                         Mesh3D mesh3D = new Mesh3D(polygon.Points, CuttingEarsTriangulator.Triangulate(polygon2D.Points));
                         mesh.Mesh = mesh3D;
 
+                        _viewPort.Children.Add(mesh);
                         for (int i = 0; i < e.Polygon.Holes.Length; i++)
                         {
                             //Check if the number of hole has been added else add it
@@ -491,6 +502,7 @@ namespace FarmingGPS.Visualization
                             {
                                 if (_trackMeshHoles[e.ID][i].Mesh.Vertices.Count != e.Polygon.Holes[i].Coordinates.Count - 1)
                                 {
+                                    _viewPort.Children.Remove(_trackMeshHoles[e.ID][i]);
                                     double area = Math.Abs(DotSpatial.Topology.Algorithm.CgAlgorithms.SignedArea(e.Polygon.Holes[i].Coordinates));
                                     Polygon3D holePolygon = new Polygon3D();
                                     Polygon holePolygon2D = new Polygon();
@@ -502,6 +514,7 @@ namespace FarmingGPS.Visualization
                                     Mesh3D holeMesh3D = new Mesh3D(holePolygon.Points, CuttingEarsTriangulator.Triangulate(holePolygon2D.Points));
                                     _trackMeshHoles[e.ID][i].FaceMaterial = area > FIELD_TRACK_HOLE_RED_MAX_AREA ? _fieldFillMaterial : _fieldTrackHoleMaterial;
                                     _trackMeshHoles[e.ID][i].Mesh = holeMesh3D;
+                                    _viewPort.Children.Add(_trackMeshHoles[e.ID][i]);
                                 }
                             }
                             else
@@ -742,6 +755,7 @@ namespace FarmingGPS.Visualization
             outlineMaterial.Freeze();
             GeometryModel3D outlineModel3D = new GeometryModel3D(outlienMesh3D.ToMeshGeometry3D(), outlineMaterial);
             outlineModel3D.BackMaterial = outlineMaterial;
+            outlineModel3D.Freeze();
             _outlineModel = new ModelVisual3D();
             _outlineModel.Content = outlineModel3D;
             
@@ -750,13 +764,12 @@ namespace FarmingGPS.Visualization
 
         private void DrawFieldMesh(IList<DotSpatial.Topology.Coordinate> coordinates)
         {
-            _viewPort.Children.Remove(_fieldMesh);
+            if(_fieldMesh != null)
+                _viewPort.Children.Remove(_fieldMesh);
+
             Polygon3D polygon = new Polygon3D();
             Polygon polygon2D = new Polygon();
-
-            LineGeometryBuilder builder = new LineGeometryBuilder(_viewPort.Children[0]);
-
-            Point3DCollection polygonPoints = new Point3DCollection();
+            
             for (int i = 0; i < coordinates.Count - 1; i++)
             {
                 polygon.Points.Add(new Point3D(coordinates[i].X - _minPoint.X, coordinates[i].Y - _minPoint.Y, FIELD_Z_INDEX));
@@ -770,6 +783,7 @@ namespace FarmingGPS.Visualization
             _fieldMesh.EdgeDiameter = 0;
             _fieldMesh.VertexRadius = 0;
             _fieldMesh.Mesh = mesh3D;
+            _fieldMesh.Content.Freeze();
 
             _viewPort.Children.Add(_fieldMesh);
         }
