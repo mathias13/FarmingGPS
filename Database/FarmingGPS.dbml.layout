@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11.75, 14.375" name="FarmingGPS">
+<ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 20.125, 14.375" name="FarmingGPS">
   <DataContextMoniker Name="/FarmingGPSDataContext" />
   <nestedChildShapes>
     <classShape Id="684c79fa-1f52-49e5-845f-5be2eb5317f5" absoluteBounds="0.75, 0.875, 2, 1.9631982421875">
@@ -82,14 +82,14 @@
         <classShapeMoniker Id="412e51ff-3156-4526-b5d4-7d994e9e9fc3" />
       </nodes>
     </associationConnector>
-    <associationConnector edgePoints="[(2.75 : 1.60179768880208); (3.04166666666667 : 1.60179768880208 : JumpStart); (3.20833333333333 : 1.60179768880208 : JumpEnd); (3.5 : 1.60179768880208)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+    <associationConnector edgePoints="[(2.75 : 1.60179768880208); (3.04166666666667 : 1.60179768880208 : JumpStart); (3.20833333333333 : 1.60179768880208 : JumpEnd); (3.5 : 1.60179768880208)]" fixedFrom="Algorithm" fixedTo="Algorithm">
       <AssociationMoniker Name="/FarmingGPSDataContext/Equipment/Equipment_FieldRecording" />
       <nodes>
         <classShapeMoniker Id="684c79fa-1f52-49e5-845f-5be2eb5317f5" />
         <classShapeMoniker Id="6cb1f792-10e9-4c40-83cd-b41866af4b6a" />
       </nodes>
     </associationConnector>
-    <associationConnector edgePoints="[(2.75 : 3.875); (3.125 : 3.5); (3.125 : 1.14464684440104); (3.5 : 1.14464684440104)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+    <associationConnector edgePoints="[(2.75 : 3.875); (3.125 : 3.5); (3.125 : 1.14464684440104); (3.5 : 1.14464684440104)]" fixedFrom="NotFixed" fixedTo="Algorithm">
       <AssociationMoniker Name="/FarmingGPSDataContext/Field/Field_FieldRecording" />
       <nodes>
         <classShapeMoniker Id="efd62ec8-abc1-4363-a8e9-a2d993f07ac0" />
@@ -138,7 +138,7 @@
         <classShapeMoniker Id="c1bebfea-d50f-4f86-a3c4-a86f58c47eb5" />
       </nodes>
     </associationConnector>
-    <associationConnector edgePoints="[(8.75 : 5.01044840494792); (9.5 : 5.01044840494792)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+    <associationConnector edgePoints="[(8.75 : 5.01044840494792); (8.88541666666667 : 5.01044840494792 : JumpStart); (9.16146083333333 : 5.01044840494792 : JumpEnd); (9.5 : 5.01044840494792)]" fixedFrom="NotFixed" fixedTo="NotFixed">
       <AssociationMoniker Name="/FarmingGPSDataContext/Vechile/Vechile_VechileAttach" />
       <nodes>
         <classShapeMoniker Id="5e64396c-56f8-4320-8905-60cb56510ac8" />
@@ -157,6 +157,132 @@
       <nodes>
         <classShapeMoniker Id="4cbac5f7-66e8-4169-bdd3-deacfd69a955" />
         <classShapeMoniker Id="c1bebfea-d50f-4f86-a3c4-a86f58c47eb5" />
+      </nodes>
+    </associationConnector>
+    <classShape Id="46f52a35-9723-4c18-b62c-641d6a0d92c1" absoluteBounds="9.5, 0.875, 2, 1.5785953776041666">
+      <DataClassMoniker Name="/FarmingGPSDataContext/FertilizerType" />
+      <nestedChildShapes>
+        <elementListCompartment Id="c20ec364-72f6-4f46-b4dc-f043a7841e49" absoluteBounds="9.515, 1.335, 1.9700000000000002, 1.0185953776041665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="b4142c2d-3aef-4794-b74f-ac284f9d002b" absoluteBounds="13.25, 0.875, 2, 1.3862939453125">
+      <DataClassMoniker Name="/FarmingGPSDataContext/SeedType" />
+      <nestedChildShapes>
+        <elementListCompartment Id="5c118f15-a033-47e4-9228-9200ffd9b77c" absoluteBounds="13.265, 1.335, 1.9700000000000002, 0.8262939453125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="5f275b31-d76b-43c3-afab-2017a40f5676" absoluteBounds="13.625, 10, 2, 1.3862939453125">
+      <DataClassMoniker Name="/FarmingGPSDataContext/WorkArea" />
+      <nestedChildShapes>
+        <elementListCompartment Id="2b031ca6-1b78-491a-84c5-3650ad0d2d0d" absoluteBounds="13.64, 10.46, 1.9700000000000002, 0.8262939453125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <associationConnector edgePoints="[(5.5 : 12.3806469726562); (14.625 : 12.3806469726562); (14.625 : 11.3862939453125)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/FarmingGPSDataContext/GpsCoordinate/GpsCoordinate_WorkArea" />
+      <nodes>
+        <classShapeMoniker Id="4cbac5f7-66e8-4169-bdd3-deacfd69a955" />
+        <classShapeMoniker Id="5f275b31-d76b-43c3-afab-2017a40f5676" />
+      </nodes>
+    </associationConnector>
+    <classShape Id="83d75647-d772-495c-a17b-74bfb1cdb76c" absoluteBounds="17.75, 9.75, 2, 1.5785953776041666">
+      <DataClassMoniker Name="/FarmingGPSDataContext/DrainageLine" />
+      <nestedChildShapes>
+        <elementListCompartment Id="85d0f56a-7934-405e-a6a3-16a512c494ff" absoluteBounds="17.765, 10.21, 1.9700000000000002, 1.0185953776041665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <associationConnector edgePoints="[(5.5 : 12.1959679589843); (14.5416666666667 : 12.1959679589843 : JumpStart); (14.7083333333333 : 12.1959679589843 : JumpEnd); (18.75 : 12.1959679589843); (18.75 : 11.3285953776042)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/FarmingGPSDataContext/GpsCoordinate/GpsCoordinate_DrainageLine" />
+      <nodes>
+        <classShapeMoniker Id="4cbac5f7-66e8-4169-bdd3-deacfd69a955" />
+        <classShapeMoniker Id="83d75647-d772-495c-a17b-74bfb1cdb76c" />
+      </nodes>
+    </associationConnector>
+    <classShape Id="e0f03594-5a1d-46e5-8109-20e2aa442015" absoluteBounds="17.875, 6.625, 2, 1.5785953776041666">
+      <DataClassMoniker Name="/FarmingGPSDataContext/Drainage" />
+      <nestedChildShapes>
+        <elementListCompartment Id="53de444a-6975-4cae-8a8f-9066e174375e" absoluteBounds="17.89, 7.0850000000000009, 1.9700000000000002, 1.0185953776041665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <associationConnector edgePoints="[(18.8125 : 8.20359537760417); (18.8125 : 9.75)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/FarmingGPSDataContext/Drainage/Drainage_DrainageLine" />
+      <nodes>
+        <classShapeMoniker Id="e0f03594-5a1d-46e5-8109-20e2aa442015" />
+        <classShapeMoniker Id="83d75647-d772-495c-a17b-74bfb1cdb76c" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(18.5774234637921 : 6.625); (18.5774234637921 : 6.375); (19.1867468474559 : 6.375); (19.1867468474559 : 6.625)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/FarmingGPSDataContext/Drainage/Drainage_Drainage" />
+      <nodes>
+        <classShapeMoniker Id="e0f03594-5a1d-46e5-8109-20e2aa442015" />
+        <classShapeMoniker Id="e0f03594-5a1d-46e5-8109-20e2aa442015" />
+      </nodes>
+    </associationConnector>
+    <classShape Id="ef5e9b81-20ed-4733-9f4f-61bfa9dbcfdd" absoluteBounds="16.25, 3.875, 2, 1.9631982421875">
+      <DataClassMoniker Name="/FarmingGPSDataContext/Maintenance" />
+      <nestedChildShapes>
+        <elementListCompartment Id="cc2b362c-2571-4179-8357-ca25581d9341" absoluteBounds="16.265, 4.335, 1.9700000000000002, 1.4031982421875" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <associationConnector edgePoints="[(2.75 : 2.67714680989583); (3.04166666666667 : 2.67714680989583 : JumpStart); (3.20833333333333 : 2.67714680989583 : JumpEnd); (5.79166666666667 : 2.67714680989583 : JumpStart); (5.95833333333333 : 2.67714680989583 : JumpEnd); (8.99479416666667 : 2.67714680989583 : JumpStart); (9.16146083333333 : 2.67714680989583 : JumpEnd); (13.3229166666667 : 2.67714680989583 : JumpStart); (13.4895833333333 : 2.67714680989583 : JumpEnd); (17.25 : 2.67714680989583); (17.25 : 3.875)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/FarmingGPSDataContext/Equipment/Equipment_Maintenance" />
+      <nodes>
+        <classShapeMoniker Id="684c79fa-1f52-49e5-845f-5be2eb5317f5" />
+        <classShapeMoniker Id="ef5e9b81-20ed-4733-9f4f-61bfa9dbcfdd" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(8.75 : 5.89453358158053); (8.90982443490112 : 6.05435801648165 : JumpStart); (9.02767556509888 : 6.17220914667941 : JumpEnd); (9.125 : 6.26953358158053); (9.125 : 6.2131982421875); (13.3229166666667 : 6.2131982421875 : JumpStart); (13.4895833333333 : 6.2131982421875 : JumpEnd); (15.875 : 6.2131982421875); (16.25 : 5.8381982421875)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/FarmingGPSDataContext/Vechile/Vechile_Maintenance" />
+      <nodes>
+        <classShapeMoniker Id="5e64396c-56f8-4320-8905-60cb56510ac8" />
+        <classShapeMoniker Id="ef5e9b81-20ed-4733-9f4f-61bfa9dbcfdd" />
+      </nodes>
+    </associationConnector>
+    <classShape Id="644c5929-c295-4a18-ba29-18b85d83d36a" absoluteBounds="8.375, 7.25, 2, 2.9247054036458331">
+      <DataClassMoniker Name="/FarmingGPSDataContext/Work" />
+      <nestedChildShapes>
+        <elementListCompartment Id="a275d1c9-fa71-42d2-9242-d31122c42838" absoluteBounds="8.39, 7.71, 1.9700000000000002, 2.364705403645833" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <associationConnector edgePoints="[(10.375 : 8.6249995); (14.625 : 8.6249995); (14.625 : 10)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/FarmingGPSDataContext/Work/Work_WorkArea" />
+      <nodes>
+        <classShapeMoniker Id="644c5929-c295-4a18-ba29-18b85d83d36a" />
+        <classShapeMoniker Id="5f275b31-d76b-43c3-afab-2017a40f5676" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(2.75 : 2.78892502604167); (3.04166666666667 : 2.78892502604167 : JumpStart); (3.20833333333333 : 2.78892502604167 : JumpEnd); (5.79166666666667 : 2.78892502604167 : JumpStart); (5.95833333333333 : 2.78892502604167 : JumpEnd); (8.96875 : 2.78892502604167); (8.96875 : 7.25)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/FarmingGPSDataContext/Equipment/Equipment_Work" />
+      <nodes>
+        <classShapeMoniker Id="684c79fa-1f52-49e5-845f-5be2eb5317f5" />
+        <classShapeMoniker Id="644c5929-c295-4a18-ba29-18b85d83d36a" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(9.5 : 1.66429768880208); (9.0781275 : 1.66429768880208); (9.0781275 : 7.25)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/FarmingGPSDataContext/FertilizerType/FertilizerType_Work" />
+      <nodes>
+        <classShapeMoniker Id="46f52a35-9723-4c18-b62c-641d6a0d92c1" />
+        <classShapeMoniker Id="644c5929-c295-4a18-ba29-18b85d83d36a" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(2.43875308969351 : 5.2612939453125); (2.43875308969351 : 7.71875); (3.04166666666667 : 7.71875 : JumpStart); (3.20833333333333 : 7.71875 : JumpEnd); (5.79166666666667 : 7.71875 : JumpStart); (5.95833333333333 : 7.71875 : JumpEnd); (7.44791416666667 : 7.71875 : JumpStart); (7.61458083333333 : 7.71875 : JumpEnd); (8.375 : 7.71875)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/FarmingGPSDataContext/Field/Field_Work" />
+      <nodes>
+        <classShapeMoniker Id="efd62ec8-abc1-4363-a8e9-a2d993f07ac0" />
+        <classShapeMoniker Id="644c5929-c295-4a18-ba29-18b85d83d36a" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(13.40625 : 2.2612939453125); (13.40625 : 7.90624725); (10.375 : 7.90624725)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/FarmingGPSDataContext/SeedType/SeedType_Work" />
+      <nodes>
+        <classShapeMoniker Id="b4142c2d-3aef-4794-b74f-ac284f9d002b" />
+        <classShapeMoniker Id="644c5929-c295-4a18-ba29-18b85d83d36a" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(7.5312475 : 5.89589680989583); (7.5312475 : 8.97798020182292); (8.375 : 8.97798020182292)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/FarmingGPSDataContext/Vechile/Vechile_Work" />
+      <nodes>
+        <classShapeMoniker Id="5e64396c-56f8-4320-8905-60cb56510ac8" />
+        <classShapeMoniker Id="644c5929-c295-4a18-ba29-18b85d83d36a" />
       </nodes>
     </associationConnector>
   </nestedChildShapes>

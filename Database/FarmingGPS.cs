@@ -2,6 +2,30 @@ using System;
 
 namespace FarmingGPS.Database
 {
+    partial class Drainage
+    {
+        public override string ToString()
+        {
+            return Name;
+        }
+    }
+
+    partial class SeedType
+    {
+        public override string ToString()
+        {
+            return Name;
+        }
+    }
+
+    partial class FertilizerType
+    {
+        public override string ToString()
+        {
+            return Name;
+        }
+    }
+
     partial class Equipment
     {
         public override string ToString()

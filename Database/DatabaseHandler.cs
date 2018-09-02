@@ -100,7 +100,7 @@ namespace FarmingGPS.Database
             }
         }
 
-        public bool SetCoordinatesOrder(GpsCoordinate[] coordinates, int fieldId)
+        public bool SetCoordinatesOrderField(GpsCoordinate[] coordinates, int fieldId)
         {
             lock (_syncObject)
             {
@@ -318,6 +318,97 @@ namespace FarmingGPS.Database
             {
                 OnDatabaseHandlerException(e, "GetIntersects");
                 return null;
+            }
+        }
+        
+        public void AddDrainage(Drainage drainage)
+        {
+            _databaseContext.Drainages.InsertOnSubmit(drainage);
+        }
+
+        public void DeleteDrainage(Drainage drainage)
+        {
+            var queryResult = from coordinate in _databaseContext.GpsCoordinates
+                              join drainagePar in _databaseContext.DrainageLines on coordinate.PosId equals drainagePar.PosId
+                              where drainagePar.DrainageId == drainage.DrainageId
+                              select coordinate;
+            _databaseContext.GpsCoordinates.DeleteAllOnSubmit(queryResult);
+            _databaseContext.Drainages.DeleteOnSubmit(drainage);
+        }
+
+        public Drainage[] GetDrainages()
+        {
+            try
+            {
+                lock (_syncObject)
+                {
+                    var queryResult = from drainage in _databaseContext.Drainages
+                                      select drainage;
+
+                    return queryResult.ToArray();
+                }
+            }
+            catch (Exception e)
+            {
+                OnDatabaseHandlerException(e, "GetDrainages");
+                return null;
+            }
+        }
+
+        public void AddDrainageLine(DrainageLine line)
+        {
+            if (line.GpsCoordinate == null)
+                throw new NullReferenceException("Coordinate of drainage needs to be set");
+
+            _databaseContext.GpsCoordinates.InsertOnSubmit(line.GpsCoordinate);
+            _databaseContext.DrainageLines.InsertOnSubmit(line);
+        }
+
+        public void DeleteDrainageLine(GpsCoordinate coordinate)
+        {
+            _databaseContext.GpsCoordinates.DeleteOnSubmit(coordinate);
+            _databaseContext.DrainageLines.DeleteOnSubmit(coordinate.DrainageLines.First());
+        }
+
+        public GpsCoordinate[] GetCoordinatesForDrainage(int drainageId)
+        {
+            try
+            {
+                lock (_syncObject)
+                {
+                    var queryResult = from coordinate in _databaseContext.GpsCoordinates
+                                      join drainage in _databaseContext.DrainageLines on coordinate.PosId equals drainage.PosId
+                                      orderby drainage.OrderId ascending
+                                      where drainage.DrainageId == drainageId
+                                      select coordinate;
+                    return queryResult.ToArray();
+                }
+            }
+            catch (Exception e)
+            {
+                OnDatabaseHandlerException(e, "GetCoordinatesForDrainage");
+                return null;
+            }
+        }
+
+        public bool SetCoordinatesOrderDrainage(GpsCoordinate[] coordinates, int drainageId)
+        {
+            lock (_syncObject)
+            {
+                if (SubmitToDatabase())
+                {
+                    for (int i = 0; i < coordinates.Length; i++)
+                    {
+                        var queryResult = from lineCoordinates in _databaseContext.DrainageLines
+                                          where lineCoordinates.DrainageId == drainageId
+                                          select lineCoordinates;
+                        DrainageLine lineCoordinate = queryResult.First(coordinate => coordinate.PosId == coordinates[i].PosId);
+                        lineCoordinate.OrderId = i;
+                    }
+                    return SubmitToDatabase();
+                }
+                else
+                    return false;
             }
         }
 
