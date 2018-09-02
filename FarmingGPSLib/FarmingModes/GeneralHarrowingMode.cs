@@ -41,7 +41,7 @@ namespace FarmingGPSLib.FarmingModes
             List<LineString> trackingLines = new List<LineString>();
             for (int i = 0; i < _headlandTurns; i++)
             {
-                trackingLines.AddRange(GetHeadlandAround(distanceFromShell));
+                trackingLines.AddRange(GetHeadlandLines(distanceFromShell));
                 distanceFromShell += _equipment.WidthExclOverlap.ToMeters().Value;
             }
             foreach (LineString line in trackingLines)
@@ -83,9 +83,10 @@ namespace FarmingGPSLib.FarmingModes
             double distanceFromShell = _equipment.CenterToTip.ToMeters().Value;
             for (int i = 1; i < _headlandTurns; i++)
                 distanceFromShell += _equipment.WidthExclOverlap.ToMeters().Value;
-            distanceFromShell += _equipment.CenterToTip.ToMeters().Value + 0.02; //add 2cm to make sure we dont get trackingline over headline
-            IList<Coordinate> headLandCoordinates = GetHeadlandAroundPoints(distanceFromShell);
-            IList<LineSegment> headLandLines = HelperClassLines.CreateLines(headLandCoordinates);
+            distanceFromShell += _equipment.CenterToTip.ToMeters().Value;
+            ILineString headLandCoordinates = GetHeadLandCoordinates(distanceFromShell + 0.02); //add 2cm to make sure we dont get trackingline over headline
+            Polygon headLandToCheck = new Polygon(GetHeadLandCoordinates(distanceFromShell).Coordinates);
+            IList<LineSegment> headLandLines = HelperClassLines.CreateLines(headLandCoordinates.Coordinates);
 
             IEnvelope fieldEnvelope = _fieldPolygon.Envelope;
             //Get longest projection to make sure we cover the whole field
@@ -124,42 +125,39 @@ namespace FarmingGPSLib.FarmingModes
                     if (intersection != null)
                         lineCoordinates.Add(intersection);
                 }
-                while (lineCoordinates.Count > 1)
+
+                for (int j = 0; j < lineCoordinates.Count; j++)
                 {
-                    bool firstPointUsed = false;
-                    for (int j = 1; j < lineCoordinates.Count; j++)
+                    if (!CgAlgorithms.IsPointInRing(lineCoordinates[j], headLandToCheck.Coordinates))
+                        lineCoordinates.RemoveAt(j);
+                }
+              
+                if (lineCoordinates.Count == 2)
+                    trackingLines.Add(new LineString(new List<Coordinate>() { lineCoordinates[0], lineCoordinates[1] }));
+                else
+                {
+                    int j = 1;
+                    while (lineCoordinates.Count > 1)
                     {
-                        if (CgAlgorithms.IsPointInRing(HelperClassLines.Midpoint(new LineSegment(lineCoordinates[0], lineCoordinates[j])), headLandCoordinates))
+                        if (j >= lineCoordinates.Count)
                         {
-                            if (lineCoordinates.Count > 2)
-                            {
-                                LineSegment lineToCheck = new LineSegment(lineCoordinates[0], lineCoordinates[j]);
-                                bool stillIntersect = false;
-                                foreach (LineSegment line in headLandLines)
-                                {
-                                    Coordinate intersection = line.Intersection(lineToCheck);
-                                    if (intersection == null)
-                                        continue;
-                                    if (HelperClassCoordinate.CoordinateEqualsRoundedmm(intersection, lineToCheck.P0) ||
-                                        HelperClassCoordinate.CoordinateEqualsRoundedmm(intersection, lineToCheck.P1))
-                                        continue;
-                                    if (intersection != null)
-                                    {
-                                        stillIntersect = true;
-                                        break;
-                                    }
-                                }
-                                if (stillIntersect)
-                                    continue;
-                            }
+                            j = 1;
+                            lineCoordinates.RemoveAt(0);
+                            continue;
+                        }
+
+                        LineString lineToCheck = new LineString(new Coordinate[] { lineCoordinates[0], lineCoordinates[j] });
+                        if (headLandToCheck.Contains(lineToCheck))
+                        {
                             trackingLines.Add(new LineString(new List<Coordinate>() { lineCoordinates[0], lineCoordinates[j] }));
                             lineCoordinates.RemoveAt(j);
                             lineCoordinates.RemoveAt(0);
-                            firstPointUsed = true;
+                            j = 1;
                         }
-                    }
-                    if (!firstPointUsed)
-                        lineCoordinates.RemoveAt(0);
+                        else
+                            j++;
+
+                    }                
                 }
 
                 lineCoordinates.Clear();
