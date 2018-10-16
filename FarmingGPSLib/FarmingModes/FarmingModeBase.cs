@@ -87,6 +87,7 @@ namespace FarmingGPSLib.FarmingModes
 
                         if (intersection != null)
                         {
+                            //TODO check if polygons turns into two polygons.
                             int first = newRing.Coordinates.IndexOf(newLines[i].P1);
                             int second = newRing.Coordinates.IndexOf(newLines[k].P1);
                             if (first > second)

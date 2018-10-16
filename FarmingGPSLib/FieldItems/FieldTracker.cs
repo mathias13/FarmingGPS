@@ -210,11 +210,11 @@ namespace FarmingGPSLib.FieldItems
                         OnAreaChanged();
                     }
                     //Make sure we are a little bit behind and to the middle so that .Union doesn't throw an exception next update
-                    LineSegment line = new LineSegment(leftPoint, rightPoint);
-                    Angle angle = new Angle(line.Angle);
-                    angle -= new Angle(Angle.PI / 6.0);
+                    Angle angle = new Angle(new LineSegment(leftPoint, rightPoint).Angle);
+                    angle -= new Angle(Angle.PI * 0.45);
                     _prevLeftPoint = HelperClassCoordinate.ComputePoint(leftPoint, angle.Radians, 0.05);
-                    angle -= new Angle(Angle.PI / 1.5);
+                    angle = new Angle(new LineSegment(rightPoint, leftPoint).Angle);
+                    angle += new Angle(Angle.PI * 0.45);
                     _prevRightPoint = HelperClassCoordinate.ComputePoint(rightPoint, angle.Radians, 0.05);
                 }
                 catch (Exception e)
