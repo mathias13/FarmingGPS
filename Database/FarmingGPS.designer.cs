@@ -63,9 +63,6 @@ namespace FarmingGPS.Database
     partial void InsertVechile(Vechile instance);
     partial void UpdateVechile(Vechile instance);
     partial void DeleteVechile(Vechile instance);
-    partial void InsertFertilizerType(FertilizerType instance);
-    partial void UpdateFertilizerType(FertilizerType instance);
-    partial void DeleteFertilizerType(FertilizerType instance);
     partial void InsertSeedType(SeedType instance);
     partial void UpdateSeedType(SeedType instance);
     partial void DeleteSeedType(SeedType instance);
@@ -81,9 +78,18 @@ namespace FarmingGPS.Database
     partial void InsertMaintenance(Maintenance instance);
     partial void UpdateMaintenance(Maintenance instance);
     partial void DeleteMaintenance(Maintenance instance);
+    partial void InsertNutrient(Nutrient instance);
+    partial void UpdateNutrient(Nutrient instance);
+    partial void DeleteNutrient(Nutrient instance);
+    partial void InsertFertilizerType(FertilizerType instance);
+    partial void UpdateFertilizerType(FertilizerType instance);
+    partial void DeleteFertilizerType(FertilizerType instance);
     partial void InsertWork(Work instance);
     partial void UpdateWork(Work instance);
     partial void DeleteWork(Work instance);
+    partial void InsertEquipmentNote(EquipmentNote instance);
+    partial void UpdateEquipmentNote(EquipmentNote instance);
+    partial void DeleteEquipmentNote(EquipmentNote instance);
     #endregion
 		
 		public FarmingGPSDataContext() : 
@@ -204,14 +210,6 @@ namespace FarmingGPS.Database
 			}
 		}
 		
-		public System.Data.Linq.Table<FertilizerType> FertilizerTypes
-		{
-			get
-			{
-				return this.GetTable<FertilizerType>();
-			}
-		}
-		
 		public System.Data.Linq.Table<SeedType> SeedTypes
 		{
 			get
@@ -252,11 +250,35 @@ namespace FarmingGPS.Database
 			}
 		}
 		
+		public System.Data.Linq.Table<Nutrient> Nutrients
+		{
+			get
+			{
+				return this.GetTable<Nutrient>();
+			}
+		}
+		
+		public System.Data.Linq.Table<FertilizerType> FertilizerTypes
+		{
+			get
+			{
+				return this.GetTable<FertilizerType>();
+			}
+		}
+		
 		public System.Data.Linq.Table<Work> Works
 		{
 			get
 			{
 				return this.GetTable<Work>();
+			}
+		}
+		
+		public System.Data.Linq.Table<EquipmentNote> EquipmentNotes
+		{
+			get
+			{
+				return this.GetTable<EquipmentNote>();
 			}
 		}
 	}
@@ -285,6 +307,8 @@ namespace FarmingGPS.Database
 		
 		private EntitySet<Work> _Works;
 		
+		private EntitySet<EquipmentNote> _EquipmentNotes;
+		
     #region Extensibility Method Definitions
     partial void OnLoaded();
     partial void OnValidate(System.Data.Linq.ChangeAction action);
@@ -308,6 +332,7 @@ namespace FarmingGPS.Database
 			this._FieldRecordings = new EntitySet<FieldRecording>(new Action<FieldRecording>(this.attach_FieldRecordings), new Action<FieldRecording>(this.detach_FieldRecordings));
 			this._Maintenances = new EntitySet<Maintenance>(new Action<Maintenance>(this.attach_Maintenances), new Action<Maintenance>(this.detach_Maintenances));
 			this._Works = new EntitySet<Work>(new Action<Work>(this.attach_Works), new Action<Work>(this.detach_Works));
+			this._EquipmentNotes = new EntitySet<EquipmentNote>(new Action<EquipmentNote>(this.attach_EquipmentNotes), new Action<EquipmentNote>(this.detach_EquipmentNotes));
 			OnCreated();
 		}
 		
@@ -470,6 +495,19 @@ namespace FarmingGPS.Database
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Equipment_EquipmentNote", Storage="_EquipmentNotes", ThisKey="EquipmentId", OtherKey="EquipmentId")]
+		public EntitySet<EquipmentNote> EquipmentNotes
+		{
+			get
+			{
+				return this._EquipmentNotes;
+			}
+			set
+			{
+				this._EquipmentNotes.Assign(value);
+			}
+		}
+		
 		public event PropertyChangingEventHandler PropertyChanging;
 		
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -521,6 +559,18 @@ namespace FarmingGPS.Database
 		}
 		
 		private void detach_Works(Work entity)
+		{
+			this.SendPropertyChanging();
+			entity.Equipment = null;
+		}
+		
+		private void attach_EquipmentNotes(EquipmentNote entity)
+		{
+			this.SendPropertyChanging();
+			entity.Equipment = this;
+		}
+		
+		private void detach_EquipmentNotes(EquipmentNote entity)
 		{
 			this.SendPropertyChanging();
 			entity.Equipment = null;
@@ -2852,168 +2902,6 @@ namespace FarmingGPS.Database
 		}
 	}
 	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.FertilizerType")]
-	public partial class FertilizerType : INotifyPropertyChanging, INotifyPropertyChanged
-	{
-		
-		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
-		
-		private int _FertilizerId;
-		
-		private string _Name;
-		
-		private double _PercentOfTotalWeight;
-		
-		private string _Content;
-		
-		private EntitySet<Work> _Works;
-		
-    #region Extensibility Method Definitions
-    partial void OnLoaded();
-    partial void OnValidate(System.Data.Linq.ChangeAction action);
-    partial void OnCreated();
-    partial void OnFertilizerIdChanging(int value);
-    partial void OnFertilizerIdChanged();
-    partial void OnNameChanging(string value);
-    partial void OnNameChanged();
-    partial void OnPercentOfTotalWeightChanging(double value);
-    partial void OnPercentOfTotalWeightChanged();
-    partial void OnContentChanging(string value);
-    partial void OnContentChanged();
-    #endregion
-		
-		public FertilizerType()
-		{
-			this._Works = new EntitySet<Work>(new Action<Work>(this.attach_Works), new Action<Work>(this.detach_Works));
-			OnCreated();
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FertilizerId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
-		public int FertilizerId
-		{
-			get
-			{
-				return this._FertilizerId;
-			}
-			set
-			{
-				if ((this._FertilizerId != value))
-				{
-					this.OnFertilizerIdChanging(value);
-					this.SendPropertyChanging();
-					this._FertilizerId = value;
-					this.SendPropertyChanged("FertilizerId");
-					this.OnFertilizerIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Name", DbType="VarChar(50) NOT NULL", CanBeNull=false)]
-		public string Name
-		{
-			get
-			{
-				return this._Name;
-			}
-			set
-			{
-				if ((this._Name != value))
-				{
-					this.OnNameChanging(value);
-					this.SendPropertyChanging();
-					this._Name = value;
-					this.SendPropertyChanged("Name");
-					this.OnNameChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PercentOfTotalWeight", DbType="Float NOT NULL")]
-		public double PercentOfTotalWeight
-		{
-			get
-			{
-				return this._PercentOfTotalWeight;
-			}
-			set
-			{
-				if ((this._PercentOfTotalWeight != value))
-				{
-					this.OnPercentOfTotalWeightChanging(value);
-					this.SendPropertyChanging();
-					this._PercentOfTotalWeight = value;
-					this.SendPropertyChanged("PercentOfTotalWeight");
-					this.OnPercentOfTotalWeightChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Content", DbType="VarChar(100) NOT NULL", CanBeNull=false)]
-		public string Content
-		{
-			get
-			{
-				return this._Content;
-			}
-			set
-			{
-				if ((this._Content != value))
-				{
-					this.OnContentChanging(value);
-					this.SendPropertyChanging();
-					this._Content = value;
-					this.SendPropertyChanged("Content");
-					this.OnContentChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FertilizerType_Work", Storage="_Works", ThisKey="FertilizerId", OtherKey="FertilizerId")]
-		public EntitySet<Work> Works
-		{
-			get
-			{
-				return this._Works;
-			}
-			set
-			{
-				this._Works.Assign(value);
-			}
-		}
-		
-		public event PropertyChangingEventHandler PropertyChanging;
-		
-		public event PropertyChangedEventHandler PropertyChanged;
-		
-		protected virtual void SendPropertyChanging()
-		{
-			if ((this.PropertyChanging != null))
-			{
-				this.PropertyChanging(this, emptyChangingEventArgs);
-			}
-		}
-		
-		protected virtual void SendPropertyChanged(String propertyName)
-		{
-			if ((this.PropertyChanged != null))
-			{
-				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-		
-		private void attach_Works(Work entity)
-		{
-			this.SendPropertyChanging();
-			entity.FertilizerType = this;
-		}
-		
-		private void detach_Works(Work entity)
-		{
-			this.SendPropertyChanging();
-			entity.FertilizerType = null;
-		}
-	}
-	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.SeedType")]
 	public partial class SeedType : INotifyPropertyChanging, INotifyPropertyChanged
 	{
@@ -4059,6 +3947,1142 @@ namespace FarmingGPS.Database
 		}
 	}
 	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Nutrient")]
+	public partial class Nutrient : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _NutrientId;
+		
+		private string _Name;
+		
+		private EntitySet<FertilizerType> _FertilizerTypes;
+		
+		private EntitySet<FertilizerType> _FertilizerTypes1;
+		
+		private EntitySet<FertilizerType> _FertilizerTypes2;
+		
+		private EntitySet<FertilizerType> _FertilizerTypes3;
+		
+		private EntitySet<FertilizerType> _FertilizerTypes4;
+		
+		private EntitySet<FertilizerType> _FertilizerTypes5;
+		
+		private EntitySet<FertilizerType> _FertilizerTypes6;
+		
+		private EntitySet<FertilizerType> _FertilizerTypes7;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnNutrientIdChanging(int value);
+    partial void OnNutrientIdChanged();
+    partial void OnNameChanging(string value);
+    partial void OnNameChanged();
+    #endregion
+		
+		public Nutrient()
+		{
+			this._FertilizerTypes = new EntitySet<FertilizerType>(new Action<FertilizerType>(this.attach_FertilizerTypes), new Action<FertilizerType>(this.detach_FertilizerTypes));
+			this._FertilizerTypes1 = new EntitySet<FertilizerType>(new Action<FertilizerType>(this.attach_FertilizerTypes1), new Action<FertilizerType>(this.detach_FertilizerTypes1));
+			this._FertilizerTypes2 = new EntitySet<FertilizerType>(new Action<FertilizerType>(this.attach_FertilizerTypes2), new Action<FertilizerType>(this.detach_FertilizerTypes2));
+			this._FertilizerTypes3 = new EntitySet<FertilizerType>(new Action<FertilizerType>(this.attach_FertilizerTypes3), new Action<FertilizerType>(this.detach_FertilizerTypes3));
+			this._FertilizerTypes4 = new EntitySet<FertilizerType>(new Action<FertilizerType>(this.attach_FertilizerTypes4), new Action<FertilizerType>(this.detach_FertilizerTypes4));
+			this._FertilizerTypes5 = new EntitySet<FertilizerType>(new Action<FertilizerType>(this.attach_FertilizerTypes5), new Action<FertilizerType>(this.detach_FertilizerTypes5));
+			this._FertilizerTypes6 = new EntitySet<FertilizerType>(new Action<FertilizerType>(this.attach_FertilizerTypes6), new Action<FertilizerType>(this.detach_FertilizerTypes6));
+			this._FertilizerTypes7 = new EntitySet<FertilizerType>(new Action<FertilizerType>(this.attach_FertilizerTypes7), new Action<FertilizerType>(this.detach_FertilizerTypes7));
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_NutrientId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int NutrientId
+		{
+			get
+			{
+				return this._NutrientId;
+			}
+			set
+			{
+				if ((this._NutrientId != value))
+				{
+					this.OnNutrientIdChanging(value);
+					this.SendPropertyChanging();
+					this._NutrientId = value;
+					this.SendPropertyChanged("NutrientId");
+					this.OnNutrientIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Name", DbType="VarChar(25) NOT NULL", CanBeNull=false)]
+		public string Name
+		{
+			get
+			{
+				return this._Name;
+			}
+			set
+			{
+				if ((this._Name != value))
+				{
+					this.OnNameChanging(value);
+					this.SendPropertyChanging();
+					this._Name = value;
+					this.SendPropertyChanged("Name");
+					this.OnNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Nutrient_FertilizerType", Storage="_FertilizerTypes", ThisKey="NutrientId", OtherKey="NutrientId")]
+		public EntitySet<FertilizerType> FertilizerTypes
+		{
+			get
+			{
+				return this._FertilizerTypes;
+			}
+			set
+			{
+				this._FertilizerTypes.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Nutrient_FertilizerType1", Storage="_FertilizerTypes1", ThisKey="NutrientId", OtherKey="Nutrient1Id")]
+		public EntitySet<FertilizerType> FertilizerTypes1
+		{
+			get
+			{
+				return this._FertilizerTypes1;
+			}
+			set
+			{
+				this._FertilizerTypes1.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Nutrient_FertilizerType2", Storage="_FertilizerTypes2", ThisKey="NutrientId", OtherKey="Nutrient2Id")]
+		public EntitySet<FertilizerType> FertilizerTypes2
+		{
+			get
+			{
+				return this._FertilizerTypes2;
+			}
+			set
+			{
+				this._FertilizerTypes2.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Nutrient_FertilizerType3", Storage="_FertilizerTypes3", ThisKey="NutrientId", OtherKey="Nutrient3Id")]
+		public EntitySet<FertilizerType> FertilizerTypes3
+		{
+			get
+			{
+				return this._FertilizerTypes3;
+			}
+			set
+			{
+				this._FertilizerTypes3.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Nutrient_FertilizerType4", Storage="_FertilizerTypes4", ThisKey="NutrientId", OtherKey="Nutrient4Id")]
+		public EntitySet<FertilizerType> FertilizerTypes4
+		{
+			get
+			{
+				return this._FertilizerTypes4;
+			}
+			set
+			{
+				this._FertilizerTypes4.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Nutrient_FertilizerType5", Storage="_FertilizerTypes5", ThisKey="NutrientId", OtherKey="Nutrient5Id")]
+		public EntitySet<FertilizerType> FertilizerTypes5
+		{
+			get
+			{
+				return this._FertilizerTypes5;
+			}
+			set
+			{
+				this._FertilizerTypes5.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Nutrient_FertilizerType6", Storage="_FertilizerTypes6", ThisKey="NutrientId", OtherKey="Nutrient6Id")]
+		public EntitySet<FertilizerType> FertilizerTypes6
+		{
+			get
+			{
+				return this._FertilizerTypes6;
+			}
+			set
+			{
+				this._FertilizerTypes6.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Nutrient_FertilizerType7", Storage="_FertilizerTypes7", ThisKey="NutrientId", OtherKey="Nutrient7Id")]
+		public EntitySet<FertilizerType> FertilizerTypes7
+		{
+			get
+			{
+				return this._FertilizerTypes7;
+			}
+			set
+			{
+				this._FertilizerTypes7.Assign(value);
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+		
+		private void attach_FertilizerTypes(FertilizerType entity)
+		{
+			this.SendPropertyChanging();
+			entity.Nutrient = this;
+		}
+		
+		private void detach_FertilizerTypes(FertilizerType entity)
+		{
+			this.SendPropertyChanging();
+			entity.Nutrient = null;
+		}
+		
+		private void attach_FertilizerTypes1(FertilizerType entity)
+		{
+			this.SendPropertyChanging();
+			entity.Nutrient1 = this;
+		}
+		
+		private void detach_FertilizerTypes1(FertilizerType entity)
+		{
+			this.SendPropertyChanging();
+			entity.Nutrient1 = null;
+		}
+		
+		private void attach_FertilizerTypes2(FertilizerType entity)
+		{
+			this.SendPropertyChanging();
+			entity.Nutrient2 = this;
+		}
+		
+		private void detach_FertilizerTypes2(FertilizerType entity)
+		{
+			this.SendPropertyChanging();
+			entity.Nutrient2 = null;
+		}
+		
+		private void attach_FertilizerTypes3(FertilizerType entity)
+		{
+			this.SendPropertyChanging();
+			entity.Nutrient3 = this;
+		}
+		
+		private void detach_FertilizerTypes3(FertilizerType entity)
+		{
+			this.SendPropertyChanging();
+			entity.Nutrient3 = null;
+		}
+		
+		private void attach_FertilizerTypes4(FertilizerType entity)
+		{
+			this.SendPropertyChanging();
+			entity.Nutrient4 = this;
+		}
+		
+		private void detach_FertilizerTypes4(FertilizerType entity)
+		{
+			this.SendPropertyChanging();
+			entity.Nutrient4 = null;
+		}
+		
+		private void attach_FertilizerTypes5(FertilizerType entity)
+		{
+			this.SendPropertyChanging();
+			entity.Nutrient5 = this;
+		}
+		
+		private void detach_FertilizerTypes5(FertilizerType entity)
+		{
+			this.SendPropertyChanging();
+			entity.Nutrient5 = null;
+		}
+		
+		private void attach_FertilizerTypes6(FertilizerType entity)
+		{
+			this.SendPropertyChanging();
+			entity.Nutrient6 = this;
+		}
+		
+		private void detach_FertilizerTypes6(FertilizerType entity)
+		{
+			this.SendPropertyChanging();
+			entity.Nutrient6 = null;
+		}
+		
+		private void attach_FertilizerTypes7(FertilizerType entity)
+		{
+			this.SendPropertyChanging();
+			entity.Nutrient7 = this;
+		}
+		
+		private void detach_FertilizerTypes7(FertilizerType entity)
+		{
+			this.SendPropertyChanging();
+			entity.Nutrient7 = null;
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.FertilizerType")]
+	public partial class FertilizerType : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _FertilizerId;
+		
+		private string _Name;
+		
+		private System.Nullable<int> _NutrientId;
+		
+		private System.Nullable<double> _NutrientPercent;
+		
+		private System.Nullable<int> _Nutrient1Id;
+		
+		private System.Nullable<double> _Nutrient1Percent;
+		
+		private System.Nullable<int> _Nutrient2Id;
+		
+		private System.Nullable<double> _Nutrient2Percent;
+		
+		private System.Nullable<int> _Nutrient3Id;
+		
+		private System.Nullable<double> _Nutrient3Percent;
+		
+		private System.Nullable<int> _Nutrient4Id;
+		
+		private System.Nullable<double> _Nutrient4Percent;
+		
+		private System.Nullable<int> _Nutrient5Id;
+		
+		private System.Nullable<double> _Nutrient5Percent;
+		
+		private System.Nullable<int> _Nutrient6Id;
+		
+		private System.Nullable<double> _Nutrient6Percent;
+		
+		private System.Nullable<int> _Nutrient7Id;
+		
+		private System.Nullable<double> _Nutrient7Percent;
+		
+		private EntitySet<Work> _Works;
+		
+		private EntityRef<Nutrient> _Nutrient;
+		
+		private EntityRef<Nutrient> _Nutrient1;
+		
+		private EntityRef<Nutrient> _Nutrient2;
+		
+		private EntityRef<Nutrient> _Nutrient3;
+		
+		private EntityRef<Nutrient> _Nutrient4;
+		
+		private EntityRef<Nutrient> _Nutrient5;
+		
+		private EntityRef<Nutrient> _Nutrient6;
+		
+		private EntityRef<Nutrient> _Nutrient7;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnFertilizerIdChanging(int value);
+    partial void OnFertilizerIdChanged();
+    partial void OnNameChanging(string value);
+    partial void OnNameChanged();
+    partial void OnNutrientIdChanging(System.Nullable<int> value);
+    partial void OnNutrientIdChanged();
+    partial void OnNutrientPercentChanging(System.Nullable<double> value);
+    partial void OnNutrientPercentChanged();
+    partial void OnNutrient1IdChanging(System.Nullable<int> value);
+    partial void OnNutrient1IdChanged();
+    partial void OnNutrient1PercentChanging(System.Nullable<double> value);
+    partial void OnNutrient1PercentChanged();
+    partial void OnNutrient2IdChanging(System.Nullable<int> value);
+    partial void OnNutrient2IdChanged();
+    partial void OnNutrient2PercentChanging(System.Nullable<double> value);
+    partial void OnNutrient2PercentChanged();
+    partial void OnNutrient3IdChanging(System.Nullable<int> value);
+    partial void OnNutrient3IdChanged();
+    partial void OnNutrient3PercentChanging(System.Nullable<double> value);
+    partial void OnNutrient3PercentChanged();
+    partial void OnNutrient4IdChanging(System.Nullable<int> value);
+    partial void OnNutrient4IdChanged();
+    partial void OnNutrient4PercentChanging(System.Nullable<double> value);
+    partial void OnNutrient4PercentChanged();
+    partial void OnNutrient5IdChanging(System.Nullable<int> value);
+    partial void OnNutrient5IdChanged();
+    partial void OnNutrient5PercentChanging(System.Nullable<double> value);
+    partial void OnNutrient5PercentChanged();
+    partial void OnNutrient6IdChanging(System.Nullable<int> value);
+    partial void OnNutrient6IdChanged();
+    partial void OnNutrient6PercentChanging(System.Nullable<double> value);
+    partial void OnNutrient6PercentChanged();
+    partial void OnNutrient7IdChanging(System.Nullable<int> value);
+    partial void OnNutrient7IdChanged();
+    partial void OnNutrient7PercentChanging(System.Nullable<double> value);
+    partial void OnNutrient7PercentChanged();
+    #endregion
+		
+		public FertilizerType()
+		{
+			this._Works = new EntitySet<Work>(new Action<Work>(this.attach_Works), new Action<Work>(this.detach_Works));
+			this._Nutrient = default(EntityRef<Nutrient>);
+			this._Nutrient1 = default(EntityRef<Nutrient>);
+			this._Nutrient2 = default(EntityRef<Nutrient>);
+			this._Nutrient3 = default(EntityRef<Nutrient>);
+			this._Nutrient4 = default(EntityRef<Nutrient>);
+			this._Nutrient5 = default(EntityRef<Nutrient>);
+			this._Nutrient6 = default(EntityRef<Nutrient>);
+			this._Nutrient7 = default(EntityRef<Nutrient>);
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FertilizerId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int FertilizerId
+		{
+			get
+			{
+				return this._FertilizerId;
+			}
+			set
+			{
+				if ((this._FertilizerId != value))
+				{
+					this.OnFertilizerIdChanging(value);
+					this.SendPropertyChanging();
+					this._FertilizerId = value;
+					this.SendPropertyChanged("FertilizerId");
+					this.OnFertilizerIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Name", DbType="VarChar(50) NOT NULL", CanBeNull=false)]
+		public string Name
+		{
+			get
+			{
+				return this._Name;
+			}
+			set
+			{
+				if ((this._Name != value))
+				{
+					this.OnNameChanging(value);
+					this.SendPropertyChanging();
+					this._Name = value;
+					this.SendPropertyChanged("Name");
+					this.OnNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_NutrientId", DbType="Int")]
+		public System.Nullable<int> NutrientId
+		{
+			get
+			{
+				return this._NutrientId;
+			}
+			set
+			{
+				if ((this._NutrientId != value))
+				{
+					if (this._Nutrient.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnNutrientIdChanging(value);
+					this.SendPropertyChanging();
+					this._NutrientId = value;
+					this.SendPropertyChanged("NutrientId");
+					this.OnNutrientIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_NutrientPercent", DbType="Float")]
+		public System.Nullable<double> NutrientPercent
+		{
+			get
+			{
+				return this._NutrientPercent;
+			}
+			set
+			{
+				if ((this._NutrientPercent != value))
+				{
+					this.OnNutrientPercentChanging(value);
+					this.SendPropertyChanging();
+					this._NutrientPercent = value;
+					this.SendPropertyChanged("NutrientPercent");
+					this.OnNutrientPercentChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Nutrient1Id", DbType="Int")]
+		public System.Nullable<int> Nutrient1Id
+		{
+			get
+			{
+				return this._Nutrient1Id;
+			}
+			set
+			{
+				if ((this._Nutrient1Id != value))
+				{
+					if (this._Nutrient1.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnNutrient1IdChanging(value);
+					this.SendPropertyChanging();
+					this._Nutrient1Id = value;
+					this.SendPropertyChanged("Nutrient1Id");
+					this.OnNutrient1IdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Nutrient1Percent", DbType="Float")]
+		public System.Nullable<double> Nutrient1Percent
+		{
+			get
+			{
+				return this._Nutrient1Percent;
+			}
+			set
+			{
+				if ((this._Nutrient1Percent != value))
+				{
+					this.OnNutrient1PercentChanging(value);
+					this.SendPropertyChanging();
+					this._Nutrient1Percent = value;
+					this.SendPropertyChanged("Nutrient1Percent");
+					this.OnNutrient1PercentChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Nutrient2Id", DbType="Int")]
+		public System.Nullable<int> Nutrient2Id
+		{
+			get
+			{
+				return this._Nutrient2Id;
+			}
+			set
+			{
+				if ((this._Nutrient2Id != value))
+				{
+					if (this._Nutrient2.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnNutrient2IdChanging(value);
+					this.SendPropertyChanging();
+					this._Nutrient2Id = value;
+					this.SendPropertyChanged("Nutrient2Id");
+					this.OnNutrient2IdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Nutrient2Percent", DbType="Float")]
+		public System.Nullable<double> Nutrient2Percent
+		{
+			get
+			{
+				return this._Nutrient2Percent;
+			}
+			set
+			{
+				if ((this._Nutrient2Percent != value))
+				{
+					this.OnNutrient2PercentChanging(value);
+					this.SendPropertyChanging();
+					this._Nutrient2Percent = value;
+					this.SendPropertyChanged("Nutrient2Percent");
+					this.OnNutrient2PercentChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Nutrient3Id", DbType="Int")]
+		public System.Nullable<int> Nutrient3Id
+		{
+			get
+			{
+				return this._Nutrient3Id;
+			}
+			set
+			{
+				if ((this._Nutrient3Id != value))
+				{
+					if (this._Nutrient3.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnNutrient3IdChanging(value);
+					this.SendPropertyChanging();
+					this._Nutrient3Id = value;
+					this.SendPropertyChanged("Nutrient3Id");
+					this.OnNutrient3IdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Nutrient3Percent", DbType="Float")]
+		public System.Nullable<double> Nutrient3Percent
+		{
+			get
+			{
+				return this._Nutrient3Percent;
+			}
+			set
+			{
+				if ((this._Nutrient3Percent != value))
+				{
+					this.OnNutrient3PercentChanging(value);
+					this.SendPropertyChanging();
+					this._Nutrient3Percent = value;
+					this.SendPropertyChanged("Nutrient3Percent");
+					this.OnNutrient3PercentChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Nutrient4Id", DbType="Int")]
+		public System.Nullable<int> Nutrient4Id
+		{
+			get
+			{
+				return this._Nutrient4Id;
+			}
+			set
+			{
+				if ((this._Nutrient4Id != value))
+				{
+					if (this._Nutrient4.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnNutrient4IdChanging(value);
+					this.SendPropertyChanging();
+					this._Nutrient4Id = value;
+					this.SendPropertyChanged("Nutrient4Id");
+					this.OnNutrient4IdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Nutrient4Percent", DbType="Float")]
+		public System.Nullable<double> Nutrient4Percent
+		{
+			get
+			{
+				return this._Nutrient4Percent;
+			}
+			set
+			{
+				if ((this._Nutrient4Percent != value))
+				{
+					this.OnNutrient4PercentChanging(value);
+					this.SendPropertyChanging();
+					this._Nutrient4Percent = value;
+					this.SendPropertyChanged("Nutrient4Percent");
+					this.OnNutrient4PercentChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Nutrient5Id", DbType="Int")]
+		public System.Nullable<int> Nutrient5Id
+		{
+			get
+			{
+				return this._Nutrient5Id;
+			}
+			set
+			{
+				if ((this._Nutrient5Id != value))
+				{
+					if (this._Nutrient5.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnNutrient5IdChanging(value);
+					this.SendPropertyChanging();
+					this._Nutrient5Id = value;
+					this.SendPropertyChanged("Nutrient5Id");
+					this.OnNutrient5IdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Nutrient5Percent", DbType="Float")]
+		public System.Nullable<double> Nutrient5Percent
+		{
+			get
+			{
+				return this._Nutrient5Percent;
+			}
+			set
+			{
+				if ((this._Nutrient5Percent != value))
+				{
+					this.OnNutrient5PercentChanging(value);
+					this.SendPropertyChanging();
+					this._Nutrient5Percent = value;
+					this.SendPropertyChanged("Nutrient5Percent");
+					this.OnNutrient5PercentChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Nutrient6Id", DbType="Int")]
+		public System.Nullable<int> Nutrient6Id
+		{
+			get
+			{
+				return this._Nutrient6Id;
+			}
+			set
+			{
+				if ((this._Nutrient6Id != value))
+				{
+					if (this._Nutrient6.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnNutrient6IdChanging(value);
+					this.SendPropertyChanging();
+					this._Nutrient6Id = value;
+					this.SendPropertyChanged("Nutrient6Id");
+					this.OnNutrient6IdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Nutrient6Percent", DbType="Float")]
+		public System.Nullable<double> Nutrient6Percent
+		{
+			get
+			{
+				return this._Nutrient6Percent;
+			}
+			set
+			{
+				if ((this._Nutrient6Percent != value))
+				{
+					this.OnNutrient6PercentChanging(value);
+					this.SendPropertyChanging();
+					this._Nutrient6Percent = value;
+					this.SendPropertyChanged("Nutrient6Percent");
+					this.OnNutrient6PercentChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Nutrient7Id", DbType="Int")]
+		public System.Nullable<int> Nutrient7Id
+		{
+			get
+			{
+				return this._Nutrient7Id;
+			}
+			set
+			{
+				if ((this._Nutrient7Id != value))
+				{
+					if (this._Nutrient7.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnNutrient7IdChanging(value);
+					this.SendPropertyChanging();
+					this._Nutrient7Id = value;
+					this.SendPropertyChanged("Nutrient7Id");
+					this.OnNutrient7IdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Nutrient7Percent", DbType="Float")]
+		public System.Nullable<double> Nutrient7Percent
+		{
+			get
+			{
+				return this._Nutrient7Percent;
+			}
+			set
+			{
+				if ((this._Nutrient7Percent != value))
+				{
+					this.OnNutrient7PercentChanging(value);
+					this.SendPropertyChanging();
+					this._Nutrient7Percent = value;
+					this.SendPropertyChanged("Nutrient7Percent");
+					this.OnNutrient7PercentChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FertilizerType_Work", Storage="_Works", ThisKey="FertilizerId", OtherKey="FertilizerId")]
+		public EntitySet<Work> Works
+		{
+			get
+			{
+				return this._Works;
+			}
+			set
+			{
+				this._Works.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Nutrient_FertilizerType", Storage="_Nutrient", ThisKey="NutrientId", OtherKey="NutrientId", IsForeignKey=true)]
+		public Nutrient Nutrient
+		{
+			get
+			{
+				return this._Nutrient.Entity;
+			}
+			set
+			{
+				Nutrient previousValue = this._Nutrient.Entity;
+				if (((previousValue != value) 
+							|| (this._Nutrient.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Nutrient.Entity = null;
+						previousValue.FertilizerTypes.Remove(this);
+					}
+					this._Nutrient.Entity = value;
+					if ((value != null))
+					{
+						value.FertilizerTypes.Add(this);
+						this._NutrientId = value.NutrientId;
+					}
+					else
+					{
+						this._NutrientId = default(Nullable<int>);
+					}
+					this.SendPropertyChanged("Nutrient");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Nutrient_FertilizerType1", Storage="_Nutrient1", ThisKey="Nutrient1Id", OtherKey="NutrientId", IsForeignKey=true)]
+		public Nutrient Nutrient1
+		{
+			get
+			{
+				return this._Nutrient1.Entity;
+			}
+			set
+			{
+				Nutrient previousValue = this._Nutrient1.Entity;
+				if (((previousValue != value) 
+							|| (this._Nutrient1.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Nutrient1.Entity = null;
+						previousValue.FertilizerTypes1.Remove(this);
+					}
+					this._Nutrient1.Entity = value;
+					if ((value != null))
+					{
+						value.FertilizerTypes1.Add(this);
+						this._Nutrient1Id = value.NutrientId;
+					}
+					else
+					{
+						this._Nutrient1Id = default(Nullable<int>);
+					}
+					this.SendPropertyChanged("Nutrient1");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Nutrient_FertilizerType2", Storage="_Nutrient2", ThisKey="Nutrient2Id", OtherKey="NutrientId", IsForeignKey=true)]
+		public Nutrient Nutrient2
+		{
+			get
+			{
+				return this._Nutrient2.Entity;
+			}
+			set
+			{
+				Nutrient previousValue = this._Nutrient2.Entity;
+				if (((previousValue != value) 
+							|| (this._Nutrient2.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Nutrient2.Entity = null;
+						previousValue.FertilizerTypes2.Remove(this);
+					}
+					this._Nutrient2.Entity = value;
+					if ((value != null))
+					{
+						value.FertilizerTypes2.Add(this);
+						this._Nutrient2Id = value.NutrientId;
+					}
+					else
+					{
+						this._Nutrient2Id = default(Nullable<int>);
+					}
+					this.SendPropertyChanged("Nutrient2");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Nutrient_FertilizerType3", Storage="_Nutrient3", ThisKey="Nutrient3Id", OtherKey="NutrientId", IsForeignKey=true)]
+		public Nutrient Nutrient3
+		{
+			get
+			{
+				return this._Nutrient3.Entity;
+			}
+			set
+			{
+				Nutrient previousValue = this._Nutrient3.Entity;
+				if (((previousValue != value) 
+							|| (this._Nutrient3.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Nutrient3.Entity = null;
+						previousValue.FertilizerTypes3.Remove(this);
+					}
+					this._Nutrient3.Entity = value;
+					if ((value != null))
+					{
+						value.FertilizerTypes3.Add(this);
+						this._Nutrient3Id = value.NutrientId;
+					}
+					else
+					{
+						this._Nutrient3Id = default(Nullable<int>);
+					}
+					this.SendPropertyChanged("Nutrient3");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Nutrient_FertilizerType4", Storage="_Nutrient4", ThisKey="Nutrient4Id", OtherKey="NutrientId", IsForeignKey=true)]
+		public Nutrient Nutrient4
+		{
+			get
+			{
+				return this._Nutrient4.Entity;
+			}
+			set
+			{
+				Nutrient previousValue = this._Nutrient4.Entity;
+				if (((previousValue != value) 
+							|| (this._Nutrient4.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Nutrient4.Entity = null;
+						previousValue.FertilizerTypes4.Remove(this);
+					}
+					this._Nutrient4.Entity = value;
+					if ((value != null))
+					{
+						value.FertilizerTypes4.Add(this);
+						this._Nutrient4Id = value.NutrientId;
+					}
+					else
+					{
+						this._Nutrient4Id = default(Nullable<int>);
+					}
+					this.SendPropertyChanged("Nutrient4");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Nutrient_FertilizerType5", Storage="_Nutrient5", ThisKey="Nutrient5Id", OtherKey="NutrientId", IsForeignKey=true)]
+		public Nutrient Nutrient5
+		{
+			get
+			{
+				return this._Nutrient5.Entity;
+			}
+			set
+			{
+				Nutrient previousValue = this._Nutrient5.Entity;
+				if (((previousValue != value) 
+							|| (this._Nutrient5.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Nutrient5.Entity = null;
+						previousValue.FertilizerTypes5.Remove(this);
+					}
+					this._Nutrient5.Entity = value;
+					if ((value != null))
+					{
+						value.FertilizerTypes5.Add(this);
+						this._Nutrient5Id = value.NutrientId;
+					}
+					else
+					{
+						this._Nutrient5Id = default(Nullable<int>);
+					}
+					this.SendPropertyChanged("Nutrient5");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Nutrient_FertilizerType6", Storage="_Nutrient6", ThisKey="Nutrient6Id", OtherKey="NutrientId", IsForeignKey=true)]
+		public Nutrient Nutrient6
+		{
+			get
+			{
+				return this._Nutrient6.Entity;
+			}
+			set
+			{
+				Nutrient previousValue = this._Nutrient6.Entity;
+				if (((previousValue != value) 
+							|| (this._Nutrient6.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Nutrient6.Entity = null;
+						previousValue.FertilizerTypes6.Remove(this);
+					}
+					this._Nutrient6.Entity = value;
+					if ((value != null))
+					{
+						value.FertilizerTypes6.Add(this);
+						this._Nutrient6Id = value.NutrientId;
+					}
+					else
+					{
+						this._Nutrient6Id = default(Nullable<int>);
+					}
+					this.SendPropertyChanged("Nutrient6");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Nutrient_FertilizerType7", Storage="_Nutrient7", ThisKey="Nutrient7Id", OtherKey="NutrientId", IsForeignKey=true)]
+		public Nutrient Nutrient7
+		{
+			get
+			{
+				return this._Nutrient7.Entity;
+			}
+			set
+			{
+				Nutrient previousValue = this._Nutrient7.Entity;
+				if (((previousValue != value) 
+							|| (this._Nutrient7.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Nutrient7.Entity = null;
+						previousValue.FertilizerTypes7.Remove(this);
+					}
+					this._Nutrient7.Entity = value;
+					if ((value != null))
+					{
+						value.FertilizerTypes7.Add(this);
+						this._Nutrient7Id = value.NutrientId;
+					}
+					else
+					{
+						this._Nutrient7Id = default(Nullable<int>);
+					}
+					this.SendPropertyChanged("Nutrient7");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+		
+		private void attach_Works(Work entity)
+		{
+			this.SendPropertyChanging();
+			entity.FertilizerType = this;
+		}
+		
+		private void detach_Works(Work entity)
+		{
+			this.SendPropertyChanging();
+			entity.FertilizerType = null;
+		}
+	}
+	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.[Work]")]
 	public partial class Work : INotifyPropertyChanging, INotifyPropertyChanged
 	{
@@ -4086,6 +5110,8 @@ namespace FarmingGPS.Database
 		private double _Area;
 		
 		private System.Nullable<double> _HarvestedAmount;
+		
+		private string _Comment;
 		
 		private EntitySet<WorkArea> _WorkAreas;
 		
@@ -4125,6 +5151,8 @@ namespace FarmingGPS.Database
     partial void OnAreaChanged();
     partial void OnHarvestedAmountChanging(System.Nullable<double> value);
     partial void OnHarvestedAmountChanged();
+    partial void OnCommentChanging(string value);
+    partial void OnCommentChanged();
     #endregion
 		
 		public Work()
@@ -4378,6 +5406,26 @@ namespace FarmingGPS.Database
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Comment", DbType="VarChar(100) NOT NULL", CanBeNull=false)]
+		public string Comment
+		{
+			get
+			{
+				return this._Comment;
+			}
+			set
+			{
+				if ((this._Comment != value))
+				{
+					this.OnCommentChanging(value);
+					this.SendPropertyChanging();
+					this._Comment = value;
+					this.SendPropertyChanged("Comment");
+					this.OnCommentChanged();
+				}
+			}
+		}
+		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Work_WorkArea", Storage="_WorkAreas", ThisKey="WorkId", OtherKey="WorkId")]
 		public EntitySet<WorkArea> WorkAreas
 		{
@@ -4591,6 +5639,157 @@ namespace FarmingGPS.Database
 		{
 			this.SendPropertyChanging();
 			entity.Work = null;
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.EquipmentNotes")]
+	public partial class EquipmentNote : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _EquipmentNoteId;
+		
+		private int _EquipmentId;
+		
+		private string _Note;
+		
+		private EntityRef<Equipment> _Equipment;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnEquipmentNoteIdChanging(int value);
+    partial void OnEquipmentNoteIdChanged();
+    partial void OnEquipmentIdChanging(int value);
+    partial void OnEquipmentIdChanged();
+    partial void OnNoteChanging(string value);
+    partial void OnNoteChanged();
+    #endregion
+		
+		public EquipmentNote()
+		{
+			this._Equipment = default(EntityRef<Equipment>);
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_EquipmentNoteId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int EquipmentNoteId
+		{
+			get
+			{
+				return this._EquipmentNoteId;
+			}
+			set
+			{
+				if ((this._EquipmentNoteId != value))
+				{
+					this.OnEquipmentNoteIdChanging(value);
+					this.SendPropertyChanging();
+					this._EquipmentNoteId = value;
+					this.SendPropertyChanged("EquipmentNoteId");
+					this.OnEquipmentNoteIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_EquipmentId", DbType="Int NOT NULL")]
+		public int EquipmentId
+		{
+			get
+			{
+				return this._EquipmentId;
+			}
+			set
+			{
+				if ((this._EquipmentId != value))
+				{
+					if (this._Equipment.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnEquipmentIdChanging(value);
+					this.SendPropertyChanging();
+					this._EquipmentId = value;
+					this.SendPropertyChanged("EquipmentId");
+					this.OnEquipmentIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Note", DbType="VarChar(50) NOT NULL", CanBeNull=false)]
+		public string Note
+		{
+			get
+			{
+				return this._Note;
+			}
+			set
+			{
+				if ((this._Note != value))
+				{
+					this.OnNoteChanging(value);
+					this.SendPropertyChanging();
+					this._Note = value;
+					this.SendPropertyChanged("Note");
+					this.OnNoteChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Equipment_EquipmentNote", Storage="_Equipment", ThisKey="EquipmentId", OtherKey="EquipmentId", IsForeignKey=true)]
+		public Equipment Equipment
+		{
+			get
+			{
+				return this._Equipment.Entity;
+			}
+			set
+			{
+				Equipment previousValue = this._Equipment.Entity;
+				if (((previousValue != value) 
+							|| (this._Equipment.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Equipment.Entity = null;
+						previousValue.EquipmentNotes.Remove(this);
+					}
+					this._Equipment.Entity = value;
+					if ((value != null))
+					{
+						value.EquipmentNotes.Add(this);
+						this._EquipmentId = value.EquipmentId;
+					}
+					else
+					{
+						this._EquipmentId = default(int);
+					}
+					this.SendPropertyChanged("Equipment");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
 		}
 	}
 }
