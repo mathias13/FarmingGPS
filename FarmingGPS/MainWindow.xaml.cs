@@ -744,6 +744,12 @@ namespace FarmingGPS
             else
                 receiver = new SBPSerial();
 
+            ISettingsCollection visual = new SettingsCollection("Visualisering");
+            visual.ChildSettings.Add(new FarmingGPS.Visualization.Settings.LightBar());
+            SettingGroup lightBarGroup = new SettingGroup(visual.ChildSettings[0].Name, null, new SettingsCollectionControl(visual.ChildSettings[0]));
+            (lightBarGroup.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+            SettingGroup visualGroup = new SettingGroup("Visualisering", new SettingGroup[] { lightBarGroup }, null);
+
             ISettingsCollection connections = new SettingsCollection("Anslutningar");
             connections.ChildSettings.Add(ntripClient);
             connections.ChildSettings.Add(database);
@@ -755,13 +761,17 @@ namespace FarmingGPS
             SettingGroup receiverGroup = new SettingGroup(connections.ChildSettings[2].Name, null, new SettingsCollectionControl(connections.ChildSettings[2]));
             (receiverGroup.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
             SettingGroup connectionGroup = new SettingGroup(connections.Name, new SettingGroup[] { ntripGroup, databaseGroup, receiverGroup}, new SettingsCollectionControl(connections));
+
             SettingGroup field = new SettingGroup("Fält", null, new GetField());
             (field.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+
             SettingGroup farmingMode = new SettingGroup("Bearbetningläge", null, new FarmingMode());
             (farmingMode.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+
             SettingGroup redskap = new SettingGroup("Redskap", new SettingGroup[] { farmingMode }, new GetVechileEquipment());
             (redskap.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
-            SettingGroup settingRoot = new SettingGroup("Inställningar", new SettingGroup[] { connectionGroup, field, redskap }, null);
+
+            SettingGroup settingRoot = new SettingGroup("Inställningar", new SettingGroup[] { connectionGroup, field, redskap, visualGroup }, null);
             _settingsTree.ItemsSource = settingRoot;
         }
 
@@ -773,7 +783,8 @@ namespace FarmingGPS
                 if (settingItem.SettingControl is IDatabaseSettings && _database != null)
                     (settingItem.SettingControl as IDatabaseSettings).RegisterDatabaseHandler(_database);
                 _settingsUsercontrolGrid.Children.Clear();
-                _settingsUsercontrolGrid.Children.Add(settingItem.SettingControl);
+                if(settingItem.SettingControl != null)
+                    _settingsUsercontrolGrid.Children.Add(settingItem.SettingControl);
             }
 
         }
@@ -803,7 +814,9 @@ namespace FarmingGPS
                     SetupNTRIP(settingControl.Settings as ClientSettings);
                 else if (settingControl.Settings is SBPSerial)
                     SetupReceiver(settingControl.Settings as SBPSerial);
-                else if(_equipment is IEquipmentControl)
+                else if (settingControl.Settings is Visualization.Settings.LightBar)
+                    _lightBar.Tolerance = new Distance((settingControl.Settings as Visualization.Settings.LightBar).Tolerance, DistanceUnit.Meters);
+                else if (_equipment is IEquipmentControl)
                 {
                     IEquipmentControl equipmentControl = _equipment as IEquipmentControl;
                     if (settingControl.Settings.GetType() == equipmentControl.ControllerSettingsType)

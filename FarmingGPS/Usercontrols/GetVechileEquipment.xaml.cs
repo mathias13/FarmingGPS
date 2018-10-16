@@ -214,7 +214,7 @@ namespace FarmingGPS.Usercontrols
 
         public void RegisterDatabaseHandler(DatabaseHandler databaseHandler)
         {
-            if (_database != null)
+            if (_database != null && ListBoxVechile.Items.Count > 0)
                 return;
             _database = databaseHandler;
             ReloadLists();

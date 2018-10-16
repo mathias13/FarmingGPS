@@ -50,8 +50,9 @@ namespace FarmingGPS.Usercontrols
 
             ListBoxFields.SelectionChanged += ListBoxFields_SelectionChanged;
             ListBoxIntersects.SelectionChanged += ListBoxIntersects_SelectionChanged;
-        }
-        
+            
+        }        
+
         private void ListBoxFields_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ListBoxIntersects.Items.Clear();
@@ -155,7 +156,7 @@ namespace FarmingGPS.Usercontrols
 
         public void RegisterDatabaseHandler(DatabaseHandler databaseHandler)
         {
-            if (_database != null)
+            if (_database != null && ListBoxFields.Items.Count > 0)
                 return;
             _database = databaseHandler;
             Field[] _fields = _database.GetFields();
