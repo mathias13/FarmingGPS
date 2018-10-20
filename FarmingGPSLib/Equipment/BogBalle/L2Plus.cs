@@ -1,5 +1,7 @@
 ﻿using System;
 using DotSpatial.Positioning;
+using FarmingGPSLib.FarmingModes;
+using FarmingGPSLib.Settings;
 
 namespace FarmingGPSLib.Equipment.BogBalle
 {
@@ -13,19 +15,15 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         private Calibrator _calibrator;
 
-        public L2Plus(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, Calibrator calibrator)
+        public L2Plus(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel)
             : base(width, distanceFromVechile, fromDirectionOfTravel)
         {
-            _calibrator = calibrator;
-            _calibrator.ChangeWidth((float)Width.ToMeters().Value);
             SetDistances();
         }
 
-        public L2Plus(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, Distance overlap, Calibrator calibrator)
+        public L2Plus(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, Distance overlap)
             : base(width, distanceFromVechile, fromDirectionOfTravel, overlap)
         {
-            _calibrator = calibrator;
-            _calibrator.ChangeWidth((float)Width.ToMeters().Value);
             SetDistances();
         }
 
@@ -73,15 +71,47 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         public void Start()
         {
-            _calibrator.Start();
+            if (_calibrator != null)
+                _calibrator.Start();
         }
 
         public void Stop()
         {
-            _calibrator.Stop();
+            if (_calibrator != null)
+                _calibrator.Stop();
         }
-        
+
+        public Type ControllerSettingsType
+        {
+            get { return typeof(Settings.BogBalle.Calibrator); }
+        }
+
+        public Type ControllerType
+        {
+            get { return typeof(Calibrator); }
+        }
+
+        public object RegisterController(object settings)
+        {
+            if (settings is Settings.BogBalle.Calibrator)
+            {
+                Settings.BogBalle.Calibrator calibratorSettings = settings as Settings.BogBalle.Calibrator;
+                _calibrator = new Calibrator(calibratorSettings.COMPort, calibratorSettings.ReadInterval);
+                _calibrator.ChangeWidth((float)Width.ToMeters().Value);
+                return _calibrator;
+            }
+            else
+                return null;
+        }
+
         #endregion
 
+        public override Type FarmingMode
+        {
+            get
+            {
+                return typeof(FertilizingMode);
+            }
+        }
     }
 }

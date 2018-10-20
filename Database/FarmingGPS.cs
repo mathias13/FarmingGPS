@@ -2,6 +2,38 @@ using System;
 
 namespace FarmingGPS.Database
 {
+    partial class Nutrient
+    {
+        public override string ToString()
+        {
+            return Name;
+        }
+    }
+
+    partial class Drainage
+    {
+        public override string ToString()
+        {
+            return Name;
+        }
+    }
+
+    partial class SeedType
+    {
+        public override string ToString()
+        {
+            return Name;
+        }
+    }
+
+    partial class FertilizerType
+    {
+        public override string ToString()
+        {
+            return Name;
+        }
+    }
+
     partial class Equipment
     {
         public override string ToString()
@@ -30,7 +62,7 @@ namespace FarmingGPS.Database
     {
         public override string ToString()
         {
-            return String.Format("{0} {1}", GpsCoordinateFirst, GpsCoordinateSecond);
+            return Name;
         }
     }
 

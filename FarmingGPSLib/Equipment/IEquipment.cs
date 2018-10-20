@@ -39,6 +39,11 @@ namespace FarmingGPSLib.Equipment
         {
             get;
         }
+        
+        Type FarmingMode
+        {
+            get;
+        }
 
         Position GetLeftTip(Position attachedPosition, Azimuth directionOfTravel);
 

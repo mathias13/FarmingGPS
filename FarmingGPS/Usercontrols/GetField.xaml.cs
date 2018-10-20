@@ -1,7 +1,6 @@
 ﻿using DotSpatial.Positioning;
 using FarmingGPS.Database;
-using FarmingGPSLib.DatabaseHelper;
-using FarmingGPS.Settings;
+using FarmingGPSLib.Settings;
 using GMap.NET;
 using GMap.NET.MapProviders;
 using GMap.NET.WindowsPresentation;
@@ -51,8 +50,9 @@ namespace FarmingGPS.Usercontrols
 
             ListBoxFields.SelectionChanged += ListBoxFields_SelectionChanged;
             ListBoxIntersects.SelectionChanged += ListBoxIntersects_SelectionChanged;
-        }
-        
+            
+        }        
+
         private void ListBoxFields_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ListBoxIntersects.Items.Clear();
@@ -60,6 +60,8 @@ namespace FarmingGPS.Usercontrols
             {
                 Field field = ListBoxFields.SelectedItem as Field;
                 SubFieldIntersect[] intersects = _database.GetIntersects(field.FieldId);
+                if (intersects == null)
+                    return;
                 foreach (SubFieldIntersect intersect in intersects)
                     ListBoxIntersects.Items.Add(intersect);
             }
@@ -154,7 +156,7 @@ namespace FarmingGPS.Usercontrols
 
         public void RegisterDatabaseHandler(DatabaseHandler databaseHandler)
         {
-            if (_database != null)
+            if (_database != null && ListBoxFields.Items.Count > 0)
                 return;
             _database = databaseHandler;
             Field[] _fields = _database.GetFields();

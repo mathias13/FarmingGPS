@@ -4,14 +4,18 @@ using FarmingGPS.Camera;
 using FarmingGPS.Camera.Axis;
 using FarmingGPS.Dialogs;
 using FarmingGPS.Settings;
-using FarmingGPS.Settings.Database;
-using FarmingGPS.Settings.NTRIP;
-using FarmingGPS.Settings.Receiver;
+using FarmingGPSLib.Settings;
+using FarmingGPSLib.Settings.Database;
+using FarmingGPSLib.Settings.NTRIP;
+using FarmingGPSLib.Settings.Receiver;
 using FarmingGPS.Usercontrols;
+using FarmingGPS.Usercontrols.Equipments;
 using FarmingGPS.Visualization;
 using FarmingGPSLib.Equipment;
+using FarmingGPSLib.Equipment.BogBalle;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
+using FarmingGPSLib.StateRecovery;
 using GpsUtilities.Filter;
 using GpsUtilities.Reciever;
 using log4net;
@@ -23,7 +27,9 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -39,7 +45,7 @@ namespace FarmingGPS
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         #region Constants
-
+        
         protected const double MINIMUM_DISTANCE_BETWEEN_POINTS = 0.5;
 
         protected const double MAXIMUM_DISTANCE_BETWEEN_POINTS = 5.0;
@@ -48,18 +54,25 @@ namespace FarmingGPS
 
         protected const double MAXIMUM_CHANGE_DIRECTION = 10.0;
 
+        protected readonly IDictionary<Type, Type> EQUIPMENTCONTROL_VISUALIZATION = new Dictionary<Type, Type>
+        {
+            {typeof(Calibrator), typeof(BogballeCalibrator) }
+        };
+
         #endregion;
 
         #region Private Variables
 
         Configuration _config;
 
-        private Field _field;
+        private StateRecoveryManager _stateRecovery;
+
+        private IField _field;
 
         private Database.DatabaseHandler _database;
         
         private string _cameraIp = String.Empty;
-        
+
         private ClientService _ntripClient;
 
         private SBPReceiverSender _sbpReceiverSender;
@@ -109,7 +122,8 @@ namespace FarmingGPS
 
             _config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
-            this.Loaded += MainWindow_Loaded;
+            ContentRendered += MainWindow_ContentRendered;
+            Closing += MainWindow_Closing;
 
             //_camera = new AxisCamera("AxisCase");
             _camera = new AxisCamera(System.Net.IPAddress.Parse("192.168.43.132"));
@@ -169,9 +183,19 @@ namespace FarmingGPS
                 _sbpReceiverSender.Dispose();
             if(_database != null)
                 _database.Dispose();
+
+            if (_stateRecovery != null)
+                _stateRecovery.Dispose();
         }
 
-        void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {   
+            YesNoDialog dialog = new YesNoDialog("Vill du radera all sessions data?");
+            if (dialog.ShowDialog().Value)
+                _stateRecovery.Clear();
+        }
+
+        private void MainWindow_ContentRendered(object sender, EventArgs e)
         {   
             SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
             SetValue(CameraSizeProperty, (Style)this.FindResource("PiPvideo"));
@@ -183,7 +207,32 @@ namespace FarmingGPS
             _workedAreaBar.Unit = AreaUnit.SquareKilometers;
             _fieldTracker.AreaChanged += _fieldTracker_AreaChanged;
             _visualization.AddFieldTracker(_fieldTracker);
+            _stateRecovery = new StateRecoveryManager(TimeSpan.FromMinutes(0.5));
 
+            if (_stateRecovery.ObjectsRecovered.Count > 0)
+            {
+                YesNoDialog dialog = new YesNoDialog("Vill du återställa tidigare tillstånd?");
+                if (dialog.ShowDialog().Value)
+                {
+                    foreach (KeyValuePair<Type, object> recoveredObject in _stateRecovery.ObjectsRecovered)
+                    {
+                        if (recoveredObject.Key == typeof(Field))
+                        {
+                            _field = new Field();
+                            _field.RestoreObject(recoveredObject.Value);
+                            _fieldTracker.FieldToCalculateAreaWithin = _field;
+                            _workedAreaBar.SetField(_field);
+                            _visualization.SetField(_field);
+                            _stateRecovery.AddStateObject(_field);
+                        }
+                        if (recoveredObject.Key == typeof(FieldTracker))
+                        {
+                            _fieldTracker.RestoreObject(recoveredObject.Value);
+                            _stateRecovery.AddStateObject(_fieldTracker);
+                        }
+                    }
+                }
+            }
             try
             {
                 DotSpatial.Data.Shapefile shapeFile = DotSpatial.Data.Shapefile.OpenFile(@"C:\Users\Mathias\Downloads\Test\Test.Shp");
@@ -209,29 +258,23 @@ namespace FarmingGPS
             }
 
 #if DEBUG
-            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.8531152), new Latitude(58.50953)), false);
+            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.855032), new Latitude(58.512722)), false);
             _receiver.BearingUpdate += _receiver_BearingUpdate;
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
             _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
-            List<Position> positions = new List<Position>();
-            positions.Add(new Position(new Latitude(58.51114), new Longitude(13.8537299)));
-            positions.Add(new Position(new Latitude(58.509705), new Longitude(13.8532929)));
-            positions.Add(new Position(new Latitude(58.509073), new Longitude(13.8606883)));
-            positions.Add(new Position(new Latitude(58.510477), new Longitude(13.8611945)));
-            positions.Add(new Position(new Latitude(58.51114), new Longitude(13.8537299)));
-            FieldChoosen(positions);
-            
-            FarmingGPSLib.Equipment.BogBalle.L2Plus fertilizer = new FarmingGPSLib.Equipment.BogBalle.L2Plus(Distance.FromMeters(5.0), Distance.FromMeters(0.0), new Azimuth(180), new FarmingGPSLib.Equipment.BogBalle.Calibrator("COM1", 1000));
-            _equipment = fertilizer;
-            _visualization.SetEquipmentWidth(fertilizer.Width);
-            _farmingMode = new FarmingGPSLib.FarmingModes.FertilizingMode(_field, _equipment, 1);
-            _farmingMode.FarmingEvent += FarmingEvent;
-            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
-                _visualization.AddLine(line);
-            ShowTrackingLineSettings();
+            //BogballeCalibrator calibrator = new BogballeCalibrator(new Calibrator("COM3", 20000));
+            if (_field == null)
+            {
+                List<Position> positions = new List<Position>();
+                positions.Add(new Position(new Latitude(58.512722), new Longitude(13.855032)));
+                positions.Add(new Position(new Latitude(58.513399), new Longitude(13.855150)));
+                positions.Add(new Position(new Latitude(58.513462), new Longitude(13.854345)));
+                positions.Add(new Position(new Latitude(58.512865), new Longitude(13.854194)));
+                positions.Add(new Position(new Latitude(58.512722), new Longitude(13.855032)));
+                FieldChoosen(positions);
+            }
 
-            _equipmentControlGrid.Children.Add(new FarmingGPS.Usercontrols.Equipments.BogballeCalibrator(new FarmingGPSLib.Equipment.BogBalle.Calibrator("COM1", 1000)));
 #endif
 
         }
@@ -284,19 +327,26 @@ namespace FarmingGPS
                 {
                     IEquipmentControl equipmentControl = _equipment as IEquipmentControl;
                     if (e.Contains("START"))
-                    {
                         equipmentControl.Start();
-                        if (!_fieldTrackerActive)
-                            Dispatcher.Invoke(new Action(ToggleFieldTracker), DispatcherPriority.Normal);
-                    }
                     else if (e.Contains("STOP"))
-                    {
-                        equipmentControl.Start();
-                        if (_fieldTrackerActive)
-                            Dispatcher.Invoke(new Action(ToggleFieldTracker), DispatcherPriority.Normal);
-                    }
+                        equipmentControl.Stop();
                 }
             }
+        }
+        
+        private void CheckAllTrackingLines()
+        {
+            if (_farmingMode == null)
+                return;
+            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadland)
+                if (!line.Depleted)
+                    if (_fieldTracker.GetTrackingLineCoverage(line) > 0.97)
+                        line.Depleted = true;
+
+            foreach (TrackingLine line in _farmingMode.TrackingLines)
+                if(!line.Depleted)
+                    if (_fieldTracker.GetTrackingLineCoverage(line) > 0.97)
+                        line.Depleted = true;
         }
         
         #endregion
@@ -305,12 +355,16 @@ namespace FarmingGPS
 
         private void FieldChoosen(List<Position> e)
         {
+            _stateRecovery.RemoveStateObject(_field);
+            _stateRecovery.RemoveStateObject(_fieldTracker);
             _field = new Field(e, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
             _fieldTracker.FieldToCalculateAreaWithin = _field;
             _workedAreaBar.SetField(_field);
-            _visualization.AddField(_field);
+            _visualization.SetField(_field);
             
             _settingsGrid.Visibility = Visibility.Hidden;
+            _stateRecovery.AddStateObject(_field);
+            _stateRecovery.AddStateObject(_fieldTracker);
         }
 
         private void _fieldTracker_AreaChanged(object sender, AreaChanged e)
@@ -323,14 +377,6 @@ namespace FarmingGPS
             _field = e.Field;
             _fieldTracker.FieldToCalculateAreaWithin = _field;
             _workedAreaBar.SetField(_field);
-            _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, 1);
-            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
-            {
-                _visualization.AddLine(line);
-                if (_fieldTracker.GetTrackingLineCoverage(line) > 0.97)
-                    line.Depleted = true;
-            }
-            ShowTrackingLineSettings();
         }
 
         #endregion
@@ -504,7 +550,8 @@ namespace FarmingGPS
 
             Azimuth actualHeading = receiver.CurrentBearing;
             _visualization.UpdatePosition(actualCoordinate, actualHeading);
-            _farmingMode.UpdateEvents(actualCoordinate, actualHeading);
+            if(_farmingMode != null)
+                _farmingMode.UpdateEvents(actualCoordinate, actualHeading);
             if (_equipment != null)
             {
                 Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(actualPosition, actualHeading));
@@ -609,14 +656,14 @@ namespace FarmingGPS
             if (_selectedTrackingLine > -1)
             {
                 _selectedTrackingLine += 1;
-                if (_selectedTrackingLine >= _farmingMode.TrackingLinesHeadLand.Count)
+                if (_selectedTrackingLine >= _farmingMode.TrackingLinesHeadland.Count)
                     _selectedTrackingLine = 0;
-                _visualization.FocusTrackingLine(_farmingMode.TrackingLinesHeadLand[_selectedTrackingLine]);
+                _visualization.FocusTrackingLine(_farmingMode.TrackingLinesHeadland[_selectedTrackingLine]);
             }
             else
         {
                 _selectedTrackingLine = 0;
-                _visualization.FocusTrackingLine(_farmingMode.TrackingLinesHeadLand[_selectedTrackingLine]);
+                _visualization.FocusTrackingLine(_farmingMode.TrackingLinesHeadland[_selectedTrackingLine]);
                 BTN_CHOOSE_TRACKLINE.Style = (Style)this.FindResource("BUTTON_MOVE_NEXT");
                 BTN_CONFIRM_TRACKLINE.Visibility = Visibility.Visible;
             }
@@ -627,7 +674,7 @@ namespace FarmingGPS
             BTN_CHOOSE_TRACKLINE.Style = (Style)this.FindResource("BUTTON_CHOOSE_TRACKLINE");
             BTN_CONFIRM_TRACKLINE.Visibility = Visibility.Collapsed;
             _trackLineGrid.Visibility = Visibility.Collapsed;
-            _farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadLand[_selectedTrackingLine]);
+            _farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadland[_selectedTrackingLine]);
             foreach (TrackingLine trackingLine in _farmingMode.TrackingLines)
                 _visualization.AddLine(trackingLine);
             _visualization.CancelFocus();
@@ -691,7 +738,7 @@ namespace FarmingGPS
 
         private void SetupSettingsPanel(SettingsCollection settings)
         {
-            ClientSettingsExt sectionNTRIP = (ClientSettingsExt)_config.Sections["NTRIP"];
+            ClientSettingsExt sectionNTRIP = (ClientSettingsExt)_config.Sections[typeof(ClientSettingsExt).FullName];
             ISettingsCollection ntripClient;
             if (sectionNTRIP != null)
             {
@@ -701,7 +748,7 @@ namespace FarmingGPS
             else
                 ntripClient = new ClientSettingsExt();
 
-            DatabaseConn sectionDatabase = (DatabaseConn)_config.Sections["Databas"];
+            DatabaseConn sectionDatabase = (DatabaseConn)_config.Sections[typeof(DatabaseConn).FullName];
             ISettingsCollection database;
             if (sectionDatabase != null)
             {
@@ -711,7 +758,7 @@ namespace FarmingGPS
             else
                 database = new DatabaseConn();
             
-            SBPSerial sectionReceiver = (SBPSerial)_config.Sections["SBPSeriell"];
+            SBPSerial sectionReceiver = (SBPSerial)_config.Sections[typeof(SBPSerial).FullName];
             ISettingsCollection receiver;
             if (sectionReceiver != null)
             {
@@ -720,6 +767,12 @@ namespace FarmingGPS
             }
             else
                 receiver = new SBPSerial();
+
+            ISettingsCollection visual = new SettingsCollection("Visualisering");
+            visual.ChildSettings.Add(new FarmingGPS.Visualization.Settings.LightBar());
+            SettingGroup lightBarGroup = new SettingGroup(visual.ChildSettings[0].Name, null, new SettingsCollectionControl(visual.ChildSettings[0]));
+            (lightBarGroup.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+            SettingGroup visualGroup = new SettingGroup("Visualisering", new SettingGroup[] { lightBarGroup }, null);
 
             ISettingsCollection connections = new SettingsCollection("Anslutningar");
             connections.ChildSettings.Add(ntripClient);
@@ -732,13 +785,17 @@ namespace FarmingGPS
             SettingGroup receiverGroup = new SettingGroup(connections.ChildSettings[2].Name, null, new SettingsCollectionControl(connections.ChildSettings[2]));
             (receiverGroup.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
             SettingGroup connectionGroup = new SettingGroup(connections.Name, new SettingGroup[] { ntripGroup, databaseGroup, receiverGroup}, new SettingsCollectionControl(connections));
+
             SettingGroup field = new SettingGroup("Fält", null, new GetField());
             (field.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+
             SettingGroup farmingMode = new SettingGroup("Bearbetningläge", null, new FarmingMode());
             (farmingMode.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+
             SettingGroup redskap = new SettingGroup("Redskap", new SettingGroup[] { farmingMode }, new GetVechileEquipment());
             (redskap.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
-            SettingGroup settingRoot = new SettingGroup("Inställningar", new SettingGroup[] { connectionGroup, field, redskap }, null);
+
+            SettingGroup settingRoot = new SettingGroup("Inställningar", new SettingGroup[] { connectionGroup, field, redskap, visualGroup }, null);
             _settingsTree.ItemsSource = settingRoot;
         }
 
@@ -750,7 +807,8 @@ namespace FarmingGPS
                 if (settingItem.SettingControl is IDatabaseSettings && _database != null)
                     (settingItem.SettingControl as IDatabaseSettings).RegisterDatabaseHandler(_database);
                 _settingsUsercontrolGrid.Children.Clear();
-                _settingsUsercontrolGrid.Children.Add(settingItem.SettingControl);
+                if(settingItem.SettingControl != null)
+                    _settingsUsercontrolGrid.Children.Add(settingItem.SettingControl);
             }
 
         }
@@ -768,9 +826,9 @@ namespace FarmingGPS
                 SettingsCollectionControl settingControl = sender as SettingsCollectionControl;
                 if (settingControl.Settings is ConfigurationSection)
                 {
-                    ConfigurationSection configSection = _config.Sections[settingControl.Settings.Name];
+                    ConfigurationSection configSection = _config.Sections[settingControl.Settings.GetType().FullName];
                     if (configSection == null)
-                        _config.Sections.Add(settingControl.Settings.Name, settingControl.Settings as ConfigurationSection);
+                        _config.Sections.Add(settingControl.Settings.GetType().FullName, settingControl.Settings as ConfigurationSection);
 
                     _config.Save(ConfigurationSaveMode.Minimal, true);
                 }
@@ -780,11 +838,27 @@ namespace FarmingGPS
                     SetupNTRIP(settingControl.Settings as ClientSettings);
                 else if (settingControl.Settings is SBPSerial)
                     SetupReceiver(settingControl.Settings as SBPSerial);
+                else if (settingControl.Settings is Visualization.Settings.LightBar)
+                    _lightBar.Tolerance = new Distance((settingControl.Settings as Visualization.Settings.LightBar).Tolerance, DistanceUnit.Meters);
+                else if (_equipment is IEquipmentControl)
+                {
+                    IEquipmentControl equipmentControl = _equipment as IEquipmentControl;
+                    if (settingControl.Settings.GetType() == equipmentControl.ControllerSettingsType)
+                        equipmentControl.RegisterController(settingControl.Settings);
+                }
             }
         }
 
         private void SetEquipmentAndFarmingMode(FarmingMode userControl)
         {
+            if(_field == null)
+            {
+                OKDialog dialog = new OKDialog("Du måste välja fält först");
+                dialog.Show();
+                return;
+            }
+            
+            _stateRecovery.RemoveStateObject(_farmingMode);
             if (_equipmentChoosen == null)
                 return;
 
@@ -792,43 +866,99 @@ namespace FarmingGPS
             {
                 foreach (TrackingLine trackingLine in _farmingMode.TrackingLines)
                     _visualization.DeleteLine(trackingLine);
-                foreach (TrackingLine trackingLine in _farmingMode.TrackingLinesHeadLand)
+                foreach (TrackingLine trackingLine in _farmingMode.TrackingLinesHeadland)
                     _visualization.DeleteLine(trackingLine);
             }
 
-            //TODO make this better
-            if (_equipmentChoosen.EquipmentId == 1)
+            if (_equipmentChoosen.EquipmentClass == null)
             {
-                FarmingGPSLib.Equipment.BogBalle.Calibrator calibrator = new FarmingGPSLib.Equipment.BogBalle.Calibrator("COM5", 1000);
-                FarmingGPSLib.Equipment.BogBalle.L2Plus fertilizer = new FarmingGPSLib.Equipment.BogBalle.L2Plus(Distance.FromMeters(_equipmentChoosen.WorkWidth), 
-                    Distance.FromMeters(_equipmentChoosen.DistFromAttach),
-                    new Azimuth(_equipmentChoosen.AngleFromAttach),
-                    Distance.FromCentimeters(userControl.Overlap),
-                    calibrator);
-                _equipment = fertilizer;
-                _farmingMode = new FarmingGPSLib.FarmingModes.FertilizingMode(_field, _equipment, 1);
-                _farmingMode.FarmingEvent += FarmingEvent;
-                _equipmentControlGrid.Children.Add(new FarmingGPS.Usercontrols.Equipments.BogballeCalibrator(calibrator));
+                _equipment = new Harrow(Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromCentimeters(userControl.Overlap));
+                _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, userControl.Headlands);
             }
             else
             {
-                Harrow harrow = new Harrow(Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromCentimeters(userControl.Overlap));
-                _equipment = harrow;
-                _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, userControl.Headlands);
+                try
+                {
+                    Type equipmentClass = AppDomain.CurrentDomain.GetAssemblies().SelectMany(t => t.GetTypes()).Where(t => String.Equals(t.FullName, _equipmentChoosen.EquipmentClass, StringComparison.Ordinal)).First();
+                    if (equipmentClass == null)
+                        _equipment = new Harrow(Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromCentimeters(userControl.Overlap));
+                    else if (equipmentClass.IsAssignableFrom(typeof(IEquipment)))
+                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromCentimeters(userControl.Overlap));
+                    else
+                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromCentimeters(userControl.Overlap));
+
+                    if (_equipment is IEquipmentControl)
+                    {
+                        IEquipmentControl equipmentControl = _equipment as IEquipmentControl;
+                        object settings = _config.Sections[equipmentControl.ControllerSettingsType.FullName];
+                        if (settings == null)
+                            settings = Activator.CreateInstance(equipmentControl.ControllerSettingsType);
+
+                        object controller = equipmentControl.RegisterController(settings);
+
+                        ISettingsCollection settingsCollection = settings as ISettingsCollection;
+                        SettingGroup controllerSettings = new SettingGroup(settingsCollection.Name, null, new SettingsCollectionControl(settingsCollection));
+                        (controllerSettings.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+
+                        SettingGroup settingRoot = _settingsTree.ItemsSource as SettingGroup;
+                        ((SettingsCollectionControl)settingRoot.Items[0].SettingControl).Settings.ChildSettings.Add(settingsCollection);
+                        settingRoot.Items[0].Items.Add(controllerSettings);
+                        _settingsTree.ItemsSource = null;
+                        _settingsTree.ItemsSource = settingRoot;
+
+                        if (EQUIPMENTCONTROL_VISUALIZATION.ContainsKey(equipmentControl.ControllerType))
+                        {
+                            BTN_START_STOP_AUTO.Visibility = Visibility.Visible;
+                            BTN_EQUIPMENT.Visibility = Visibility.Visible;
+                            _equipmentControlGrid.Children.Add(Activator.CreateInstance(EQUIPMENTCONTROL_VISUALIZATION[equipmentControl.ControllerType], controller) as UserControl);
+                        }
+                        else
+                        {
+                            BTN_START_STOP_AUTO.Visibility = Visibility.Hidden;
+                            BTN_EQUIPMENT.Visibility = Visibility.Hidden;
+                            _equipmentControlGrid.Visibility = Visibility.Hidden;
+                        }
+                    }
+
+                    _farmingMode = (FarmingGPSLib.FarmingModes.IFarmingMode)Activator.CreateInstance(_equipment.FarmingMode, _field, _equipment, userControl.Headlands);
+                }
+                catch(Exception e)
+                {
+                    Log.Error("Failed to set euipment and farmingmode", e);
+                    return;
+                }
             }
 
             _visualization.SetEquipmentWidth(_equipment.Width);
             
 
-            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadLand)
+            if (_stateRecovery.ObjectsRecovered.ContainsKey(typeof(FarmingGPSLib.FarmingModes.IFarmingMode)))
+            {
+                YesNoDialog dialog = new YesNoDialog("Vill du återställa tidigare spårlinjer?");
+                if (dialog.ShowDialog().Value)
+                    _farmingMode.RestoreObject(_stateRecovery.ObjectsRecovered[typeof(FarmingGPSLib.FarmingModes.IFarmingMode)]);
+            }
+            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadland)
                 _visualization.AddLine(line);
 
-            if (_fieldTrackerActive)
-                ToggleFieldTracker();
-            _fieldTracker.ClearTrack();
+            foreach(TrackingLine line in _farmingMode.TrackingLines)
+                _visualization.AddLine(line);
+
+            CheckAllTrackingLines();
+
+            YesNoDialog dialogFieldTracker = new YesNoDialog("Vill du radera körd area?");
+            if (dialogFieldTracker.ShowDialog().Value)
+            {
+                if (_fieldTrackerActive)
+                    ToggleFieldTracker();
+                _fieldTracker.ClearTrack();
+            }
+
+            _stateRecovery.AddStateObject(_farmingMode);
 
             _settingsGrid.Visibility = Visibility.Hidden;
             ShowTrackingLineSettings();
+            _farmingMode.FarmingEvent += FarmingEvent;
         }
 
         private void GetVechileEquipment(GetVechileEquipment userControl)
@@ -854,7 +984,7 @@ namespace FarmingGPS
                     break;
             }
         }
-                
+
         #endregion
 
     }

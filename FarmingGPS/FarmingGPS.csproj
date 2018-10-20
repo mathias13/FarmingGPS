@@ -16,6 +16,21 @@
     <TargetFrameworkProfile />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -30,7 +45,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>C:\Binaries\FarmingGPS\FarmingGPS\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
@@ -163,20 +178,17 @@
     <Compile Include="Dialogs\ComPortDialog.xaml.cs">
       <DependentUpon>ComPortDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialogs\OKDialog.xaml.cs">
+      <DependentUpon>OKDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\YesNoDialog.xaml.cs">
+      <DependentUpon>YesNoDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\UserPasswordDialog.xaml.cs">
       <DependentUpon>UserPasswordDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="GeometryUtilities\Lines.cs" />
-    <Compile Include="Settings\Database\DatabaseConn.cs" />
-    <Compile Include="Settings\IDatabaseSettings.cs" />
-    <Compile Include="Settings\ISetting.cs" />
-    <Compile Include="Settings\ISettingsChanged.cs" />
-    <Compile Include="Settings\ISettingsCollection.cs" />
-    <Compile Include="Settings\NTRIP\ClientSettingsExt.cs" />
-    <Compile Include="Settings\Receiver\SBPSerial.cs" />
-    <Compile Include="Settings\Setting.cs" />
     <Compile Include="Settings\SettingGroup.cs" />
-    <Compile Include="Settings\SettingsCollection.cs" />
     <Compile Include="Usercontrols\Equipments\BogballeCalibrator.xaml.cs">
       <DependentUpon>BogballeCalibrator.xaml</DependentUpon>
     </Compile>
@@ -198,6 +210,7 @@
     <Compile Include="Visualization\LightBar.xaml.cs">
       <DependentUpon>LightBar.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Visualization\Settings\LightBar.cs" />
     <Compile Include="Visualization\SpeedBar.xaml.cs">
       <DependentUpon>SpeedBar.xaml</DependentUpon>
     </Compile>
@@ -207,6 +220,14 @@
     <Page Include="Dialogs\ComPortDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialogs\OKDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Dialogs\YesNoDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Dialogs\UserPasswordDialog.xaml">
       <SubType>Designer</SubType>
@@ -330,6 +351,18 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="LICENSE.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.6">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.6 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

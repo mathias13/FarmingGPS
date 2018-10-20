@@ -4,11 +4,25 @@ using DotSpatial.Projections;
 using DotSpatial.Positioning;
 using DotSpatial.Topology;
 using DotSpatial.Topology.Algorithm;
+using FarmingGPSLib.StateRecovery;
 
 namespace FarmingGPSLib.FieldItems
 {
-    public class FieldBase :IField
+    public class FieldBase : IField
     {
+        public struct FieldState
+        {
+            public List<Position> Positions;
+
+            public string Proj4String;
+
+            public FieldState(List<Position> positions, string proj4String)
+            {
+                Positions = positions;
+                Proj4String = proj4String;
+            }
+        }
+
         #region Private Variables
 
         protected IList<Position> _positions;
@@ -18,6 +32,8 @@ namespace FarmingGPSLib.FieldItems
         protected ProjectionInfo _proj;
 
         protected object _syncObject = new object();
+
+        private bool _hasChanged = true;
 
         #endregion
 
@@ -46,6 +62,7 @@ namespace FarmingGPSLib.FieldItems
         {
             lock (_syncObject)
             {
+                _hasChanged = true;
                 if (_positions.Count > 2)
                 {
                     IList<Coordinate> coords = ReprojectBoundary();
@@ -158,6 +175,40 @@ namespace FarmingGPSLib.FieldItems
         public ProjectionInfo Projection
         {
             get { return _proj; }
+        }
+
+        #endregion
+
+        #region IStateObjectImplementation
+
+        public void RestoreObject(object restoredState)
+        {
+            FieldState fieldState = (FieldState)restoredState;
+            _positions = fieldState.Positions;
+            _proj = ProjectionInfo.FromProj4String(fieldState.Proj4String);
+            ReloadPolygon();
+        }
+        
+        public object StateObject
+        {
+            get
+            {
+                lock(_syncObject)
+                    return new FieldState(new List<Position>(_positions), _proj.ToProj4String());
+            }
+        }
+
+        public bool HasChanged
+        {
+            get { return _hasChanged; }
+        }
+
+        public Type StateType
+        {
+            get
+            {
+                return typeof(FieldState);
+            }
         }
 
         #endregion

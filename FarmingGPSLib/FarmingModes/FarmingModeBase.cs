@@ -8,6 +8,7 @@ using FarmingGPSLib.HelperClasses;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using FarmingGPSLib.StateRecovery;
 
 namespace FarmingGPSLib.FarmingModes
 {
@@ -21,14 +22,41 @@ namespace FarmingGPSLib.FarmingModes
 
     public abstract class FarmingModeBase : IFarmingMode
     {
+        [Serializable]
+        public struct SimpleLine
+        {
+            public List<Coordinate> Line;
+
+            public SimpleLine(List<Coordinate> line)
+            {
+                Line = line;
+            }
+        }
+
+        [Serializable]
+        public struct FarmingModeState
+        {
+            public List<SimpleLine> TrackingLines;
+
+            public List<SimpleLine> TrackingLinesHeadLand;
+
+            public FarmingModeState(List<SimpleLine> trackingLines, List<SimpleLine> trackingLinesHeadLand)
+            {
+                TrackingLines = trackingLines;
+                TrackingLinesHeadLand = trackingLinesHeadLand;
+            }
+        }
+
         #region Private Variables
 
         protected Polygon _fieldPolygon;
 
-        protected IList<TrackingLine> _trackingLinesHeadLand = new List<TrackingLine>();
+        protected IList<TrackingLine> _trackingLinesHeadland = new List<TrackingLine>();
 
         protected IList<TrackingLine> _trackingLines = new List<TrackingLine>();
-        
+
+        private bool _hasChanged = true;
+
         #endregion
 
         public FarmingModeBase()
@@ -42,51 +70,64 @@ namespace FarmingGPSLib.FarmingModes
 
         #region private Methods
 
-        protected IList<LineString> GetHeadlandAround(double distance)
+        protected ILineString GetHeadLandCoordinates(double distance)
         {
-            List<LineString> lines = new List<LineString>();
             LineString newRing = new LineString(GetHeadlandAroundPoints(distance));
-            IList<LineSegment> oldLines = HelperClassLines.CreateLines(_fieldPolygon.Shell.Coordinates);
             IList<LineSegment> newLines = HelperClassLines.CreateLines(newRing.Coordinates);
             if (!newRing.IsSimple)
             {
-                List<int> linesAlreadyFinished = new List<int>();
-
-                for (int i = 0; i < newLines.Count; i++)
+                for (int i = 1; i < newLines.Count; i++)
                 {
                     for (int k = 0; k < newLines.Count; k++)
                     {
-                        if (linesAlreadyFinished.Contains(i) || linesAlreadyFinished.Contains(k))
+                        if (k >= i - 1 && k <= i + 1)
                             continue;
-                        if (i == k)
-                            continue;
+
                         Coordinate intersection = newLines[i].Intersection(newLines[k]);
-                        if (intersection == newLines[i].P0 || intersection == newLines[i].P1 ||
-                            intersection == newLines[k].P0 || intersection == newLines[k].P1)
-                            continue;
+
                         if (intersection != null)
                         {
+                            //TODO check if polygons turns into two polygons.
                             int first = newRing.Coordinates.IndexOf(newLines[i].P1);
                             int second = newRing.Coordinates.IndexOf(newLines[k].P1);
-                            int indexToRemove = first;
-                            while (first < second)
+                            if (first > second)
                             {
-                                newRing.Coordinates.RemoveAt(indexToRemove);
-                                first++;
+                                while (newRing.Coordinates.Count > first)
+                                    newRing.Coordinates.RemoveAt(first);
+
+                                int coordinateToRemove = second - 1;
+                                for (int l = 0; l < coordinateToRemove; l++)
+                                    newRing.Coordinates.RemoveAt(0);
+
+                                newRing.Coordinates.Insert(0, intersection);
                             }
-                            newRing.Coordinates.Insert(indexToRemove, intersection);
-                            int firstLine = i;
-                            while (firstLine <= k)
+                            else
                             {
-                                linesAlreadyFinished.Add(firstLine);
-                                firstLine++;
+                                int indexToRemove = first;
+                                while (first < second)
+                                {
+                                    newRing.Coordinates.RemoveAt(indexToRemove);
+                                    first++;
+                                }
+                                newRing.Coordinates.Insert(indexToRemove, intersection);
                             }
+                            newLines = HelperClassLines.CreateLines(newRing.Coordinates);
                         }
                     }
                 }
-                newLines = HelperClassLines.CreateLines(newRing.Coordinates);
-                //throw new InvalidOperationException("Headland has an selfintersection");
+
+                if (!newRing.IsSimple)
+                    throw new InvalidOperationException("Headland has an selfintersection");
             }
+            return newRing;
+        }
+
+        protected IList<LineString> GetHeadlandLines(double distance)
+        {
+            ILineString newRing = GetHeadLandCoordinates(distance);
+            List<LineString> lines = new List<LineString>();
+            IList<LineSegment> oldLines = HelperClassLines.CreateLines(_fieldPolygon.Shell.Coordinates);
+            IList<LineSegment> newLines = HelperClassLines.CreateLines(newRing.Coordinates);
 
             int lastNewLine = 0;
             for (int i = 0; i < oldLines.Count; i++)
@@ -134,7 +175,7 @@ namespace FarmingGPSLib.FarmingModes
             IList list = curveBuilder.GetRingCurve(_fieldPolygon.Shell.Coordinates, PositionType.Left, distance);
             return (IList<Coordinate>)list[0];
         }
-
+        
         protected void OnFarmingEvent(string message)
         {
             if (FarmingEvent != null)
@@ -145,9 +186,9 @@ namespace FarmingGPSLib.FarmingModes
 
         #region IFarmingMode Implementation
 
-        public IList<TrackingLine> TrackingLinesHeadLand
+        public IList<TrackingLine> TrackingLinesHeadland
         {
-            get { return _trackingLinesHeadLand; }
+            get { return _trackingLinesHeadland; }
         }
 
         public IList<TrackingLine> TrackingLines
@@ -172,7 +213,7 @@ namespace FarmingGPSLib.FarmingModes
                 }
             }
 
-            foreach (TrackingLine trackingLine in _trackingLinesHeadLand)
+            foreach (TrackingLine trackingLine in _trackingLinesHeadland)
             {
                 if (trackingLine.Depleted)
                     continue;
@@ -190,17 +231,17 @@ namespace FarmingGPSLib.FarmingModes
 
         public virtual void CreateTrackingLines(Coordinate aCoord, Angle direction)
         {
-            throw new NotImplementedException();
+            _hasChanged = true;
         }
 
         public virtual void CreateTrackingLines(Coordinate aCoord, Coordinate bCoord)
         {
-            throw new NotImplementedException();
+            _hasChanged = true;
         }
 
         public virtual void CreateTrackingLines(TrackingLine headLine)
         {
-            throw new NotImplementedException();
+            _hasChanged = true;
         }
 
         public virtual void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction)
@@ -209,6 +250,43 @@ namespace FarmingGPSLib.FarmingModes
         }
 
         public event EventHandler<string> FarmingEvent;
+
+        #endregion
+
+        #region IStateObjectImplementation
+        
+        public object StateObject
+        {
+            get
+            {
+                List<SimpleLine> trackingLines = new List<SimpleLine>();
+                foreach (TrackingLine trackingLine in _trackingLines)
+                    trackingLines.Add(new SimpleLine(new List<Coordinate>(trackingLine.Line.Coordinates)));
+                List<SimpleLine> trackingLinesHeadland = new List<SimpleLine>();
+                foreach (TrackingLine trackingLineHeadland in _trackingLinesHeadland)
+                    trackingLinesHeadland.Add(new SimpleLine(new List<Coordinate>(trackingLineHeadland.Line.Coordinates)));
+                return new FarmingModeState(trackingLines, trackingLinesHeadland);
+            }
+        }
+
+        public Type StateType
+        {
+            get { return typeof(FarmingModeState); }
+        }
+
+        public bool HasChanged
+        {
+            get { return _hasChanged; }
+        }
+
+        public void RestoreObject(object restoredState)
+        {
+            FarmingModeState farmingModeState = (FarmingModeState)restoredState;
+            foreach (SimpleLine line in farmingModeState.TrackingLines)
+                _trackingLines.Add(new TrackingLine(new LineString(line.Line)));
+            foreach (SimpleLine line in farmingModeState.TrackingLinesHeadLand)
+                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line)));
+        }
 
         #endregion
     }

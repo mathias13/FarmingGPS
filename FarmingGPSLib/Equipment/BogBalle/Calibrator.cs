@@ -62,7 +62,11 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         private object _syncObject = new object();
 
-        private Timer _readTimer;
+        private Thread _readThread;
+
+        private bool _readThreadStop = false;
+
+        private int _readInterval = 1000;
 
         private int _noAnswerCount = DISCONNECTED_COUNT;
 
@@ -104,14 +108,17 @@ namespace FarmingGPSLib.Equipment.BogBalle
         {
             lock (_syncObject)
             {
+                _readInterval = readInterval;
                 _serialPort = new SerialPort(comPort);
                 _serialPort.BaudRate = 9600;
                 _serialPort.DataBits = 8;
                 _serialPort.Parity = Parity.None;
                 _serialPort.StopBits = StopBits.One;
-                _serialPort.ReadTimeout = 100;
+                _serialPort.ReadTimeout = 500;
+                _serialPort.WriteTimeout = 500;
                 _serialPort.Handshake = Handshake.None;
-                _readTimer = new Timer(new TimerCallback(ReadValues), new object(), 0, readInterval);
+                _readThread = new Thread(new ThreadStart(ReadThread));
+                _readThread.Start();
             }
         }
 
@@ -121,6 +128,8 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         public void Dispose()
         {
+            _readThreadStop = true;
+            _readThread.Join();
             if (_serialPort != null)
             {
                 _serialPort.Close();
@@ -215,73 +224,77 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         #region Private Methods
 
-        private void ReadValues(object state)
+        private void ReadThread()
         {
-            bool isConnected = IsConnected;
-
-            string value = ReadValue(STATUS_READ);
-            if (value != string.Empty)
+            DateTime nextRead = DateTime.MinValue;
+            while (!_readThreadStop)
             {
-                _started = value[2] == '1';
-                _activeField = int.Parse(value.Substring(3, 1));
-            }
-            else
-            {
-                _started = false;
-                _activeField = -1;
-            }
+                if(nextRead > DateTime.Now)
+                {
+                    Thread.Sleep(1);
+                    continue;
+                }
 
-            value = ReadValue(ACT_VALUE_READ);
-            if (value != string.Empty)
-                _actValue = int.Parse(value);
-            else
-                _actValue = -1;
+                nextRead = DateTime.Now.AddMilliseconds(_readInterval);
 
-            value = ReadValue(SET_VALUE_READ);
-            if (value != string.Empty)
-                _setValue = int.Parse(value);
-            else
-                _setValue = -1;
+                bool isConnected = IsConnected;
 
-            value = ReadValue(SPREAD_WIDTH_READ);
-            if (value != string.Empty)
-                _spreadWidth = float.Parse(value) / 10;
-            else
-                _spreadWidth = -1.0f;
+                string value = ReadValue(STATUS_READ);
+                if (value.Length > 3)
+                {
+                    if (int.TryParse(value.Substring(3, 1), out _activeField))
+                        _started = value[2] == '1';
+                    else
+                    {
+                        _started = false;
+                        _activeField = -1;
+                    }
+                }
 
-            if (_activeField > -1)
-            {
-                value = ReadValue(HA_READ + _activeField.ToString());
-                if (value != string.Empty)
-                    _ha = float.Parse(value) / 100;
+                value = ReadValue(ACT_VALUE_READ);
+                if (!int.TryParse(value, out _actValue))
+                    _actValue = -1;
+
+                value = ReadValue(SET_VALUE_READ);
+                if (!int.TryParse(value, out _setValue))
+                    _setValue = -1;
+
+                value = ReadValue(SPREAD_WIDTH_READ);
+                if (float.TryParse(value, out _spreadWidth))
+                    _spreadWidth = _spreadWidth / 10;
                 else
-                    _ha = -1.0f;
+                    _spreadWidth = -1.0f;
+
+                if (_activeField > -1)
+                {
+                    value = ReadValue(HA_READ + _activeField.ToString());
+                    if (float.TryParse(value, out _ha))
+                        _ha = _ha / 100;
+                    else
+                        _ha = -1.0f;
+                }
+
+                value = ReadValue(TARA_READ);
+                if (!int.TryParse(value, out _tara))
+                    _tara = -1;
+
+                value = ReadValue(SPEED_READ);
+                if (float.TryParse(value, out _speed))
+                    _speed = _speed / 10;
+                else
+                    _speed = -1.0f;
+
+                value = ReadValue(PTO_READ);
+                if (!int.TryParse(value, out _pto))
+                    _pto = -1;
+
+                if (ValuesUpdated != null)
+                    ValuesUpdated.Invoke(this, new EventArgs());
+
+                if (isConnected != IsConnected)
+                    if (IsConnectedChanged != null)
+                        IsConnectedChanged.Invoke(this, IsConnected);
             }
-
-            value = ReadValue(TARA_READ);
-            if (value != string.Empty)
-                _tara = int.Parse(value);
-            else
-                _tara = -1;
-
-            value = ReadValue(SPEED_READ);
-            if (value != string.Empty)
-                _speed = float.Parse(value) / 10;
-            else
-                _speed = -1.0f;
-
-            value = ReadValue(PTO_READ);
-            if (value != string.Empty)
-                _pto = int.Parse(value);
-            else
-                _pto = -1;
-
-            if (ValuesUpdated != null)
-                ValuesUpdated.Invoke(this, new EventArgs());
-
-            if (isConnected != IsConnected)
-                if (IsConnectedChanged != null)
-                    IsConnectedChanged.Invoke(this, IsConnected);
         }
 
         private bool ValidateMessage(ref string message)
@@ -336,8 +349,8 @@ namespace FarmingGPSLib.Equipment.BogBalle
                     timeout = DateTime.Now.AddSeconds(1.0);
                     while (!answer.Contains(END_CHAR))
                     {
-                        byte[] readBuffer = new byte[10];
-                        int bytesRead = _serialPort.Read(readBuffer, 0, 10);
+                        byte[] readBuffer = new byte[1];
+                        int bytesRead = _serialPort.Read(readBuffer, 0, 1);
                         if (bytesRead < 1)
                         {
                             Thread.Sleep(1);
@@ -352,10 +365,13 @@ namespace FarmingGPSLib.Equipment.BogBalle
                     }
                     if (ValidateMessage(ref answer))
                     {
-                        if (answer.StartsWith(READ_ANSWER + command))
+                        string commandAnswer = command;
+                        if (command == STATUS_READ)
+                            commandAnswer = "P";
+                        if (answer.StartsWith(READ_ANSWER + commandAnswer))
                         {
                             _noAnswerCount = 0;
-                            return answer.Replace(READ_ANSWER + command, String.Empty);
+                            return answer.Replace(READ_ANSWER + commandAnswer, String.Empty);
                         }
                         else
                         {
@@ -371,7 +387,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                 }
                 catch(Exception e)
                 {
-                    Log.Error("Failed to read value with command: " + command, e);
+                    Log.Debug("Failed to read value with command: " + command, e);
                     _noAnswerCount++;
                     return string.Empty;
                 }

@@ -1,9 +1,9 @@
 ﻿using System;
 using FarmingGPS.Database;
 
-namespace FarmingGPS.Settings
+namespace FarmingGPSLib.Settings
 {
-    interface IDatabaseSettings
+    public interface IDatabaseSettings
     {
         void RegisterDatabaseHandler(DatabaseHandler databaseHandler);
     }

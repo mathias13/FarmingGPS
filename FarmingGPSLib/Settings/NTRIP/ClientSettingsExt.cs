@@ -3,7 +3,7 @@ using NTRIP.Settings;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace FarmingGPS.Settings.NTRIP
+namespace FarmingGPSLib.Settings.NTRIP
 {
     public class ClientSettingsExt : ClientSettings, ISettingsCollection
     {

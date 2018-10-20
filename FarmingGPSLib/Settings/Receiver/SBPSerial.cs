@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 
-namespace FarmingGPS.Settings.Receiver
+namespace FarmingGPSLib.Settings.Receiver
 {
     public class SBPSerial : ConfigurationSection, ISettingsCollection
     {
@@ -39,7 +39,7 @@ namespace FarmingGPS.Settings.Receiver
                 setting.SettingChanged += Setting_SettingChanged;
         }
 
-        public SBPSerial(SBPSerial sbpSettings)
+        public SBPSerial(SBPSerial sbpSettings) : this()
         {
             COMPort = sbpSettings.COMPort;
             Baudrate = sbpSettings.Baudrate;

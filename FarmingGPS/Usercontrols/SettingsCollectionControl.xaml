@@ -24,6 +24,6 @@
             </StackPanel>
         </ScrollViewer>
 
-        <Button HorizontalAlignment="Center" Height="80" Margin="10,10,10,10" x:FieldModifier="private" x:Name="ButtonUpdate" Click="ButtonUpdate_Click" Style="{StaticResource GENERAL_BUTTON}">Ändra</Button>
+        <Button HorizontalAlignment="Center" Height="60" Margin="10,10,10,10" x:FieldModifier="private" x:Name="ButtonUpdate" Click="ButtonUpdate_Click" Style="{StaticResource GENERAL_BUTTON}">Ändra</Button>
     </StackPanel>
 </UserControl>

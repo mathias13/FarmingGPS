@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
-namespace FarmingGPS.Settings
+namespace FarmingGPSLib.Settings
 {
     public class SettingsCollection : ISettingsCollection
     {

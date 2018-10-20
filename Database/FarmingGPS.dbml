@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?><Database Name="FarmingDatabase" Class="FarmingGPSDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
-  <Connection Mode="AppSettings" ConnectionString="Data Source=SERVER\SQLEXPRESS;Initial Catalog=FarmingDatabase;Integrated Security=True" SettingsObjectName="FarmingGPS.Database.Properties.Settings" SettingsPropertyName="FarmingDatabaseConnectionString" Provider="System.Data.SqlClient" />
+  <Connection Mode="AppSettings" ConnectionString="Data Source=SRV03\SQLPublic,50801;Initial Catalog=FarmingDatabase;Integrated Security=True" SettingsObjectName="FarmingGPS.Database.Properties.Settings" SettingsPropertyName="FarmingDatabaseConnectionString1" Provider="System.Data.SqlClient" />
   <Table Name="dbo.Equipment" Member="Equipments">
     <Type Name="Equipment">
       <Column Name="EquipmentId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
@@ -7,7 +7,11 @@
       <Column Name="DistFromAttach" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
       <Column Name="AngleFromAttach" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
       <Column Name="WorkWidth" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="EquipmentClass" Type="System.String" DbType="VarChar(50)" CanBeNull="false" />
       <Association Name="Equipment_FieldRecording" Member="FieldRecordings" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="FieldRecording" />
+      <Association Name="Equipment_Maintenance" Member="Maintenances" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="Maintenance" />
+      <Association Name="Equipment_Work" Member="Works" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="Work" />
+      <Association Name="Equipment_EquipmentNote" Member="EquipmentNotes" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="EquipmentNote" />
     </Type>
   </Table>
   <Table Name="dbo.VechileAttach" Member="VechileAttaches">
@@ -29,6 +33,7 @@
       <Association Name="Field_FieldBoundary" Member="FieldBoundaries" ThisKey="FieldId" OtherKey="FieldId" Type="FieldBoundary" />
       <Association Name="Field_FieldRecording" Member="FieldRecordings" ThisKey="FieldId" OtherKey="FieldId" Type="FieldRecording" />
       <Association Name="Field_SubFieldIntersect" Member="SubFieldIntersects" ThisKey="FieldId" OtherKey="FieldId" Type="SubFieldIntersect" />
+      <Association Name="Field_Work" Member="Works" ThisKey="FieldId" OtherKey="FieldId" Type="Work" />
       <Association Name="Field_Field" Member="FieldParent" Storage="_Field1" ThisKey="ParentField" OtherKey="FieldId" Type="Field" IsForeignKey="true" />
     </Type>
   </Table>
@@ -65,6 +70,8 @@
       <Association Name="GpsCoordinate_Reminder" Member="Reminders" ThisKey="PosId" OtherKey="PosId" Type="Reminder" />
       <Association Name="GpsCoordinate_SubFieldIntersect" Member="SubFieldIntersects" ThisKey="PosId" OtherKey="FirstPosId" Type="SubFieldIntersect" />
       <Association Name="GpsCoordinate_SubFieldIntersect1" Member="SubFieldIntersects1" ThisKey="PosId" OtherKey="SecondPosId" Type="SubFieldIntersect" />
+      <Association Name="GpsCoordinate_WorkArea" Member="WorkAreas" ThisKey="PosId" OtherKey="PosId" Type="WorkArea" />
+      <Association Name="GpsCoordinate_DrainageLine" Member="DrainageLines" ThisKey="PosId" OtherKey="PosId" Type="DrainageLine" />
     </Type>
   </Table>
   <Table Name="dbo.Obstacle" Member="Obstacles">
@@ -98,6 +105,7 @@
       <Column Name="FieldId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="FirstPosId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="SecondPosId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
       <Association Name="Field_SubFieldIntersect" Member="Field" ThisKey="FieldId" OtherKey="FieldId" Type="Field" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
       <Association Name="GpsCoordinate_SubFieldIntersect" Member="GpsCoordinateFirst" ThisKey="FirstPosId" OtherKey="PosId" Type="GpsCoordinate" IsForeignKey="true" />
       <Association Name="GpsCoordinate_SubFieldIntersect1" Member="GpsCoordinateSecond" ThisKey="SecondPosId" OtherKey="PosId" Type="GpsCoordinate" IsForeignKey="true" />
@@ -111,6 +119,133 @@
       <Column Name="ReceiverDistFromCenter" Type="System.Single" DbType="Real NOT NULL" CanBeNull="false" />
       <Column Name="ReceiverAngleFromCenter" Type="System.Single" DbType="Real NOT NULL" CanBeNull="false" />
       <Association Name="Vechile_VechileAttach" Member="VechileAttaches" ThisKey="VechileId" OtherKey="VechileId" Type="VechileAttach" />
+      <Association Name="Vechile_Maintenance" Member="Maintenances" ThisKey="VechileId" OtherKey="VechileId" Type="Maintenance" />
+      <Association Name="Vechile_Work" Member="Works" ThisKey="VechileId" OtherKey="VechileId" Type="Work" />
+    </Type>
+  </Table>
+  <Table Name="dbo.SeedType" Member="SeedTypes">
+    <Type Name="SeedType">
+      <Column Name="SeedId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="Family" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
+      <Association Name="SeedType_Work" Member="Works" ThisKey="SeedId" OtherKey="SeedId" Type="Work" />
+    </Type>
+  </Table>
+  <Table Name="dbo.WorkArea" Member="WorkAreas">
+    <Type Name="WorkArea">
+      <Column Name="WorkId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="PosId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="WorkAreaId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Association Name="GpsCoordinate_WorkArea" Member="GpsCoordinate" ThisKey="PosId" OtherKey="PosId" Type="GpsCoordinate" IsForeignKey="true" />
+      <Association Name="Work_WorkArea" Member="Work" ThisKey="WorkId" OtherKey="WorkId" Type="Work" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.DrainageLines" Member="DrainageLines">
+    <Type Name="DrainageLine">
+      <Column Name="DrainageLineId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="DrainageId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="PosId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="OrderId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="GpsCoordinate_DrainageLine" Member="GpsCoordinate" ThisKey="PosId" OtherKey="PosId" Type="GpsCoordinate" IsForeignKey="true" />
+      <Association Name="Drainage_DrainageLine" Member="Drainage" ThisKey="DrainageId" OtherKey="DrainageId" Type="Drainage" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Drainage" Member="Drainages">
+    <Type Name="Drainage">
+      <Column Name="DrainageId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="Dimension" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="ConnectedTo" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Association Name="Drainage_DrainageLine" Member="DrainageLines" ThisKey="DrainageId" OtherKey="DrainageId" Type="DrainageLine" />
+      <Association Name="Drainage_Drainage" Member="Drainage2" ThisKey="DrainageId" OtherKey="DrainageId" Type="Drainage" Cardinality="One" />
+      <Association Name="Drainage_Drainage" Member="Drainage1" ThisKey="DrainageId" OtherKey="DrainageId" Type="Drainage" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Maintenance" Member="Maintenances">
+    <Type Name="Maintenance">
+      <Column Name="MaintId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="VechileId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="EquipmentId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Hours" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Description" Type="System.String" DbType="VarChar(200) NOT NULL" CanBeNull="false" />
+      <Column Name="Time" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Association Name="Equipment_Maintenance" Member="Equipment" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="Equipment" IsForeignKey="true" />
+      <Association Name="Vechile_Maintenance" Member="Vechile" ThisKey="VechileId" OtherKey="VechileId" Type="Vechile" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Nutrient" Member="Nutrients">
+    <Type Name="Nutrient">
+      <Column Name="NutrientId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="VarChar(25) NOT NULL" CanBeNull="false" />
+      <Association Name="Nutrient_FertilizerType" Member="FertilizerTypes" ThisKey="NutrientId" OtherKey="NutrientId" Type="FertilizerType" />
+      <Association Name="Nutrient_FertilizerType1" Member="FertilizerTypes1" ThisKey="NutrientId" OtherKey="Nutrient1Id" Type="FertilizerType" />
+      <Association Name="Nutrient_FertilizerType2" Member="FertilizerTypes2" ThisKey="NutrientId" OtherKey="Nutrient2Id" Type="FertilizerType" />
+      <Association Name="Nutrient_FertilizerType3" Member="FertilizerTypes3" ThisKey="NutrientId" OtherKey="Nutrient3Id" Type="FertilizerType" />
+      <Association Name="Nutrient_FertilizerType4" Member="FertilizerTypes4" ThisKey="NutrientId" OtherKey="Nutrient4Id" Type="FertilizerType" />
+      <Association Name="Nutrient_FertilizerType5" Member="FertilizerTypes5" ThisKey="NutrientId" OtherKey="Nutrient5Id" Type="FertilizerType" />
+      <Association Name="Nutrient_FertilizerType6" Member="FertilizerTypes6" ThisKey="NutrientId" OtherKey="Nutrient6Id" Type="FertilizerType" />
+      <Association Name="Nutrient_FertilizerType7" Member="FertilizerTypes7" ThisKey="NutrientId" OtherKey="Nutrient7Id" Type="FertilizerType" />
+    </Type>
+  </Table>
+  <Table Name="dbo.FertilizerType" Member="FertilizerTypes">
+    <Type Name="FertilizerType">
+      <Column Name="FertilizerId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="NutrientId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="NutrientPercent" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Nutrient1Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Nutrient1Percent" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Nutrient2Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Nutrient2Percent" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Nutrient3Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Nutrient3Percent" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Nutrient4Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Nutrient4Percent" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Nutrient5Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Nutrient5Percent" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Nutrient6Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Nutrient6Percent" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Nutrient7Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Nutrient7Percent" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Association Name="FertilizerType_Work" Member="Works" ThisKey="FertilizerId" OtherKey="FertilizerId" Type="Work" />
+      <Association Name="Nutrient_FertilizerType" Member="Nutrient" ThisKey="NutrientId" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
+      <Association Name="Nutrient_FertilizerType1" Member="Nutrient1" ThisKey="Nutrient1Id" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
+      <Association Name="Nutrient_FertilizerType2" Member="Nutrient2" ThisKey="Nutrient2Id" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
+      <Association Name="Nutrient_FertilizerType3" Member="Nutrient3" ThisKey="Nutrient3Id" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
+      <Association Name="Nutrient_FertilizerType4" Member="Nutrient4" ThisKey="Nutrient4Id" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
+      <Association Name="Nutrient_FertilizerType5" Member="Nutrient5" ThisKey="Nutrient5Id" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
+      <Association Name="Nutrient_FertilizerType6" Member="Nutrient6" ThisKey="Nutrient6Id" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
+      <Association Name="Nutrient_FertilizerType7" Member="Nutrient7" ThisKey="Nutrient7Id" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.[Work]" Member="Works">
+    <Type Name="Work">
+      <Column Name="WorkId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Time" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Column Name="FertilizerId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="SeedId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="AmountOfInput" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="FuelUsed" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="VechileId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="EquipmentId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="FieldId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Area" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="HarvestedAmount" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Comment" Type="System.String" DbType="VarChar(100) NOT NULL" CanBeNull="false" />
+      <Association Name="Work_WorkArea" Member="WorkAreas" ThisKey="WorkId" OtherKey="WorkId" Type="WorkArea" />
+      <Association Name="Equipment_Work" Member="Equipment" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="Equipment" IsForeignKey="true" />
+      <Association Name="FertilizerType_Work" Member="FertilizerType" ThisKey="FertilizerId" OtherKey="FertilizerId" Type="FertilizerType" IsForeignKey="true" />
+      <Association Name="Field_Work" Member="Field" ThisKey="FieldId" OtherKey="FieldId" Type="Field" IsForeignKey="true" />
+      <Association Name="SeedType_Work" Member="SeedType" ThisKey="SeedId" OtherKey="SeedId" Type="SeedType" IsForeignKey="true" />
+      <Association Name="Vechile_Work" Member="Vechile" ThisKey="VechileId" OtherKey="VechileId" Type="Vechile" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.EquipmentNotes" Member="EquipmentNotes">
+    <Type Name="EquipmentNote">
+      <Column Name="EquipmentNoteId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="EquipmentId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Note" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
+      <Association Name="Equipment_EquipmentNote" Member="Equipment" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="Equipment" IsForeignKey="true" />
     </Type>
   </Table>
 </Database>

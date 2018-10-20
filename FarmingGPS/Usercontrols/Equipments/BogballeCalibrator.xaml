@@ -27,6 +27,10 @@
                         <TextBlock Background="Transparent" Padding="5" FontSize="14">Ansluten</TextBlock>
                     </Grid>
                 </Border>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Grid.Row="1" x:Name="BTN_START" Style="{StaticResource GENERAL_BUTTON}" Width="80" Height="40" Margin="10,10,2,10" Click="BTN_START_Click">Starta</Button>
+                    <Button Grid.Row="1" x:Name="BTN_STOP" Style="{StaticResource GENERAL_BUTTON}" Width="80" Height="40" Margin="2,10,10,10" Click="BTN_STOP_Click">Stoppa</Button>
+                </StackPanel>
                 <Border Background="WhiteSmoke" ClipToBounds="True" BorderBrush="Black" BorderThickness="2" CornerRadius="5" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="13">
                     <Grid>
                         <Rectangle Fill="Green" Visibility="{Binding Path=Started, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}, Converter={StaticResource BoolToVis}}"/>
@@ -51,7 +55,7 @@
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Inställd giva</TextBlock>
                     <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg/ha" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=SetSpreadingRate, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Hastighet</TextBlock>
-                    <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="50" AllowSpin="False" IsReadOnly="True" FormatString="0.0 km/h" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=PTO, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
+                    <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="50" AllowSpin="False" IsReadOnly="True" FormatString="0.0 km/h" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=Speed, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Vikt</TextBlock>
                     <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=HopperContents, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
                 </StackPanel>

@@ -1,5 +1,6 @@
 ﻿using System;
 using DotSpatial.Positioning;
+using FarmingGPSLib.FarmingModes;
 
 namespace FarmingGPSLib.Equipment
 {
@@ -33,8 +34,8 @@ namespace FarmingGPSLib.Equipment
             _overlap = Distance.FromMeters(0);
             Position attachedPoint = new Position(new Latitude(1.0), new Longitude(1.0));
             Position centerOfEquipment = attachedPoint.TranslateTo(fromDirectionOfTravel, distanceFromVechile);
-            Position leftTip = centerOfEquipment.TranslateTo(fromDirectionOfTravel.Add(180.0).Normalize().Add(-90.0), CenterToTip);
-            Position rightTip = centerOfEquipment.TranslateTo(fromDirectionOfTravel.Add(180.0).Normalize().Add(90.0), CenterToTip);
+            Position leftTip = centerOfEquipment.TranslateTo(Azimuth.West, CenterToTip);
+            Position rightTip = centerOfEquipment.TranslateTo(Azimuth.East, CenterToTip);
             _bearingToLeftTip = attachedPoint.BearingTo(leftTip);
             _bearingToRightTip = attachedPoint.BearingTo(rightTip);
             _distanceToLeftTip = attachedPoint.DistanceTo(leftTip);
@@ -91,6 +92,11 @@ namespace FarmingGPSLib.Equipment
         public Distance CenterToTipWithOverlap
         {
             get { return CenterToTip.Subtract(Overlap); }
+        }
+
+        public virtual Type FarmingMode
+        {
+            get { return null; }
         }
 
         public Position GetLeftTip(Position attachedPosition, Azimuth directionOfTravel)
