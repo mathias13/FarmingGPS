@@ -187,8 +187,21 @@ namespace FarmingGPS
             try
             {
                 DotSpatial.Data.Shapefile shapeFile = DotSpatial.Data.Shapefile.OpenFile(@"C:\Users\Mathias\Downloads\Test\Test.Shp");
-                if (shapeFile.Attributes.Columns.Count > 0)
-                    ;
+                foreach (var feature in shapeFile.Features)
+                {
+                    //58.510313,13.8618418
+                    //58.5103128,13.8618394
+                    if (feature.FeatureType == FeatureType.Polygon && feature.BasicGeometry is IPolygon)
+                    {
+                        IPolygon poly = (IPolygon)feature.BasicGeometry;
+                        Coordinate position = new Coordinate(13.8598715, 58.508508);
+                        if (poly.Contains(new DotSpatial.Topology.Point(position)))
+                        {
+                            double index = (double)feature.DataRow[0];
+                            double rate = (double)feature.DataRow[1];
+                        }
+                    }
+                }
             }
             catch(Exception e1)
             {
