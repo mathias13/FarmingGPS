@@ -1,0 +1,38 @@
+﻿<UserControl x:Class="FarmingGPS.Usercontrols.GetEquipmentRate"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"              
+             xmlns:extended="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
+             xmlns:local="clr-namespace:FarmingGPS.Usercontrols"
+             mc:Ignorable="d" 
+             d:DesignHeight="400" d:DesignWidth="300">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Visualization/Buttons.xaml" />
+                <ResourceDictionary Source="../Visualization/VisualizationDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid>
+            <StackPanel Orientation="Vertical" Margin="10,10,10,10">
+                <Border Style="{StaticResource SUBJECT_HEADER_BORDER}" MinWidth="150" HorizontalAlignment="Center">
+                    <TextBlock Style="{StaticResource SUBJECT_HEADER_TEXT}">Styrfiler</TextBlock>
+                </Border>
+                <ListBox x:FieldModifier="private" x:Name="ListBoxDates" SelectionMode="Single" Style="{StaticResource LISTBOX}" ItemContainerStyle="{StaticResource LISTBOX_ITEM}" MinWidth="150" HorizontalAlignment="Center"/>
+                <Grid Margin="0,20,20,20" Width="Auto" Height="Auto">
+                    <Image Source="{Binding Path=Image, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:GetEquipmentRate}}}"/>
+                    <Rectangle Margin="2,2,2,2" RadiusX="5" RadiusY="5" Fill="Gray" Opacity="0.6" Visibility="{Binding Path=ImageUnavailable, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:GetEquipmentRate}}}"/>
+                    <Viewbox Margin="10,10,10,10" Stretch="Uniform" MaxHeight="300" MaxWidth="300">
+                        <TextBlock Background="Transparent" Foreground="Red" Visibility="{Binding Path=ImageUnavailable, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:GetEquipmentRate}}}">X</TextBlock>
+                    </Viewbox>
+                </Grid>
+                <TextBlock Style="{StaticResource SETTING_HEADER}">Grund giva</TextBlock>
+                <extended:DoubleUpDown Minimum="0" Maximum="360" Value="200" AllowSpin="True" Increment="1" FormatString="0kg" x:FieldModifier="private" x:Name="NumericDefaultValue" Style="{StaticResource DOUBLEUPDOWN}"/>
+                <Button HorizontalAlignment="Center" Height="60" x:FieldModifier="private" x:Name="ButtonChoose" Click="ButtonChoose_Click" Style="{StaticResource GENERAL_BUTTON}">Välj</Button>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

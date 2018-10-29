@@ -104,6 +104,11 @@ namespace FarmingGPSLib.Equipment.BogBalle
                 return null;
         }
 
+        public void SetRate(double rate)
+        {
+            _calibrator.ChangeSpreadingRate((int)rate);
+        }
+
         #endregion
 
         public override Type FarmingMode

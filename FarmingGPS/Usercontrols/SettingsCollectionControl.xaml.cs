@@ -125,5 +125,10 @@ namespace FarmingGPS.Usercontrols
             if (SettingChanged != null)
                 SettingChanged.Invoke(this, String.Empty);
         }
+
+        public void RegisterSettingEvent(ISettingsChanged settings)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

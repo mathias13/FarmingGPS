@@ -9,6 +9,8 @@ namespace FarmingGPSLib.Equipment
 
         void Stop();
 
+        void SetRate(double rate);
+
         double StartDistance
         {
             get;

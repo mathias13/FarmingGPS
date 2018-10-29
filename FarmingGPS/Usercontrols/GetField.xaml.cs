@@ -23,6 +23,8 @@ namespace FarmingGPS.Usercontrols
         private DatabaseHandler _database;
 
         private List<Position> _fieldChoosen;
+
+        private int _fieldId;
         
         public const string FIELD_CHOOSEN = "FIELD_CHOOSEN";
 
@@ -142,6 +144,8 @@ namespace FarmingGPS.Usercontrols
 
         private void ButtonChoose_Click(object sender, RoutedEventArgs e)
         {
+            Field field = ListBoxFields.SelectedItem as Field;
+            _fieldId = field.FieldId;
             if (_fieldChoosen != null)
                 if (SettingChanged != null)
                     SettingChanged.Invoke(this, FIELD_CHOOSEN);
@@ -150,6 +154,11 @@ namespace FarmingGPS.Usercontrols
         public List<Position> FieldChoosen
         {
             get { return _fieldChoosen; }
+        }
+
+        public int FieldId
+        {
+            get { return _fieldId; }
         }
 
         #region IDatabaseSettings
@@ -170,6 +179,11 @@ namespace FarmingGPS.Usercontrols
         #region ISettingsChanged
 
         public event EventHandler<string> SettingChanged;
+        
+        public void RegisterSettingEvent(ISettingsChanged settings)
+        {
+            throw new NotImplementedException();
+        }
 
         #endregion
     }

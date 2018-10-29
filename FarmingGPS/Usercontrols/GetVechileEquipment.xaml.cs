@@ -16,7 +16,7 @@ namespace FarmingGPS.Usercontrols
         private VechileAttach _vechileAttach;
 
         private Equipment _equipment;
-
+        
         private DatabaseHandler _database;
         
         public static readonly string VECHILE_EQUIPMENT_CHOOSEN = "VECHILE_EQUIPMENT_CHOOSEN";
@@ -207,7 +207,7 @@ namespace FarmingGPS.Usercontrols
         {
             get { return _equipment; }
         }
-
+        
         #endregion
 
         #region IDatabaseSettings
@@ -225,6 +225,11 @@ namespace FarmingGPS.Usercontrols
         #region ISettingsChanged
 
         public event EventHandler<string> SettingChanged;
+
+        public void RegisterSettingEvent(ISettingsChanged settings)
+        {
+            throw new NotImplementedException();
+        }
 
         #endregion
 

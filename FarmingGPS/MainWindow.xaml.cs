@@ -68,7 +68,7 @@ namespace FarmingGPS
         private StateRecoveryManager _stateRecovery;
 
         private IField _field;
-
+        
         private Database.DatabaseHandler _database;
         
         private string _cameraIp = String.Empty;
@@ -87,6 +87,8 @@ namespace FarmingGPS
         
         private FieldTracker _fieldTracker = new FieldTracker();
 
+        private FieldRateTracker _fieldRateTracker;
+
         private bool _fieldTrackerActive = false;
 
         private FieldCreator _fieldCreator;
@@ -98,7 +100,7 @@ namespace FarmingGPS
         private FarmingGPSLib.FarmingModes.IFarmingMode _farmingMode;
 
         private IEquipment _equipment;
-
+        
         private Database.Equipment _equipmentChoosen;
 
         private bool _ntripConnected = false;
@@ -232,29 +234,6 @@ namespace FarmingGPS
                         }
                     }
                 }
-            }
-            try
-            {
-                DotSpatial.Data.Shapefile shapeFile = DotSpatial.Data.Shapefile.OpenFile(@"C:\Users\Mathias\Downloads\Test\Test.Shp");
-                foreach (var feature in shapeFile.Features)
-                {
-                    //58.510313,13.8618418
-                    //58.5103128,13.8618394
-                    if (feature.FeatureType == FeatureType.Polygon && feature.BasicGeometry is IPolygon)
-                    {
-                        IPolygon poly = (IPolygon)feature.BasicGeometry;
-                        Coordinate position = new Coordinate(13.8598715, 58.508508);
-                        if (poly.Contains(new DotSpatial.Topology.Point(position)))
-                        {
-                            double index = (double)feature.DataRow[0];
-                            double rate = (double)feature.DataRow[1];
-                        }
-                    }
-                }
-            }
-            catch(Exception e1)
-            {
-                Log.Error("Shapefile", e1);
             }
 
 #if DEBUG
@@ -557,6 +536,9 @@ namespace FarmingGPS
                 Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(actualPosition, actualHeading));
                 Coordinate rightTip = _field.GetPositionInField(_equipment.GetRightTip(actualPosition, actualHeading));
 
+                if (_fieldRateTracker != null)
+                    _fieldRateTracker.UpdatePosition(leftTip, rightTip);
+
                 if (_fieldTracker.IsTracking && !_fieldTrackerActive)
                     _fieldTracker.StopTrack(leftTip, rightTip);
                 else if (_fieldTrackerActive && !_fieldTracker.IsTracking)
@@ -792,8 +774,13 @@ namespace FarmingGPS
             SettingGroup farmingMode = new SettingGroup("Bearbetningläge", null, new FarmingMode());
             (farmingMode.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
 
-            SettingGroup redskap = new SettingGroup("Redskap", new SettingGroup[] { farmingMode }, new GetVechileEquipment());
+            SettingGroup equipmentRate = new SettingGroup("Redskapsstyrning", null, new GetEquipmentRate());
+            (equipmentRate.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+            (equipmentRate.SettingControl as ISettingsChanged).RegisterSettingEvent((field.SettingControl as ISettingsChanged));
+
+            SettingGroup redskap = new SettingGroup("Redskap", new SettingGroup[] { farmingMode, equipmentRate}, new GetVechileEquipment());
             (redskap.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+            (equipmentRate.SettingControl as ISettingsChanged).RegisterSettingEvent((redskap.SettingControl as ISettingsChanged));
 
             SettingGroup settingRoot = new SettingGroup("Inställningar", new SettingGroup[] { connectionGroup, field, redskap, visualGroup }, null);
             _settingsTree.ItemsSource = settingRoot;
@@ -821,6 +808,8 @@ namespace FarmingGPS
                 GetVechileEquipment((sender as GetVechileEquipment));
             else if (sender is FarmingMode)
                 SetEquipmentAndFarmingMode((sender as FarmingMode));
+            else if (sender is GetEquipmentRate)
+                SetEquipmentRate((sender as GetEquipmentRate));
             else if (sender is SettingsCollectionControl)
             {
                 SettingsCollectionControl settingControl = sender as SettingsCollectionControl;
@@ -847,6 +836,13 @@ namespace FarmingGPS
                         equipmentControl.RegisterController(settingControl.Settings);
                 }
             }
+        }
+
+        private void SetEquipmentRate(GetEquipmentRate usercontrol)
+        {
+            _fieldRateTracker = new FieldRateTracker(usercontrol.DefaultRate, 5.0, usercontrol.ShapeFile, 1, _field);
+            if (_equipment is IEquipmentControl)
+                _fieldRateTracker.RegisterEquipmentControl(_equipment as IEquipmentControl);
         }
 
         private void SetEquipmentAndFarmingMode(FarmingMode userControl)
