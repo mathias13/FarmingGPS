@@ -129,7 +129,10 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -195,6 +198,9 @@
     <Compile Include="Usercontrols\FarmingMode.xaml.cs">
       <DependentUpon>FarmingMode.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Usercontrols\GetEquipmentRate.xaml.cs">
+      <DependentUpon>GetEquipmentRate.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Usercontrols\GetVechileEquipment.xaml.cs">
       <DependentUpon>GetVechileEquipment.xaml</DependentUpon>
     </Compile>
@@ -254,6 +260,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Usercontrols\FarmingMode.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Usercontrols\GetEquipmentRate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
