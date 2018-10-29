@@ -12,6 +12,7 @@
       <Association Name="Equipment_Maintenance" Member="Maintenances" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="Maintenance" />
       <Association Name="Equipment_Work" Member="Works" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="Work" />
       <Association Name="Equipment_EquipmentNote" Member="EquipmentNotes" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="EquipmentNote" />
+      <Association Name="Equipment_EquipmentRateFile" Member="EquipmentRateFiles" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="EquipmentRateFile" />
     </Type>
   </Table>
   <Table Name="dbo.VechileAttach" Member="VechileAttaches">
@@ -34,6 +35,7 @@
       <Association Name="Field_FieldRecording" Member="FieldRecordings" ThisKey="FieldId" OtherKey="FieldId" Type="FieldRecording" />
       <Association Name="Field_SubFieldIntersect" Member="SubFieldIntersects" ThisKey="FieldId" OtherKey="FieldId" Type="SubFieldIntersect" />
       <Association Name="Field_Work" Member="Works" ThisKey="FieldId" OtherKey="FieldId" Type="Work" />
+      <Association Name="Field_EquipmentRateFile" Member="EquipmentRateFiles" ThisKey="FieldId" OtherKey="FieldId" Type="EquipmentRateFile" />
       <Association Name="Field_Field" Member="FieldParent" Storage="_Field1" ThisKey="ParentField" OtherKey="FieldId" Type="Field" IsForeignKey="true" />
     </Type>
   </Table>
@@ -246,6 +248,18 @@
       <Column Name="EquipmentId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="Note" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
       <Association Name="Equipment_EquipmentNote" Member="Equipment" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="Equipment" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.EquipmentRateFiles" Member="EquipmentRateFiles">
+    <Type Name="EquipmentRateFile">
+      <Column Name="EquipmentRateId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="FieldId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="EquipmentId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="OverviewImage" Type="System.Data.Linq.Binary" DbType="VarBinary(MAX)" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="ShapeZipFile" Type="System.Data.Linq.Binary" DbType="VarBinary(MAX) NOT NULL" CanBeNull="false" UpdateCheck="Never" />
+      <Column Name="Added" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Association Name="Equipment_EquipmentRateFile" Member="Equipment" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="Equipment" IsForeignKey="true" />
+      <Association Name="Field_EquipmentRateFile" Member="Field" ThisKey="FieldId" OtherKey="FieldId" Type="Field" IsForeignKey="true" />
     </Type>
   </Table>
 </Database>

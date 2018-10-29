@@ -90,6 +90,9 @@ namespace FarmingGPS.Database
     partial void InsertEquipmentNote(EquipmentNote instance);
     partial void UpdateEquipmentNote(EquipmentNote instance);
     partial void DeleteEquipmentNote(EquipmentNote instance);
+    partial void InsertEquipmentRateFile(EquipmentRateFile instance);
+    partial void UpdateEquipmentRateFile(EquipmentRateFile instance);
+    partial void DeleteEquipmentRateFile(EquipmentRateFile instance);
     #endregion
 		
 		public FarmingGPSDataContext() : 
@@ -281,6 +284,14 @@ namespace FarmingGPS.Database
 				return this.GetTable<EquipmentNote>();
 			}
 		}
+		
+		public System.Data.Linq.Table<EquipmentRateFile> EquipmentRateFiles
+		{
+			get
+			{
+				return this.GetTable<EquipmentRateFile>();
+			}
+		}
 	}
 	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Equipment")]
@@ -309,6 +320,8 @@ namespace FarmingGPS.Database
 		
 		private EntitySet<EquipmentNote> _EquipmentNotes;
 		
+		private EntitySet<EquipmentRateFile> _EquipmentRateFiles;
+		
     #region Extensibility Method Definitions
     partial void OnLoaded();
     partial void OnValidate(System.Data.Linq.ChangeAction action);
@@ -333,6 +346,7 @@ namespace FarmingGPS.Database
 			this._Maintenances = new EntitySet<Maintenance>(new Action<Maintenance>(this.attach_Maintenances), new Action<Maintenance>(this.detach_Maintenances));
 			this._Works = new EntitySet<Work>(new Action<Work>(this.attach_Works), new Action<Work>(this.detach_Works));
 			this._EquipmentNotes = new EntitySet<EquipmentNote>(new Action<EquipmentNote>(this.attach_EquipmentNotes), new Action<EquipmentNote>(this.detach_EquipmentNotes));
+			this._EquipmentRateFiles = new EntitySet<EquipmentRateFile>(new Action<EquipmentRateFile>(this.attach_EquipmentRateFiles), new Action<EquipmentRateFile>(this.detach_EquipmentRateFiles));
 			OnCreated();
 		}
 		
@@ -508,6 +522,19 @@ namespace FarmingGPS.Database
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Equipment_EquipmentRateFile", Storage="_EquipmentRateFiles", ThisKey="EquipmentId", OtherKey="EquipmentId")]
+		public EntitySet<EquipmentRateFile> EquipmentRateFiles
+		{
+			get
+			{
+				return this._EquipmentRateFiles;
+			}
+			set
+			{
+				this._EquipmentRateFiles.Assign(value);
+			}
+		}
+		
 		public event PropertyChangingEventHandler PropertyChanging;
 		
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -571,6 +598,18 @@ namespace FarmingGPS.Database
 		}
 		
 		private void detach_EquipmentNotes(EquipmentNote entity)
+		{
+			this.SendPropertyChanging();
+			entity.Equipment = null;
+		}
+		
+		private void attach_EquipmentRateFiles(EquipmentRateFile entity)
+		{
+			this.SendPropertyChanging();
+			entity.Equipment = this;
+		}
+		
+		private void detach_EquipmentRateFiles(EquipmentRateFile entity)
 		{
 			this.SendPropertyChanging();
 			entity.Equipment = null;
@@ -798,6 +837,8 @@ namespace FarmingGPS.Database
 		
 		private EntitySet<Work> _Works;
 		
+		private EntitySet<EquipmentRateFile> _EquipmentRateFiles;
+		
 		private EntityRef<Field> _Field1;
 		
     #region Extensibility Method Definitions
@@ -819,6 +860,7 @@ namespace FarmingGPS.Database
 			this._FieldRecordings = new EntitySet<FieldRecording>(new Action<FieldRecording>(this.attach_FieldRecordings), new Action<FieldRecording>(this.detach_FieldRecordings));
 			this._SubFieldIntersects = new EntitySet<SubFieldIntersect>(new Action<SubFieldIntersect>(this.attach_SubFieldIntersects), new Action<SubFieldIntersect>(this.detach_SubFieldIntersects));
 			this._Works = new EntitySet<Work>(new Action<Work>(this.attach_Works), new Action<Work>(this.detach_Works));
+			this._EquipmentRateFiles = new EntitySet<EquipmentRateFile>(new Action<EquipmentRateFile>(this.attach_EquipmentRateFiles), new Action<EquipmentRateFile>(this.detach_EquipmentRateFiles));
 			this._Field1 = default(EntityRef<Field>);
 			OnCreated();
 		}
@@ -952,6 +994,19 @@ namespace FarmingGPS.Database
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Field_EquipmentRateFile", Storage="_EquipmentRateFiles", ThisKey="FieldId", OtherKey="FieldId")]
+		public EntitySet<EquipmentRateFile> EquipmentRateFiles
+		{
+			get
+			{
+				return this._EquipmentRateFiles;
+			}
+			set
+			{
+				this._EquipmentRateFiles.Assign(value);
+			}
+		}
+		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Field_Field", Storage="_Field1", ThisKey="ParentField", OtherKey="FieldId", IsForeignKey=true)]
 		public Field FieldParent
 		{
@@ -1061,6 +1116,18 @@ namespace FarmingGPS.Database
 		}
 		
 		private void detach_Works(Work entity)
+		{
+			this.SendPropertyChanging();
+			entity.Field = null;
+		}
+		
+		private void attach_EquipmentRateFiles(EquipmentRateFile entity)
+		{
+			this.SendPropertyChanging();
+			entity.Field = this;
+		}
+		
+		private void detach_EquipmentRateFiles(EquipmentRateFile entity)
 		{
 			this.SendPropertyChanging();
 			entity.Field = null;
@@ -5768,6 +5835,270 @@ namespace FarmingGPS.Database
 						this._EquipmentId = default(int);
 					}
 					this.SendPropertyChanged("Equipment");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.EquipmentRateFiles")]
+	public partial class EquipmentRateFile : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _EquipmentRateId;
+		
+		private int _FieldId;
+		
+		private int _EquipmentId;
+		
+		private System.Data.Linq.Binary _OverviewImage;
+		
+		private System.Data.Linq.Binary _ShapeZipFile;
+		
+		private System.DateTime _Added;
+		
+		private EntityRef<Equipment> _Equipment;
+		
+		private EntityRef<Field> _Field;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnEquipmentRateIdChanging(int value);
+    partial void OnEquipmentRateIdChanged();
+    partial void OnFieldIdChanging(int value);
+    partial void OnFieldIdChanged();
+    partial void OnEquipmentIdChanging(int value);
+    partial void OnEquipmentIdChanged();
+    partial void OnOverviewImageChanging(System.Data.Linq.Binary value);
+    partial void OnOverviewImageChanged();
+    partial void OnShapeZipFileChanging(System.Data.Linq.Binary value);
+    partial void OnShapeZipFileChanged();
+    partial void OnAddedChanging(System.DateTime value);
+    partial void OnAddedChanged();
+    #endregion
+		
+		public EquipmentRateFile()
+		{
+			this._Equipment = default(EntityRef<Equipment>);
+			this._Field = default(EntityRef<Field>);
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_EquipmentRateId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int EquipmentRateId
+		{
+			get
+			{
+				return this._EquipmentRateId;
+			}
+			set
+			{
+				if ((this._EquipmentRateId != value))
+				{
+					this.OnEquipmentRateIdChanging(value);
+					this.SendPropertyChanging();
+					this._EquipmentRateId = value;
+					this.SendPropertyChanged("EquipmentRateId");
+					this.OnEquipmentRateIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FieldId", DbType="Int NOT NULL")]
+		public int FieldId
+		{
+			get
+			{
+				return this._FieldId;
+			}
+			set
+			{
+				if ((this._FieldId != value))
+				{
+					if (this._Field.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnFieldIdChanging(value);
+					this.SendPropertyChanging();
+					this._FieldId = value;
+					this.SendPropertyChanged("FieldId");
+					this.OnFieldIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_EquipmentId", DbType="Int NOT NULL")]
+		public int EquipmentId
+		{
+			get
+			{
+				return this._EquipmentId;
+			}
+			set
+			{
+				if ((this._EquipmentId != value))
+				{
+					if (this._Equipment.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnEquipmentIdChanging(value);
+					this.SendPropertyChanging();
+					this._EquipmentId = value;
+					this.SendPropertyChanged("EquipmentId");
+					this.OnEquipmentIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_OverviewImage", DbType="VarBinary(MAX)", CanBeNull=true, UpdateCheck=UpdateCheck.Never)]
+		public System.Data.Linq.Binary OverviewImage
+		{
+			get
+			{
+				return this._OverviewImage;
+			}
+			set
+			{
+				if ((this._OverviewImage != value))
+				{
+					this.OnOverviewImageChanging(value);
+					this.SendPropertyChanging();
+					this._OverviewImage = value;
+					this.SendPropertyChanged("OverviewImage");
+					this.OnOverviewImageChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ShapeZipFile", DbType="VarBinary(MAX) NOT NULL", CanBeNull=false, UpdateCheck=UpdateCheck.Never)]
+		public System.Data.Linq.Binary ShapeZipFile
+		{
+			get
+			{
+				return this._ShapeZipFile;
+			}
+			set
+			{
+				if ((this._ShapeZipFile != value))
+				{
+					this.OnShapeZipFileChanging(value);
+					this.SendPropertyChanging();
+					this._ShapeZipFile = value;
+					this.SendPropertyChanged("ShapeZipFile");
+					this.OnShapeZipFileChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Added", DbType="DateTime NOT NULL")]
+		public System.DateTime Added
+		{
+			get
+			{
+				return this._Added;
+			}
+			set
+			{
+				if ((this._Added != value))
+				{
+					this.OnAddedChanging(value);
+					this.SendPropertyChanging();
+					this._Added = value;
+					this.SendPropertyChanged("Added");
+					this.OnAddedChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Equipment_EquipmentRateFile", Storage="_Equipment", ThisKey="EquipmentId", OtherKey="EquipmentId", IsForeignKey=true)]
+		public Equipment Equipment
+		{
+			get
+			{
+				return this._Equipment.Entity;
+			}
+			set
+			{
+				Equipment previousValue = this._Equipment.Entity;
+				if (((previousValue != value) 
+							|| (this._Equipment.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Equipment.Entity = null;
+						previousValue.EquipmentRateFiles.Remove(this);
+					}
+					this._Equipment.Entity = value;
+					if ((value != null))
+					{
+						value.EquipmentRateFiles.Add(this);
+						this._EquipmentId = value.EquipmentId;
+					}
+					else
+					{
+						this._EquipmentId = default(int);
+					}
+					this.SendPropertyChanged("Equipment");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Field_EquipmentRateFile", Storage="_Field", ThisKey="FieldId", OtherKey="FieldId", IsForeignKey=true)]
+		public Field Field
+		{
+			get
+			{
+				return this._Field.Entity;
+			}
+			set
+			{
+				Field previousValue = this._Field.Entity;
+				if (((previousValue != value) 
+							|| (this._Field.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Field.Entity = null;
+						previousValue.EquipmentRateFiles.Remove(this);
+					}
+					this._Field.Entity = value;
+					if ((value != null))
+					{
+						value.EquipmentRateFiles.Add(this);
+						this._FieldId = value.FieldId;
+					}
+					else
+					{
+						this._FieldId = default(int);
+					}
+					this.SendPropertyChanged("Field");
 				}
 			}
 		}

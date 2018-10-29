@@ -2,6 +2,14 @@ using System;
 
 namespace FarmingGPS.Database
 {
+    partial class EquipmentRateFile
+    {
+        public override string ToString()
+        {
+            return Added.ToString("yyyy-MM-dd");
+        }
+    }
+
     partial class Nutrient
     {
         public override string ToString()

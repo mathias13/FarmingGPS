@@ -412,6 +412,36 @@ namespace FarmingGPS.Database
             }
         }
 
+        public EquipmentRateFile[] GetEquipmentRate(int fieldId, int equipmentId)
+        {
+            try
+            {
+                lock (_syncObject)
+                {
+                    var queryResult = from equipmentRate in _databaseContext.EquipmentRateFiles
+                                      where equipmentRate.FieldId == fieldId && equipmentRate.EquipmentId == equipmentId
+                                      select equipmentRate;
+
+                    return queryResult.ToArray();
+                }
+            }
+            catch (Exception e)
+            {
+                OnDatabaseHandlerException(e, "GetEquipmentRate");
+                return null;
+            }
+        }
+
+        public void AddEquipmentRate(EquipmentRateFile equipmentRate)
+        {
+            _databaseContext.EquipmentRateFiles.InsertOnSubmit(equipmentRate);
+        }
+
+        public void DeleteEquipmentRate(EquipmentRateFile equipmentRate)
+        {
+            _databaseContext.EquipmentRateFiles.DeleteOnSubmit(equipmentRate);
+        }
+
         #endregion
 
         private void Connection_StateChange(object sender, System.Data.StateChangeEventArgs e)
