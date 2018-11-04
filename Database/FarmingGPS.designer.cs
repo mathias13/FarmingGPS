@@ -57,9 +57,6 @@ namespace FarmingGPS.Database
     partial void InsertReminder(Reminder instance);
     partial void UpdateReminder(Reminder instance);
     partial void DeleteReminder(Reminder instance);
-    partial void InsertSubFieldIntersect(SubFieldIntersect instance);
-    partial void UpdateSubFieldIntersect(SubFieldIntersect instance);
-    partial void DeleteSubFieldIntersect(SubFieldIntersect instance);
     partial void InsertVechile(Vechile instance);
     partial void UpdateVechile(Vechile instance);
     partial void DeleteVechile(Vechile instance);
@@ -93,6 +90,9 @@ namespace FarmingGPS.Database
     partial void InsertEquipmentRateFile(EquipmentRateFile instance);
     partial void UpdateEquipmentRateFile(EquipmentRateFile instance);
     partial void DeleteEquipmentRateFile(EquipmentRateFile instance);
+    partial void InsertFieldCut(FieldCut instance);
+    partial void UpdateFieldCut(FieldCut instance);
+    partial void DeleteFieldCut(FieldCut instance);
     #endregion
 		
 		public FarmingGPSDataContext() : 
@@ -197,14 +197,6 @@ namespace FarmingGPS.Database
 			}
 		}
 		
-		public System.Data.Linq.Table<SubFieldIntersect> SubFieldIntersects
-		{
-			get
-			{
-				return this.GetTable<SubFieldIntersect>();
-			}
-		}
-		
 		public System.Data.Linq.Table<Vechile> Vechiles
 		{
 			get
@@ -290,6 +282,14 @@ namespace FarmingGPS.Database
 			get
 			{
 				return this.GetTable<EquipmentRateFile>();
+			}
+		}
+		
+		public System.Data.Linq.Table<FieldCut> FieldCuts
+		{
+			get
+			{
+				return this.GetTable<FieldCut>();
 			}
 		}
 	}
@@ -833,11 +833,11 @@ namespace FarmingGPS.Database
 		
 		private EntitySet<FieldRecording> _FieldRecordings;
 		
-		private EntitySet<SubFieldIntersect> _SubFieldIntersects;
-		
 		private EntitySet<Work> _Works;
 		
 		private EntitySet<EquipmentRateFile> _EquipmentRateFiles;
+		
+		private EntitySet<FieldCut> _FieldCuts;
 		
 		private EntityRef<Field> _Field1;
 		
@@ -858,9 +858,9 @@ namespace FarmingGPS.Database
 			this._Fields = new EntitySet<Field>(new Action<Field>(this.attach_Fields), new Action<Field>(this.detach_Fields));
 			this._FieldBoundaries = new EntitySet<FieldBoundary>(new Action<FieldBoundary>(this.attach_FieldBoundaries), new Action<FieldBoundary>(this.detach_FieldBoundaries));
 			this._FieldRecordings = new EntitySet<FieldRecording>(new Action<FieldRecording>(this.attach_FieldRecordings), new Action<FieldRecording>(this.detach_FieldRecordings));
-			this._SubFieldIntersects = new EntitySet<SubFieldIntersect>(new Action<SubFieldIntersect>(this.attach_SubFieldIntersects), new Action<SubFieldIntersect>(this.detach_SubFieldIntersects));
 			this._Works = new EntitySet<Work>(new Action<Work>(this.attach_Works), new Action<Work>(this.detach_Works));
 			this._EquipmentRateFiles = new EntitySet<EquipmentRateFile>(new Action<EquipmentRateFile>(this.attach_EquipmentRateFiles), new Action<EquipmentRateFile>(this.detach_EquipmentRateFiles));
+			this._FieldCuts = new EntitySet<FieldCut>(new Action<FieldCut>(this.attach_FieldCuts), new Action<FieldCut>(this.detach_FieldCuts));
 			this._Field1 = default(EntityRef<Field>);
 			OnCreated();
 		}
@@ -968,19 +968,6 @@ namespace FarmingGPS.Database
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Field_SubFieldIntersect", Storage="_SubFieldIntersects", ThisKey="FieldId", OtherKey="FieldId")]
-		public EntitySet<SubFieldIntersect> SubFieldIntersects
-		{
-			get
-			{
-				return this._SubFieldIntersects;
-			}
-			set
-			{
-				this._SubFieldIntersects.Assign(value);
-			}
-		}
-		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Field_Work", Storage="_Works", ThisKey="FieldId", OtherKey="FieldId")]
 		public EntitySet<Work> Works
 		{
@@ -1004,6 +991,19 @@ namespace FarmingGPS.Database
 			set
 			{
 				this._EquipmentRateFiles.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Field_FieldCut", Storage="_FieldCuts", ThisKey="FieldId", OtherKey="FieldId")]
+		public EntitySet<FieldCut> FieldCuts
+		{
+			get
+			{
+				return this._FieldCuts;
+			}
+			set
+			{
+				this._FieldCuts.Assign(value);
 			}
 		}
 		
@@ -1097,18 +1097,6 @@ namespace FarmingGPS.Database
 			entity.Field = null;
 		}
 		
-		private void attach_SubFieldIntersects(SubFieldIntersect entity)
-		{
-			this.SendPropertyChanging();
-			entity.Field = this;
-		}
-		
-		private void detach_SubFieldIntersects(SubFieldIntersect entity)
-		{
-			this.SendPropertyChanging();
-			entity.Field = null;
-		}
-		
 		private void attach_Works(Work entity)
 		{
 			this.SendPropertyChanging();
@@ -1128,6 +1116,18 @@ namespace FarmingGPS.Database
 		}
 		
 		private void detach_EquipmentRateFiles(EquipmentRateFile entity)
+		{
+			this.SendPropertyChanging();
+			entity.Field = null;
+		}
+		
+		private void attach_FieldCuts(FieldCut entity)
+		{
+			this.SendPropertyChanging();
+			entity.Field = this;
+		}
+		
+		private void detach_FieldCuts(FieldCut entity)
 		{
 			this.SendPropertyChanging();
 			entity.Field = null;
@@ -1616,13 +1616,13 @@ namespace FarmingGPS.Database
 		
 		private EntitySet<Reminder> _Reminders;
 		
-		private EntitySet<SubFieldIntersect> _SubFieldIntersects;
-		
-		private EntitySet<SubFieldIntersect> _SubFieldIntersects1;
-		
 		private EntitySet<WorkArea> _WorkAreas;
 		
 		private EntitySet<DrainageLine> _DrainageLines;
+		
+		private EntitySet<FieldCut> _FieldCuts;
+		
+		private EntitySet<FieldCut> _FieldCuts1;
 		
     #region Extensibility Method Definitions
     partial void OnLoaded();
@@ -1644,10 +1644,10 @@ namespace FarmingGPS.Database
 			this._Obstacles = new EntitySet<Obstacle>(new Action<Obstacle>(this.attach_Obstacles), new Action<Obstacle>(this.detach_Obstacles));
 			this._RecordingPositions = new EntitySet<RecordingPosition>(new Action<RecordingPosition>(this.attach_RecordingPositions), new Action<RecordingPosition>(this.detach_RecordingPositions));
 			this._Reminders = new EntitySet<Reminder>(new Action<Reminder>(this.attach_Reminders), new Action<Reminder>(this.detach_Reminders));
-			this._SubFieldIntersects = new EntitySet<SubFieldIntersect>(new Action<SubFieldIntersect>(this.attach_SubFieldIntersects), new Action<SubFieldIntersect>(this.detach_SubFieldIntersects));
-			this._SubFieldIntersects1 = new EntitySet<SubFieldIntersect>(new Action<SubFieldIntersect>(this.attach_SubFieldIntersects1), new Action<SubFieldIntersect>(this.detach_SubFieldIntersects1));
 			this._WorkAreas = new EntitySet<WorkArea>(new Action<WorkArea>(this.attach_WorkAreas), new Action<WorkArea>(this.detach_WorkAreas));
 			this._DrainageLines = new EntitySet<DrainageLine>(new Action<DrainageLine>(this.attach_DrainageLines), new Action<DrainageLine>(this.detach_DrainageLines));
+			this._FieldCuts = new EntitySet<FieldCut>(new Action<FieldCut>(this.attach_FieldCuts), new Action<FieldCut>(this.detach_FieldCuts));
+			this._FieldCuts1 = new EntitySet<FieldCut>(new Action<FieldCut>(this.attach_FieldCuts1), new Action<FieldCut>(this.detach_FieldCuts1));
 			OnCreated();
 		}
 		
@@ -1783,32 +1783,6 @@ namespace FarmingGPS.Database
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="GpsCoordinate_SubFieldIntersect", Storage="_SubFieldIntersects", ThisKey="PosId", OtherKey="FirstPosId")]
-		public EntitySet<SubFieldIntersect> SubFieldIntersects
-		{
-			get
-			{
-				return this._SubFieldIntersects;
-			}
-			set
-			{
-				this._SubFieldIntersects.Assign(value);
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="GpsCoordinate_SubFieldIntersect1", Storage="_SubFieldIntersects1", ThisKey="PosId", OtherKey="SecondPosId")]
-		public EntitySet<SubFieldIntersect> SubFieldIntersects1
-		{
-			get
-			{
-				return this._SubFieldIntersects1;
-			}
-			set
-			{
-				this._SubFieldIntersects1.Assign(value);
-			}
-		}
-		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="GpsCoordinate_WorkArea", Storage="_WorkAreas", ThisKey="PosId", OtherKey="PosId")]
 		public EntitySet<WorkArea> WorkAreas
 		{
@@ -1832,6 +1806,32 @@ namespace FarmingGPS.Database
 			set
 			{
 				this._DrainageLines.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="GpsCoordinate_FieldCut", Storage="_FieldCuts", ThisKey="PosId", OtherKey="FirstPosId")]
+		public EntitySet<FieldCut> FieldCuts
+		{
+			get
+			{
+				return this._FieldCuts;
+			}
+			set
+			{
+				this._FieldCuts.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="GpsCoordinate_FieldCut1", Storage="_FieldCuts1", ThisKey="PosId", OtherKey="SecondPosId")]
+		public EntitySet<FieldCut> FieldCuts1
+		{
+			get
+			{
+				return this._FieldCuts1;
+			}
+			set
+			{
+				this._FieldCuts1.Assign(value);
 			}
 		}
 		
@@ -1903,30 +1903,6 @@ namespace FarmingGPS.Database
 			entity.GpsCoordinate = null;
 		}
 		
-		private void attach_SubFieldIntersects(SubFieldIntersect entity)
-		{
-			this.SendPropertyChanging();
-			entity.GpsCoordinateFirst = this;
-		}
-		
-		private void detach_SubFieldIntersects(SubFieldIntersect entity)
-		{
-			this.SendPropertyChanging();
-			entity.GpsCoordinateFirst = null;
-		}
-		
-		private void attach_SubFieldIntersects1(SubFieldIntersect entity)
-		{
-			this.SendPropertyChanging();
-			entity.GpsCoordinateSecond = this;
-		}
-		
-		private void detach_SubFieldIntersects1(SubFieldIntersect entity)
-		{
-			this.SendPropertyChanging();
-			entity.GpsCoordinateSecond = null;
-		}
-		
 		private void attach_WorkAreas(WorkArea entity)
 		{
 			this.SendPropertyChanging();
@@ -1949,6 +1925,30 @@ namespace FarmingGPS.Database
 		{
 			this.SendPropertyChanging();
 			entity.GpsCoordinate = null;
+		}
+		
+		private void attach_FieldCuts(FieldCut entity)
+		{
+			this.SendPropertyChanging();
+			entity.GpsCoordinateFirst = this;
+		}
+		
+		private void detach_FieldCuts(FieldCut entity)
+		{
+			this.SendPropertyChanging();
+			entity.GpsCoordinateFirst = null;
+		}
+		
+		private void attach_FieldCuts1(FieldCut entity)
+		{
+			this.SendPropertyChanging();
+			entity.GpsCoordinateSecond = this;
+		}
+		
+		private void detach_FieldCuts1(FieldCut entity)
+		{
+			this.SendPropertyChanging();
+			entity.GpsCoordinateSecond = null;
 		}
 	}
 	
@@ -2421,287 +2421,6 @@ namespace FarmingGPS.Database
 						this._PosId = default(int);
 					}
 					this.SendPropertyChanged("GpsCoordinate");
-				}
-			}
-		}
-		
-		public event PropertyChangingEventHandler PropertyChanging;
-		
-		public event PropertyChangedEventHandler PropertyChanged;
-		
-		protected virtual void SendPropertyChanging()
-		{
-			if ((this.PropertyChanging != null))
-			{
-				this.PropertyChanging(this, emptyChangingEventArgs);
-			}
-		}
-		
-		protected virtual void SendPropertyChanged(String propertyName)
-		{
-			if ((this.PropertyChanged != null))
-			{
-				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-	}
-	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.SubFieldIntersect")]
-	public partial class SubFieldIntersect : INotifyPropertyChanging, INotifyPropertyChanged
-	{
-		
-		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
-		
-		private int _SubFieldIntersectId;
-		
-		private int _FieldId;
-		
-		private int _FirstPosId;
-		
-		private int _SecondPosId;
-		
-		private string _Name;
-		
-		private EntityRef<Field> _Field;
-		
-		private EntityRef<GpsCoordinate> _GpsCoordinateFirst;
-		
-		private EntityRef<GpsCoordinate> _GpsCoordinateSecond;
-		
-    #region Extensibility Method Definitions
-    partial void OnLoaded();
-    partial void OnValidate(System.Data.Linq.ChangeAction action);
-    partial void OnCreated();
-    partial void OnSubFieldIntersectIdChanging(int value);
-    partial void OnSubFieldIntersectIdChanged();
-    partial void OnFieldIdChanging(int value);
-    partial void OnFieldIdChanged();
-    partial void OnFirstPosIdChanging(int value);
-    partial void OnFirstPosIdChanged();
-    partial void OnSecondPosIdChanging(int value);
-    partial void OnSecondPosIdChanged();
-    partial void OnNameChanging(string value);
-    partial void OnNameChanged();
-    #endregion
-		
-		public SubFieldIntersect()
-		{
-			this._Field = default(EntityRef<Field>);
-			this._GpsCoordinateFirst = default(EntityRef<GpsCoordinate>);
-			this._GpsCoordinateSecond = default(EntityRef<GpsCoordinate>);
-			OnCreated();
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SubFieldIntersectId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
-		public int SubFieldIntersectId
-		{
-			get
-			{
-				return this._SubFieldIntersectId;
-			}
-			set
-			{
-				if ((this._SubFieldIntersectId != value))
-				{
-					this.OnSubFieldIntersectIdChanging(value);
-					this.SendPropertyChanging();
-					this._SubFieldIntersectId = value;
-					this.SendPropertyChanged("SubFieldIntersectId");
-					this.OnSubFieldIntersectIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FieldId", DbType="Int NOT NULL")]
-		public int FieldId
-		{
-			get
-			{
-				return this._FieldId;
-			}
-			set
-			{
-				if ((this._FieldId != value))
-				{
-					if (this._Field.HasLoadedOrAssignedValue)
-					{
-						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
-					}
-					this.OnFieldIdChanging(value);
-					this.SendPropertyChanging();
-					this._FieldId = value;
-					this.SendPropertyChanged("FieldId");
-					this.OnFieldIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FirstPosId", DbType="Int NOT NULL")]
-		public int FirstPosId
-		{
-			get
-			{
-				return this._FirstPosId;
-			}
-			set
-			{
-				if ((this._FirstPosId != value))
-				{
-					if (this._GpsCoordinateFirst.HasLoadedOrAssignedValue)
-					{
-						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
-					}
-					this.OnFirstPosIdChanging(value);
-					this.SendPropertyChanging();
-					this._FirstPosId = value;
-					this.SendPropertyChanged("FirstPosId");
-					this.OnFirstPosIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SecondPosId", DbType="Int NOT NULL")]
-		public int SecondPosId
-		{
-			get
-			{
-				return this._SecondPosId;
-			}
-			set
-			{
-				if ((this._SecondPosId != value))
-				{
-					if (this._GpsCoordinateSecond.HasLoadedOrAssignedValue)
-					{
-						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
-					}
-					this.OnSecondPosIdChanging(value);
-					this.SendPropertyChanging();
-					this._SecondPosId = value;
-					this.SendPropertyChanged("SecondPosId");
-					this.OnSecondPosIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Name", DbType="VarChar(30)")]
-		public string Name
-		{
-			get
-			{
-				return this._Name;
-			}
-			set
-			{
-				if ((this._Name != value))
-				{
-					this.OnNameChanging(value);
-					this.SendPropertyChanging();
-					this._Name = value;
-					this.SendPropertyChanged("Name");
-					this.OnNameChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Field_SubFieldIntersect", Storage="_Field", ThisKey="FieldId", OtherKey="FieldId", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
-		public Field Field
-		{
-			get
-			{
-				return this._Field.Entity;
-			}
-			set
-			{
-				Field previousValue = this._Field.Entity;
-				if (((previousValue != value) 
-							|| (this._Field.HasLoadedOrAssignedValue == false)))
-				{
-					this.SendPropertyChanging();
-					if ((previousValue != null))
-					{
-						this._Field.Entity = null;
-						previousValue.SubFieldIntersects.Remove(this);
-					}
-					this._Field.Entity = value;
-					if ((value != null))
-					{
-						value.SubFieldIntersects.Add(this);
-						this._FieldId = value.FieldId;
-					}
-					else
-					{
-						this._FieldId = default(int);
-					}
-					this.SendPropertyChanged("Field");
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="GpsCoordinate_SubFieldIntersect", Storage="_GpsCoordinateFirst", ThisKey="FirstPosId", OtherKey="PosId", IsForeignKey=true)]
-		public GpsCoordinate GpsCoordinateFirst
-		{
-			get
-			{
-				return this._GpsCoordinateFirst.Entity;
-			}
-			set
-			{
-				GpsCoordinate previousValue = this._GpsCoordinateFirst.Entity;
-				if (((previousValue != value) 
-							|| (this._GpsCoordinateFirst.HasLoadedOrAssignedValue == false)))
-				{
-					this.SendPropertyChanging();
-					if ((previousValue != null))
-					{
-						this._GpsCoordinateFirst.Entity = null;
-						previousValue.SubFieldIntersects.Remove(this);
-					}
-					this._GpsCoordinateFirst.Entity = value;
-					if ((value != null))
-					{
-						value.SubFieldIntersects.Add(this);
-						this._FirstPosId = value.PosId;
-					}
-					else
-					{
-						this._FirstPosId = default(int);
-					}
-					this.SendPropertyChanged("GpsCoordinateFirst");
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="GpsCoordinate_SubFieldIntersect1", Storage="_GpsCoordinateSecond", ThisKey="SecondPosId", OtherKey="PosId", IsForeignKey=true)]
-		public GpsCoordinate GpsCoordinateSecond
-		{
-			get
-			{
-				return this._GpsCoordinateSecond.Entity;
-			}
-			set
-			{
-				GpsCoordinate previousValue = this._GpsCoordinateSecond.Entity;
-				if (((previousValue != value) 
-							|| (this._GpsCoordinateSecond.HasLoadedOrAssignedValue == false)))
-				{
-					this.SendPropertyChanging();
-					if ((previousValue != null))
-					{
-						this._GpsCoordinateSecond.Entity = null;
-						previousValue.SubFieldIntersects1.Remove(this);
-					}
-					this._GpsCoordinateSecond.Entity = value;
-					if ((value != null))
-					{
-						value.SubFieldIntersects1.Add(this);
-						this._SecondPosId = value.PosId;
-					}
-					else
-					{
-						this._SecondPosId = default(int);
-					}
-					this.SendPropertyChanged("GpsCoordinateSecond");
 				}
 			}
 		}
@@ -5975,7 +5694,7 @@ namespace FarmingGPS.Database
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_OverviewImage", DbType="VarBinary(MAX)", CanBeNull=true, UpdateCheck=UpdateCheck.Never)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_OverviewImage", DbType="VarBinary(MAX)", UpdateCheck=UpdateCheck.Never)]
 		public System.Data.Linq.Binary OverviewImage
 		{
 			get
@@ -6099,6 +5818,287 @@ namespace FarmingGPS.Database
 						this._FieldId = default(int);
 					}
 					this.SendPropertyChanged("Field");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.FieldCut")]
+	public partial class FieldCut : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _FieldCutId;
+		
+		private int _FieldId;
+		
+		private int _GpsCoordinateFirst;
+		
+		private int _GpsCoordinateSecond;
+		
+		private string _Name;
+		
+		private EntityRef<Field> _Field;
+		
+		private EntityRef<GpsCoordinate> _GpsCoordinate;
+		
+		private EntityRef<GpsCoordinate> _GpsCoordinate1;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnFieldCutIdChanging(int value);
+    partial void OnFieldCutIdChanged();
+    partial void OnFieldIdChanging(int value);
+    partial void OnFieldIdChanged();
+    partial void OnFirstPosIdChanging(int value);
+    partial void OnFirstPosIdChanged();
+    partial void OnSecondPosIdChanging(int value);
+    partial void OnSecondPosIdChanged();
+    partial void OnNameChanging(string value);
+    partial void OnNameChanged();
+    #endregion
+		
+		public FieldCut()
+		{
+			this._Field = default(EntityRef<Field>);
+			this._GpsCoordinate = default(EntityRef<GpsCoordinate>);
+			this._GpsCoordinate1 = default(EntityRef<GpsCoordinate>);
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FieldCutId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int FieldCutId
+		{
+			get
+			{
+				return this._FieldCutId;
+			}
+			set
+			{
+				if ((this._FieldCutId != value))
+				{
+					this.OnFieldCutIdChanging(value);
+					this.SendPropertyChanging();
+					this._FieldCutId = value;
+					this.SendPropertyChanged("FieldCutId");
+					this.OnFieldCutIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FieldId", DbType="Int NOT NULL")]
+		public int FieldId
+		{
+			get
+			{
+				return this._FieldId;
+			}
+			set
+			{
+				if ((this._FieldId != value))
+				{
+					if (this._Field.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnFieldIdChanging(value);
+					this.SendPropertyChanging();
+					this._FieldId = value;
+					this.SendPropertyChanged("FieldId");
+					this.OnFieldIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_GpsCoordinateFirst", DbType="Int NOT NULL")]
+		public int FirstPosId
+		{
+			get
+			{
+				return this._GpsCoordinateFirst;
+			}
+			set
+			{
+				if ((this._GpsCoordinateFirst != value))
+				{
+					if (this._GpsCoordinate.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnFirstPosIdChanging(value);
+					this.SendPropertyChanging();
+					this._GpsCoordinateFirst = value;
+					this.SendPropertyChanged("FirstPosId");
+					this.OnFirstPosIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_GpsCoordinateSecond", DbType="Int NOT NULL")]
+		public int SecondPosId
+		{
+			get
+			{
+				return this._GpsCoordinateSecond;
+			}
+			set
+			{
+				if ((this._GpsCoordinateSecond != value))
+				{
+					if (this._GpsCoordinate1.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnSecondPosIdChanging(value);
+					this.SendPropertyChanging();
+					this._GpsCoordinateSecond = value;
+					this.SendPropertyChanged("SecondPosId");
+					this.OnSecondPosIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Name", DbType="VarChar(30)")]
+		public string Name
+		{
+			get
+			{
+				return this._Name;
+			}
+			set
+			{
+				if ((this._Name != value))
+				{
+					this.OnNameChanging(value);
+					this.SendPropertyChanging();
+					this._Name = value;
+					this.SendPropertyChanged("Name");
+					this.OnNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Field_FieldCut", Storage="_Field", ThisKey="FieldId", OtherKey="FieldId", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
+		public Field Field
+		{
+			get
+			{
+				return this._Field.Entity;
+			}
+			set
+			{
+				Field previousValue = this._Field.Entity;
+				if (((previousValue != value) 
+							|| (this._Field.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Field.Entity = null;
+						previousValue.FieldCuts.Remove(this);
+					}
+					this._Field.Entity = value;
+					if ((value != null))
+					{
+						value.FieldCuts.Add(this);
+						this._FieldId = value.FieldId;
+					}
+					else
+					{
+						this._FieldId = default(int);
+					}
+					this.SendPropertyChanged("Field");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="GpsCoordinate_FieldCut", Storage="_GpsCoordinate", ThisKey="FirstPosId", OtherKey="PosId", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
+		public GpsCoordinate GpsCoordinateFirst
+		{
+			get
+			{
+				return this._GpsCoordinate.Entity;
+			}
+			set
+			{
+				GpsCoordinate previousValue = this._GpsCoordinate.Entity;
+				if (((previousValue != value) 
+							|| (this._GpsCoordinate.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._GpsCoordinate.Entity = null;
+						previousValue.FieldCuts.Remove(this);
+					}
+					this._GpsCoordinate.Entity = value;
+					if ((value != null))
+					{
+						value.FieldCuts.Add(this);
+						this._GpsCoordinateFirst = value.PosId;
+					}
+					else
+					{
+						this._GpsCoordinateFirst = default(int);
+					}
+					this.SendPropertyChanged("GpsCoordinate");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="GpsCoordinate_FieldCut1", Storage="_GpsCoordinate1", ThisKey="SecondPosId", OtherKey="PosId", IsForeignKey=true)]
+		public GpsCoordinate GpsCoordinateSecond
+		{
+			get
+			{
+				return this._GpsCoordinate1.Entity;
+			}
+			set
+			{
+				GpsCoordinate previousValue = this._GpsCoordinate1.Entity;
+				if (((previousValue != value) 
+							|| (this._GpsCoordinate1.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._GpsCoordinate1.Entity = null;
+						previousValue.FieldCuts1.Remove(this);
+					}
+					this._GpsCoordinate1.Entity = value;
+					if ((value != null))
+					{
+						value.FieldCuts1.Add(this);
+						this._GpsCoordinateSecond = value.PosId;
+					}
+					else
+					{
+						this._GpsCoordinateSecond = default(int);
+					}
+					this.SendPropertyChanged("GpsCoordinate1");
 				}
 			}
 		}

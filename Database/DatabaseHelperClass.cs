@@ -4,20 +4,20 @@ namespace FarmingGPS.Database
 {
     public class DatabaseHelperClass
     {
-        public static List<List<GpsCoordinate>> GetSubfields(SubFieldIntersect[] intersects, List<GpsCoordinate> coordinates)
+        public static List<List<GpsCoordinate>> GetSubfields(FieldCut[] fieldCuts, List<GpsCoordinate> coordinates)
         {
             List<List<GpsCoordinate>> subFields = new List<List<GpsCoordinate>>();
             if (coordinates.Count < 3)
                 return subFields;
             subFields.Add(coordinates);
-            if (intersects.Length > 0)
+            if (fieldCuts.Length > 0)
             {
-                foreach (SubFieldIntersect intersect in intersects)
+                foreach (FieldCut fieldCut in fieldCuts)
                 {
                     List<GpsCoordinate> listToCut = null;
                     foreach (List<GpsCoordinate> list in subFields)
                     {
-                        if (list.Contains(intersect.GpsCoordinateFirst))
+                        if (list.Contains(fieldCut.GpsCoordinateFirst))
                         {
                             listToCut = list;
                             break;
@@ -25,8 +25,8 @@ namespace FarmingGPS.Database
                     }
                     if (listToCut == null)
                         continue;
-                    int first = listToCut.IndexOf(intersect.GpsCoordinateFirst);
-                    int second = listToCut.IndexOf(intersect.GpsCoordinateSecond);
+                    int first = listToCut.IndexOf(fieldCut.GpsCoordinateFirst);
+                    int second = listToCut.IndexOf(fieldCut.GpsCoordinateSecond);
                     if (second == -1)
                         continue;
                     if (first > second)

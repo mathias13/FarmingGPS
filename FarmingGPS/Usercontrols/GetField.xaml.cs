@@ -61,11 +61,11 @@ namespace FarmingGPS.Usercontrols
             if (ListBoxFields.SelectedItem != null)
             {
                 Field field = ListBoxFields.SelectedItem as Field;
-                SubFieldIntersect[] intersects = _database.GetIntersects(field.FieldId);
-                if (intersects == null)
+                FieldCut[] fieldCuts = _database.GetFieldCuts(field.FieldId);
+                if (fieldCuts == null)
                     return;
-                foreach (SubFieldIntersect intersect in intersects)
-                    ListBoxIntersects.Items.Add(intersect);
+                foreach (FieldCut fieldCut in fieldCuts)
+                    ListBoxIntersects.Items.Add(fieldCut);
             }
             ReloadFields();
         }
@@ -91,10 +91,10 @@ namespace FarmingGPS.Usercontrols
                 coordinates.AddRange(_database.GetCoordinatesForField(field.FieldId));
                 List<GMapPolygon> polygons = new List<GMapPolygon>();
                 List<GMapMarker> markers = new List<GMapMarker>();
-                List<SubFieldIntersect> intersects = new List<SubFieldIntersect>();
-                foreach (object intersect in ListBoxIntersects.SelectedItems)
-                    intersects.Add(intersect as SubFieldIntersect);
-                List<List<GpsCoordinate>> subFields = DatabaseHelperClass.GetSubfields(intersects.ToArray(), coordinates);
+                List<FieldCut> fieldCuts = new List<FieldCut>();
+                foreach (object fieldCut in ListBoxIntersects.SelectedItems)
+                    fieldCuts.Add(fieldCut as FieldCut);
+                List<List<GpsCoordinate>> subFields = DatabaseHelperClass.GetSubfields(fieldCuts.ToArray(), coordinates);
                 foreach (List<GpsCoordinate> subField in subFields)
                 {
                     List<PointLatLng> points = new List<PointLatLng>();

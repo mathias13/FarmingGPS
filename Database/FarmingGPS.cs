@@ -66,7 +66,7 @@ namespace FarmingGPS.Database
         }
     }
 
-    partial class SubFieldIntersect
+    partial class FieldCut
     {
         public override string ToString()
         {
