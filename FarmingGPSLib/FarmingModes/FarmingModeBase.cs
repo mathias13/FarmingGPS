@@ -205,7 +205,7 @@ namespace FarmingGPSLib.FarmingModes
                 if (trackingLine.Depleted)
                     continue;
 
-                double tempDistance = trackingLine.GetDistanceToLine(position);
+                double tempDistance = trackingLine.GetDistanceToLine(position, false);
                 if(tempDistance < distanceToLine)
                 {
                     distanceToLine = tempDistance;
@@ -218,7 +218,7 @@ namespace FarmingGPSLib.FarmingModes
                 if (trackingLine.Depleted)
                     continue;
 
-                double tempDistance = trackingLine.GetDistanceToLine(position);
+                double tempDistance = trackingLine.GetDistanceToLine(position, false);
                 if (tempDistance < distanceToLine)
                 {
                     distanceToLine = tempDistance;

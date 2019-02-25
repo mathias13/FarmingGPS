@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using DotSpatial.Topology;
 using DotSpatial.Topology.Algorithm;
+using FarmingGPSLib.HelperClasses;
 
 namespace FarmingGPSLib.FarmingModes.Tools
 {
@@ -28,6 +29,8 @@ namespace FarmingGPSLib.FarmingModes.Tools
 
         protected ILineString _line;
 
+        protected ILineSegment _extendedLine = null;
+
         #endregion
 
         public TrackingLine(ILineString line)
@@ -35,22 +38,34 @@ namespace FarmingGPSLib.FarmingModes.Tools
             _depleted = false;
             _active = false;
             _line = line;
+            if (line.Coordinates.Count == 2)
+            {
+                _extendedLine = new LineSegment(line.Coordinates[0], line.Coordinates[1]);
+                Coordinate p0 = HelperClassCoordinate.ComputePoint(line.Coordinates[0], _extendedLine.Angle, -25.0);
+                Coordinate p1 = HelperClassCoordinate.ComputePoint(line.Coordinates[1], _extendedLine.Angle, 25.0);
+                _extendedLine = new LineSegment(p0, p1);
+            }
         }
 
-        public OrientationToLine GetOrientationToLine(Coordinate point, DotSpatial.Positioning.Azimuth directionOfTravel)
+        public OrientationToLine GetOrientationToLine(Coordinate point, DotSpatial.Positioning.Azimuth directionOfTravel, bool useExtendedLine)
         {
             Coordinate p0 = Coordinate.Empty;
             Coordinate p1 = Coordinate.Empty;
             double tempDistance = 0.0;
             double distance = double.MaxValue;
-            for (int i = 0; i < _line.Coordinates.Count - 1; i++)
+            if (_extendedLine != null && useExtendedLine)
+                distance = CgAlgorithms.DistancePointLine(point, _extendedLine.P0, _extendedLine.P1);
+            else
             {
-                tempDistance = CgAlgorithms.DistancePointLine(point, _line.Coordinates[i], _line.Coordinates[i + 1]);
-                if (tempDistance < distance)
+                for (int i = 0; i < _line.Coordinates.Count - 1; i++)
                 {
-                    p0 = _line.Coordinates[i];
-                    p1 = _line.Coordinates[i+1];
-                    distance = tempDistance;
+                    tempDistance = CgAlgorithms.DistancePointLine(point, _line.Coordinates[i], _line.Coordinates[i + 1]);
+                    if (tempDistance < distance)
+                    {
+                        p0 = _line.Coordinates[i];
+                        p1 = _line.Coordinates[i + 1];
+                        distance = tempDistance;
+                    }
                 }
             }
             LineSegment line = new LineSegment(p0, p1);
@@ -71,15 +86,20 @@ namespace FarmingGPSLib.FarmingModes.Tools
             return new OrientationToLine(side, distance);
         }
         
-        public double GetDistanceToLine(Coordinate point)
+        public double GetDistanceToLine(Coordinate point, bool useExtendedLine)
         {
             double tempDistance = 0.0;
             double distance = double.MaxValue;
-            for (int i = 0; i < _line.Coordinates.Count - 1; i++)
+            if (_extendedLine != null && useExtendedLine)
+                distance = CgAlgorithms.DistancePointLine(point, _extendedLine.P0, _extendedLine.P1);
+            else
             {
-                tempDistance = CgAlgorithms.DistancePointLine(point, _line.Coordinates[i], _line.Coordinates[i + 1]);
-                if (tempDistance < distance)
-                    distance = tempDistance;
+                for (int i = 0; i < _line.Coordinates.Count - 1; i++)
+                {
+                    tempDistance = CgAlgorithms.DistancePointLine(point, _line.Coordinates[i], _line.Coordinates[i + 1]);
+                    if (tempDistance < distance)
+                        distance = tempDistance;
+                }
             }
             return distance;
         }
