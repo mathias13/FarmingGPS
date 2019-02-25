@@ -257,6 +257,7 @@ namespace FarmingGPS.Usercontrols
                 NumericVechileReceiverDistToCenter.Value = vechile.ReceiverDistFromCenter;
 
                 VechileAttach[] attachPoints = _database.GetAttachPoints(vechile.VechileId);
+                ListBoxAttach.Items.Clear();
                 if (attachPoints != null)
                 {
                     foreach (VechileAttach attachPoint in attachPoints)
