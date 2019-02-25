@@ -12,7 +12,20 @@ namespace FarmingGPS.Visualization
     /// </summary>
     public partial class WorkedAreaBar : UserControl
     {
-        private AreaUnit _unit = AreaUnit.Acres;
+        public enum AreaUnitExt
+        {
+            Acres,
+            SquareCentimeters,
+            SquareFeet,
+            SquareInches,
+            SquareKilometers,
+            SquareMeters,
+            SquareNauticalMiles,
+            SquareStatuteMiles,
+            Hectars
+        }
+
+        private AreaUnitExt _unit = AreaUnitExt.Acres;
 
         private Area _fieldArea = Area.Minimum;
 
@@ -23,7 +36,7 @@ namespace FarmingGPS.Visualization
 
         #region Public Properties
 
-        public AreaUnit Unit
+        public AreaUnitExt Unit
         {
             get { return _unit; }
             set { _unit = value; }
@@ -38,36 +51,40 @@ namespace FarmingGPS.Visualization
             {
                 switch (_unit)
                 {
-                    case AreaUnit.Acres:
+                    case AreaUnitExt.Acres:
                         SetValue(WorkedAreaString, String.Format("{0}/{1} acre", area.ToAcres().Value.ToString("0.00"), _fieldArea.ToAcres().ToString("0.00")));
                         break;
 
-                    case AreaUnit.SquareCentimeters:
+                    case AreaUnitExt.SquareCentimeters:
                         SetValue(WorkedAreaString, String.Format("{0}/{1} cm²", area.ToAcres().Value.ToString("0."), _fieldArea.ToAcres().ToString("0.")));
                         break;
 
-                    case AreaUnit.SquareFeet:
+                    case AreaUnitExt.SquareFeet:
                         SetValue(WorkedAreaString, String.Format("{0}/{1} ft²", area.ToAcres().Value.ToString("0."), _fieldArea.ToAcres().ToString("0.")));
                         break;
 
-                    case AreaUnit.SquareInches:
+                    case AreaUnitExt.SquareInches:
                         SetValue(WorkedAreaString, String.Format("{0}/{1} in²", area.ToAcres().Value.ToString("0."), _fieldArea.ToAcres().ToString("0.")));
                         break;
 
-                    case AreaUnit.SquareKilometers:
+                    case AreaUnitExt.SquareKilometers:
                         SetValue(WorkedAreaString, String.Format("{0}/{1} km²", area.ToAcres().Value.ToString("0.00"), _fieldArea.ToAcres().ToString("0.00")));
                         break;
 
-                    case AreaUnit.SquareMeters:
+                    case AreaUnitExt.SquareMeters:
                         SetValue(WorkedAreaString, String.Format("{0}/{1} m²", area.ToAcres().Value.ToString("0."), _fieldArea.ToAcres().ToString("0.")));
                         break;
 
-                    case AreaUnit.SquareNauticalMiles:
+                    case AreaUnitExt.SquareNauticalMiles:
                         SetValue(WorkedAreaString, String.Format("{0}/{1} nm²", area.ToAcres().Value.ToString("0.0"), _fieldArea.ToAcres().ToString("0.0")));
                         break;
                         
-                    case AreaUnit.SquareStatuteMiles:
+                    case AreaUnitExt.SquareStatuteMiles:
                         SetValue(WorkedAreaString, String.Format("{0}/{1} sm²", area.ToAcres().Value.ToString("0.0"), _fieldArea.ToAcres().ToString("0.0")));
+                        break;
+
+                    case AreaUnitExt.Hectars:
+                        SetValue(WorkedAreaString, String.Format("{0}/{1} ha", (area.ToSquareMeters().Value / 10000).ToString("0.0"), (_fieldArea.ToSquareMeters().Value / 10000).ToString("0.0")));
                         break;
                 }
 

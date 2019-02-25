@@ -122,7 +122,7 @@
                             <Setter Property="Opacity" TargetName="TRIGGER_RECT" Value="0.4"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter Property="Fill" TargetName="INNER_RECT" Value="LightBlue"/>
+                            <Setter Property="Fill" TargetName="INNER_RECT" Value="LightGreen"/>
                             <Setter Property="Margin" TargetName="INNER_RECT" Value="2,2,4,4"/>
                             <Setter Property="Margin" TargetName="TRIGGER_RECT" Value="4,4,2,2"/>
                         </Trigger>
