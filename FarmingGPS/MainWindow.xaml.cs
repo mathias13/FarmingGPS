@@ -206,7 +206,7 @@ namespace FarmingGPS
             
             _speedBar.Unit = SpeedUnit.KilometersPerHour;
             _speedBar.SetSpeed(Speed.FromKilometersPerHour(0.0));
-            _workedAreaBar.Unit = AreaUnit.SquareKilometers;
+            _workedAreaBar.Unit = WorkedAreaBar.AreaUnitExt.Hectars;
             _fieldTracker.AreaChanged += _fieldTracker_AreaChanged;
             _visualization.AddFieldTracker(_fieldTracker);
             _stateRecovery = new StateRecoveryManager(TimeSpan.FromMinutes(0.5));
@@ -237,11 +237,11 @@ namespace FarmingGPS
             }
 
 #if DEBUG
-            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.855032), new Latitude(58.512722)), false);
-            _receiver.BearingUpdate += _receiver_BearingUpdate;
-            _receiver.PositionUpdate += _receiver_PositionUpdate;
-            _receiver.SpeedUpdate += _receiver_SpeedUpdate;
-            _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
+            //_receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.855032), new Latitude(58.512722)), false);
+            //_receiver.BearingUpdate += _receiver_BearingUpdate;
+            //_receiver.PositionUpdate += _receiver_PositionUpdate;
+            //_receiver.SpeedUpdate += _receiver_SpeedUpdate;
+            //_receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
             //BogballeCalibrator calibrator = new BogballeCalibrator(new Calibrator("COM3", 20000));
             if (_field == null)
             {
@@ -497,7 +497,7 @@ namespace FarmingGPS
             
             _sbpReceiverSender.ReadExceptionEvent += _sbpReceiverSender_ReadExceptionEvent;
             _receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(1000));
-            _receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0);
+            _receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(2.0);
             _receiver.BearingUpdate += _receiver_BearingUpdate;
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
@@ -574,8 +574,12 @@ namespace FarmingGPS
             
             if (_activeTrackingLine != null)
             {
+                OrientationToLine orientationToLine;
+                if (_farmingMode.TrackingLinesHeadland.Contains(_activeTrackingLine))
+                    orientationToLine = _activeTrackingLine.GetOrientationToLine(actualCoordinate, actualHeading, false);
+                else
+                    orientationToLine = _activeTrackingLine.GetOrientationToLine(actualCoordinate, actualHeading, true);
                 _activeTrackingLine.Active = true;
-                OrientationToLine orientationToLine = _activeTrackingLine.GetOrientationToLine(actualCoordinate, actualHeading);
                 LightBar.Direction lightBarDirection = LightBar.Direction.Left;
                 if (orientationToLine.SideOfLine == OrientationToLine.Side.Left)
                     lightBarDirection = LightBar.Direction.Right;
@@ -964,7 +968,7 @@ namespace FarmingGPS
             {
                 Position originPosition = new Position( new Latitude(0.0), new Longitude(0.0));
                 Position newPosition = originPosition.TranslateTo(new Azimuth(userControl.Vechile.ReceiverAngleFromCenter), Distance.FromMeters(userControl.Vechile.ReceiverDistFromCenter), Ellipsoid.Wgs1984);
-                newPosition = newPosition.TranslateTo(new Azimuth(userControl.VechileAttach.AttachAngleFromCenter), Distance.FromMeters(userControl.Vechile.ReceiverDistFromCenter), Ellipsoid.Wgs1984);
+                newPosition = newPosition.TranslateTo(new Azimuth(userControl.VechileAttach.AttachAngleFromCenter), Distance.FromMeters(userControl.VechileAttach.AttachDistFromCenter), Ellipsoid.Wgs1984);
                 newPosition = newPosition.TranslateTo(new Azimuth(userControl.Equipment.AngleFromAttach), Distance.FromMeters(userControl.Equipment.DistFromAttach), Ellipsoid.Wgs1984);
                 _receiver.OffsetDirection = originPosition.BearingTo(newPosition);
                 _receiver.OffsetDistance = originPosition.DistanceTo(newPosition);
