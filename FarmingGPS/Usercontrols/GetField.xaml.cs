@@ -94,12 +94,12 @@ namespace FarmingGPS.Usercontrols
                 List<FieldCut> fieldCuts = new List<FieldCut>();
                 foreach (object fieldCut in ListBoxIntersects.SelectedItems)
                     fieldCuts.Add(fieldCut as FieldCut);
-                List<List<GpsCoordinate>> subFields = DatabaseHelperClass.GetSubfields(fieldCuts.ToArray(), coordinates);
-                foreach (List<GpsCoordinate> subField in subFields)
+                List<DatabaseHelperClass.SubField> subFields = DatabaseHelperClass.GetSubfields(fieldCuts.ToArray(), coordinates);
+                foreach (DatabaseHelperClass.SubField subField in subFields)
                 {
                     List<PointLatLng> points = new List<PointLatLng>();
                     List<Position> pointsField = new List<Position>();
-                    foreach (GpsCoordinate coord in subField)
+                    foreach (GpsCoordinate coord in subField.Field)
                     {
                         points.Add(new PointLatLng(coord.Latitude, coord.Longitude));
                         left = Math.Min(left, coord.Longitude);

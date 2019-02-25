@@ -166,14 +166,14 @@ namespace FarmingGPS.Database
             _databaseContext.FieldBoundaries.DeleteOnSubmit(coordinate.FieldBoundaries.First());
         }
 
-        public void AddFieldCut(FieldCut intersect)
+        public void AddFieldCut(FieldCut fieldCut)
         {
-            _databaseContext.FieldCuts.InsertOnSubmit(intersect);
+            _databaseContext.FieldCuts.InsertOnSubmit(fieldCut);
         }
 
-        public void DeleteFieldCut(FieldCut intersect)
+        public void DeleteFieldCut(FieldCut fieldCut)
         {
-            _databaseContext.FieldCuts.DeleteOnSubmit(intersect);
+            _databaseContext.FieldCuts.DeleteOnSubmit(fieldCut);
         }
 
         public void AddVechile(Vechile vechile)
@@ -232,15 +232,15 @@ namespace FarmingGPS.Database
             {
                 lock (_syncObject)
                 {
-                    var queryResult = from intersects in _databaseContext.FieldCuts
-                                      where intersects.FieldId == fieldId
-                                      select intersects;
+                    var queryResult = from fieldCuts in _databaseContext.FieldCuts
+                                      where fieldCuts.FieldId == fieldId
+                                      select fieldCuts;
                     return queryResult.ToArray();
                 }
             }
             catch (Exception e)
             {
-                OnDatabaseHandlerException(e, "GetIntersects");
+                OnDatabaseHandlerException(e, "GetFieldCuts");
                 return null;
             }
         }
@@ -316,7 +316,7 @@ namespace FarmingGPS.Database
             }
             catch (Exception e)
             {
-                OnDatabaseHandlerException(e, "GetIntersects");
+                OnDatabaseHandlerException(e, "GetFieldCuts");
                 return null;
             }
         }

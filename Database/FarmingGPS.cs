@@ -2,6 +2,18 @@ using System;
 
 namespace FarmingGPS.Database
 {
+    partial class CropProductionPlan
+    {
+    }
+
+    partial class CropYear
+    {
+        public override string ToString()
+        {
+            return Year.ToString();
+        }
+    }
+
     partial class EquipmentRateFile
     {
         public override string ToString()

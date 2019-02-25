@@ -10,9 +10,9 @@
       <Column Name="EquipmentClass" Type="System.String" DbType="VarChar(50)" CanBeNull="false" />
       <Association Name="Equipment_FieldRecording" Member="FieldRecordings" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="FieldRecording" />
       <Association Name="Equipment_Maintenance" Member="Maintenances" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="Maintenance" />
-      <Association Name="Equipment_Work" Member="Works" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="Work" />
       <Association Name="Equipment_EquipmentNote" Member="EquipmentNotes" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="EquipmentNote" />
       <Association Name="Equipment_EquipmentRateFile" Member="EquipmentRateFiles" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="EquipmentRateFile" />
+      <Association Name="Equipment_Work" Member="Works" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="Work" />
     </Type>
   </Table>
   <Table Name="dbo.VechileAttach" Member="VechileAttaches">
@@ -33,9 +33,10 @@
       <Association Name="Field_Field" Member="Fields" ThisKey="FieldId" OtherKey="ParentField" Type="Field" />
       <Association Name="Field_FieldBoundary" Member="FieldBoundaries" ThisKey="FieldId" OtherKey="FieldId" Type="FieldBoundary" />
       <Association Name="Field_FieldRecording" Member="FieldRecordings" ThisKey="FieldId" OtherKey="FieldId" Type="FieldRecording" />
-      <Association Name="Field_Work" Member="Works" ThisKey="FieldId" OtherKey="FieldId" Type="Work" />
       <Association Name="Field_EquipmentRateFile" Member="EquipmentRateFiles" ThisKey="FieldId" OtherKey="FieldId" Type="EquipmentRateFile" />
       <Association Name="Field_FieldCut" Member="FieldCuts" ThisKey="FieldId" OtherKey="FieldId" Type="FieldCut" />
+      <Association Name="Field_Work" Member="Works" ThisKey="FieldId" OtherKey="FieldId" Type="Work" />
+      <Association Name="Field_CropProductionPlan" Member="CropProductionPlans" ThisKey="FieldId" OtherKey="FieldId" Type="CropProductionPlan" />
       <Association Name="Field_Field" Member="FieldParent" Storage="_Field1" ThisKey="ParentField" OtherKey="FieldId" Type="Field" IsForeignKey="true" />
     </Type>
   </Table>
@@ -70,7 +71,6 @@
       <Association Name="GpsCoordinate_Obstacle" Member="Obstacles" ThisKey="PosId" OtherKey="PosId" Type="Obstacle" />
       <Association Name="GpsCoordinate_RecordingPosition" Member="RecordingPositions" ThisKey="PosId" OtherKey="PosId" Type="RecordingPosition" />
       <Association Name="GpsCoordinate_Reminder" Member="Reminders" ThisKey="PosId" OtherKey="PosId" Type="Reminder" />
-      <Association Name="GpsCoordinate_WorkArea" Member="WorkAreas" ThisKey="PosId" OtherKey="PosId" Type="WorkArea" />
       <Association Name="GpsCoordinate_DrainageLine" Member="DrainageLines" ThisKey="PosId" OtherKey="PosId" Type="DrainageLine" />
       <Association Name="GpsCoordinate_FieldCut" Member="FieldCuts" ThisKey="PosId" OtherKey="FirstPosId" Type="FieldCut" />
       <Association Name="GpsCoordinate_FieldCut1" Member="FieldCuts1" ThisKey="PosId" OtherKey="SecondPosId" Type="FieldCut" />
@@ -119,15 +119,7 @@
       <Column Name="Name" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="Family" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
       <Association Name="SeedType_Work" Member="Works" ThisKey="SeedId" OtherKey="SeedId" Type="Work" />
-    </Type>
-  </Table>
-  <Table Name="dbo.WorkArea" Member="WorkAreas">
-    <Type Name="WorkArea">
-      <Column Name="WorkId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="PosId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="WorkAreaId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Association Name="GpsCoordinate_WorkArea" Member="GpsCoordinate" ThisKey="PosId" OtherKey="PosId" Type="GpsCoordinate" IsForeignKey="true" />
-      <Association Name="Work_WorkArea" Member="Work" ThisKey="WorkId" OtherKey="WorkId" Type="Work" IsForeignKey="true" />
+      <Association Name="SeedType_CropProductionPlan" Member="CropProductionPlans" ThisKey="SeedId" OtherKey="SeedId" Type="CropProductionPlan" />
     </Type>
   </Table>
   <Table Name="dbo.DrainageLines" Member="DrainageLines">
@@ -175,6 +167,10 @@
       <Association Name="Nutrient_FertilizerType5" Member="FertilizerTypes5" ThisKey="NutrientId" OtherKey="Nutrient5Id" Type="FertilizerType" />
       <Association Name="Nutrient_FertilizerType6" Member="FertilizerTypes6" ThisKey="NutrientId" OtherKey="Nutrient6Id" Type="FertilizerType" />
       <Association Name="Nutrient_FertilizerType7" Member="FertilizerTypes7" ThisKey="NutrientId" OtherKey="Nutrient7Id" Type="FertilizerType" />
+      <Association Name="Nutrient_NutrientPlan" Member="NutrientPlans" ThisKey="NutrientId" OtherKey="Nutrient1Id" Type="NutrientPlan" />
+      <Association Name="Nutrient_NutrientPlan1" Member="NutrientPlans1" ThisKey="NutrientId" OtherKey="Nutrient2Id" Type="NutrientPlan" />
+      <Association Name="Nutrient_NutrientPlan2" Member="NutrientPlans2" ThisKey="NutrientId" OtherKey="Nutrient3Id" Type="NutrientPlan" />
+      <Association Name="Nutrient_NutrientPlan3" Member="NutrientPlans3" ThisKey="NutrientId" OtherKey="Nutrient4Id" Type="NutrientPlan" />
     </Type>
   </Table>
   <Table Name="dbo.FertilizerType" Member="FertilizerTypes">
@@ -198,6 +194,7 @@
       <Column Name="Nutrient7Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="Nutrient7Percent" Type="System.Double" DbType="Float" CanBeNull="true" />
       <Association Name="FertilizerType_Work" Member="Works" ThisKey="FertilizerId" OtherKey="FertilizerId" Type="Work" />
+      <Association Name="FertilizerType_FertilizerPlan" Member="FertilizerPlans" ThisKey="FertilizerId" OtherKey="FertilizerId" Type="FertilizerPlan" />
       <Association Name="Nutrient_FertilizerType" Member="Nutrient" ThisKey="NutrientId" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
       <Association Name="Nutrient_FertilizerType1" Member="Nutrient1" ThisKey="Nutrient1Id" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
       <Association Name="Nutrient_FertilizerType2" Member="Nutrient2" ThisKey="Nutrient2Id" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
@@ -206,28 +203,6 @@
       <Association Name="Nutrient_FertilizerType5" Member="Nutrient5" ThisKey="Nutrient5Id" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
       <Association Name="Nutrient_FertilizerType6" Member="Nutrient6" ThisKey="Nutrient6Id" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
       <Association Name="Nutrient_FertilizerType7" Member="Nutrient7" ThisKey="Nutrient7Id" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
-    </Type>
-  </Table>
-  <Table Name="dbo.[Work]" Member="Works">
-    <Type Name="Work">
-      <Column Name="WorkId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="Time" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
-      <Column Name="FertilizerId" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="SeedId" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="AmountOfInput" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="FuelUsed" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
-      <Column Name="VechileId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="EquipmentId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="FieldId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="Area" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
-      <Column Name="HarvestedAmount" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="Comment" Type="System.String" DbType="VarChar(100) NOT NULL" CanBeNull="false" />
-      <Association Name="Work_WorkArea" Member="WorkAreas" ThisKey="WorkId" OtherKey="WorkId" Type="WorkArea" />
-      <Association Name="Equipment_Work" Member="Equipment" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="Equipment" IsForeignKey="true" />
-      <Association Name="FertilizerType_Work" Member="FertilizerType" ThisKey="FertilizerId" OtherKey="FertilizerId" Type="FertilizerType" IsForeignKey="true" />
-      <Association Name="Field_Work" Member="Field" ThisKey="FieldId" OtherKey="FieldId" Type="Field" IsForeignKey="true" />
-      <Association Name="SeedType_Work" Member="SeedType" ThisKey="SeedId" OtherKey="SeedId" Type="SeedType" IsForeignKey="true" />
-      <Association Name="Vechile_Work" Member="Vechile" ThisKey="VechileId" OtherKey="VechileId" Type="Vechile" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.EquipmentNotes" Member="EquipmentNotes">
@@ -254,12 +229,143 @@
     <Type Name="FieldCut">
       <Column Name="FieldCutId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="FieldId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="FirstPosId" Storage="_GpsCoordinateFirst" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="SecondPosId" Storage="_GpsCoordinateSecond" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="FirstPosId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="SecondPosId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="Name" Type="System.String" DbType="VarChar(30)" CanBeNull="true" />
+      <Association Name="FieldCut_Work" Member="Works" ThisKey="FieldCutId" OtherKey="FieldCutFirst" Type="Work" />
+      <Association Name="FieldCut_Work1" Member="Works1" ThisKey="FieldCutId" OtherKey="FieldCutSecond" Type="Work" />
+      <Association Name="FieldCut_CropProductionPlan" Member="CropProductionPlans" ThisKey="FieldCutId" OtherKey="FieldCutFirst" Type="CropProductionPlan" />
+      <Association Name="FieldCut_CropProductionPlan1" Member="CropProductionPlans1" ThisKey="FieldCutId" OtherKey="FieldCutSecond" Type="CropProductionPlan" />
       <Association Name="Field_FieldCut" Member="Field" ThisKey="FieldId" OtherKey="FieldId" Type="Field" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-      <Association Name="GpsCoordinate_FieldCut" Member="GpsCoordinate" ThisKey="FirstPosId" OtherKey="PosId" Type="GpsCoordinate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-      <Association Name="GpsCoordinate_FieldCut1" Member="GpsCoordinate1" ThisKey="SecondPosId" OtherKey="PosId" Type="GpsCoordinate" IsForeignKey="true" />
+      <Association Name="GpsCoordinate_FieldCut" Member="GpsCoordinateFirst" ThisKey="FirstPosId" OtherKey="PosId" Type="GpsCoordinate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+      <Association Name="GpsCoordinate_FieldCut1" Member="GpsCoordinateSecond" ThisKey="SecondPosId" OtherKey="PosId" Type="GpsCoordinate" IsForeignKey="true" />
     </Type>
   </Table>
+  <Table Name="dbo.[Work]" Member="Works">
+    <Type Name="Work">
+      <Column Name="WorkId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Time" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Column Name="FertilizerId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="SeedId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="AmountOfInput" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="FuelUsed" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="VechileId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="EquipmentId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="FieldId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Area" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="HarvestedAmount" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Comment" Type="System.String" DbType="VarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="FieldCutFirst" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="FieldCutFirstInv" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Column Name="FieldCutSecond" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="FieldCutSecondInv" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Column Name="CropProductionPlanId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Association Name="Equipment_Work" Member="Equipment" ThisKey="EquipmentId" OtherKey="EquipmentId" Type="Equipment" IsForeignKey="true" />
+      <Association Name="FertilizerType_Work" Member="FertilizerType" ThisKey="FertilizerId" OtherKey="FertilizerId" Type="FertilizerType" IsForeignKey="true" />
+      <Association Name="Field_Work" Member="Field" ThisKey="FieldId" OtherKey="FieldId" Type="Field" IsForeignKey="true" />
+      <Association Name="FieldCut_Work" Member="FieldCut" ThisKey="FieldCutFirst" OtherKey="FieldCutId" Type="FieldCut" IsForeignKey="true" />
+      <Association Name="FieldCut_Work1" Member="FieldCut1" ThisKey="FieldCutSecond" OtherKey="FieldCutId" Type="FieldCut" IsForeignKey="true" />
+      <Association Name="SeedType_Work" Member="SeedType" ThisKey="SeedId" OtherKey="SeedId" Type="SeedType" IsForeignKey="true" />
+      <Association Name="Vechile_Work" Member="Vechile" ThisKey="VechileId" OtherKey="VechileId" Type="Vechile" IsForeignKey="true" />
+      <Association Name="CropProductionPlan_Work" Member="CropProductionPlan" ThisKey="CropProductionPlanId" OtherKey="CropProductionPlanId" Type="CropProductionPlan" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.CropYear" Member="CropYears">
+    <Type Name="CropYear">
+      <Column Name="CropYearId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Year" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Comment" Type="System.String" DbType="VarChar(200) NOT NULL" CanBeNull="false" />
+      <Association Name="CropYear_CropProductionPlan" Member="CropProductionPlans" ThisKey="CropYearId" OtherKey="CropYearId" Type="CropProductionPlan" />
+    </Type>
+  </Table>
+  <Table Name="dbo.CropProductionPlan" Member="CropProductionPlans">
+    <Type Name="CropProductionPlan">
+      <Column Name="CropProductionPlanId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="CropYearId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="FieldId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="SeedId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Area" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="FieldCutFirst" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="FieldCutFirstInv" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Column Name="FieldCutSecond" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="FieldCutSecondInv" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Association Name="CropProductionPlan_Work" Member="Works" ThisKey="CropProductionPlanId" OtherKey="CropProductionPlanId" Type="Work" />
+      <Association Name="CropProductionPlan_NutrientPlan" Member="NutrientPlans" ThisKey="CropProductionPlanId" OtherKey="CropProductionPlanId" Type="NutrientPlan" />
+      <Association Name="CropProductionPlan_FertilizerPlan" Member="FertilizerPlans" ThisKey="CropProductionPlanId" OtherKey="CropProductionPlanId" Type="FertilizerPlan" />
+      <Association Name="CropYear_CropProductionPlan" Member="CropYear" ThisKey="CropYearId" OtherKey="CropYearId" Type="CropYear" IsForeignKey="true" />
+      <Association Name="Field_CropProductionPlan" Member="Field" ThisKey="FieldId" OtherKey="FieldId" Type="Field" IsForeignKey="true" />
+      <Association Name="FieldCut_CropProductionPlan" Member="FieldCut" ThisKey="FieldCutFirst" OtherKey="FieldCutId" Type="FieldCut" IsForeignKey="true" />
+      <Association Name="FieldCut_CropProductionPlan1" Member="FieldCut1" ThisKey="FieldCutSecond" OtherKey="FieldCutId" Type="FieldCut" IsForeignKey="true" />
+      <Association Name="SeedType_CropProductionPlan" Member="SeedType" ThisKey="SeedId" OtherKey="SeedId" Type="SeedType" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.NutrientPlan" Member="NutrientPlans">
+    <Type Name="NutrientPlan">
+      <Column Name="NutrientPlanId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="CropProductionPlanId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Nutrient1Id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Nutrient1Amount" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="Nutrient2Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Nutrient2Amount" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Nutrient3Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Nutrient3Amount" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Nutrient4Id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Nutrient4Amount" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Association Name="CropProductionPlan_NutrientPlan" Member="CropProductionPlan" ThisKey="CropProductionPlanId" OtherKey="CropProductionPlanId" Type="CropProductionPlan" IsForeignKey="true" />
+      <Association Name="Nutrient_NutrientPlan" Member="Nutrient" ThisKey="Nutrient1Id" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
+      <Association Name="Nutrient_NutrientPlan1" Member="Nutrient1" ThisKey="Nutrient2Id" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
+      <Association Name="Nutrient_NutrientPlan2" Member="Nutrient2" ThisKey="Nutrient3Id" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
+      <Association Name="Nutrient_NutrientPlan3" Member="Nutrient3" ThisKey="Nutrient4Id" OtherKey="NutrientId" Type="Nutrient" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.FertilizerPlan" Member="FertilizerPlans">
+    <Type Name="FertilizerPlan">
+      <Column Name="FertilizerPlanId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="CropProductionPlanId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="FertilizerId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Amount" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="Done" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Association Name="CropProductionPlan_FertilizerPlan" Member="CropProductionPlan" ThisKey="CropProductionPlanId" OtherKey="CropProductionPlanId" Type="CropProductionPlan" IsForeignKey="true" />
+      <Association Name="FertilizerType_FertilizerPlan" Member="FertilizerType" ThisKey="FertilizerId" OtherKey="FertilizerId" Type="FertilizerType" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Function Name="dbo.GetWorkFiltered" Method="GetWorkFiltered">
+    <Parameter Name="fieldId" Type="System.Int32" DbType="Int" />
+    <Parameter Name="seedId" Type="System.Int32" DbType="Int" />
+    <Parameter Name="fertilizerId" Type="System.Int32" DbType="Int" />
+    <Parameter Name="equipmentId" Type="System.Int32" DbType="Int" />
+    <Parameter Name="vechileId" Type="System.Int32" DbType="Int" />
+    <Parameter Name="fieldCut1" Type="System.Int32" DbType="Int" />
+    <Parameter Name="fieldCut2" Type="System.Int32" DbType="Int" />
+    <ElementType Name="GetWorkFilteredResult">
+      <Column Name="WorkId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Time" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Column Name="FertilizerId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="SeedId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="AmountOfInput" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="FuelUsed" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="VechileId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="EquipmentId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="FieldId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Area" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="HarvestedAmount" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Comment" Type="System.String" DbType="VarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="FieldCutFirst" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="FieldCutFirstInv" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Column Name="FieldCutSecond" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="FieldCutSecondInv" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Column Name="EquipmentId1" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="DistFromAttach" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="AngleFromAttach" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="WorkWidth" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="EquipmentClass" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="EquipmentId2" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Name1" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="DistFromAttach1" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="AngleFromAttach1" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="WorkWidth1" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
+      <Column Name="EquipmentClass1" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+    </ElementType>
+  </Function>
 </Database>
