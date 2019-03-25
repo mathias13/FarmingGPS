@@ -237,12 +237,12 @@ namespace FarmingGPS
             }
 
 #if DEBUG
-            //_receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.855032), new Latitude(58.512722)), false);
-            //_receiver.BearingUpdate += _receiver_BearingUpdate;
-            //_receiver.PositionUpdate += _receiver_PositionUpdate;
-            //_receiver.SpeedUpdate += _receiver_SpeedUpdate;
-            //_receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
-            //BogballeCalibrator calibrator = new BogballeCalibrator(new Calibrator("COM3", 20000));
+            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.855032), new Latitude(58.512722)), false);
+            _receiver.BearingUpdate += _receiver_BearingUpdate;
+            _receiver.PositionUpdate += _receiver_PositionUpdate;
+            _receiver.SpeedUpdate += _receiver_SpeedUpdate;
+            _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
+            BogballeCalibrator calibrator = new BogballeCalibrator(new Calibrator("COM3", 20000));
             if (_field == null)
             {
                 List<Position> positions = new List<Position>();
@@ -820,10 +820,11 @@ namespace FarmingGPS
                 if (settingControl.Settings is ConfigurationSection)
                 {
                     ConfigurationSection configSection = _config.Sections[settingControl.Settings.GetType().FullName];
-                    if (configSection == null)
-                        _config.Sections.Add(settingControl.Settings.GetType().FullName, settingControl.Settings as ConfigurationSection);
+                    if (configSection != null)
+                        _config.Sections.Remove(settingControl.Settings.GetType().FullName);
 
-                    _config.Save(ConfigurationSaveMode.Minimal, true);
+                    _config.Sections.Add(settingControl.Settings.GetType().FullName, settingControl.Settings as ConfigurationSection);
+                    _config.Save(ConfigurationSaveMode.Modified, true);
                 }
                 if (settingControl.Settings is DatabaseConn)
                     SetupDatabase(settingControl.Settings as DatabaseConn);

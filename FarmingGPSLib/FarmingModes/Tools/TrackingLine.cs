@@ -54,7 +54,11 @@ namespace FarmingGPSLib.FarmingModes.Tools
             double tempDistance = 0.0;
             double distance = double.MaxValue;
             if (_extendedLine != null && useExtendedLine)
+            {
+                p0 = _extendedLine.P0;
+                p1 = _extendedLine.P1;
                 distance = CgAlgorithms.DistancePointLine(point, _extendedLine.P0, _extendedLine.P1);
+            }
             else
             {
                 for (int i = 0; i < _line.Coordinates.Count - 1; i++)

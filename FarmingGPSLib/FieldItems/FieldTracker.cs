@@ -380,7 +380,7 @@ namespace FarmingGPSLib.FieldItems
         private bool CheckHoleValidity(ILinearRing hole)
         {
             double area = Math.Abs(CgAlgorithms.SignedArea(hole.Coordinates));
-            if (area < 0.25)
+            if (area < 0.4)
                 return false;
 
             return true;
