@@ -328,11 +328,15 @@ namespace FarmingGPS.Database
 
         public void DeleteDrainage(Drainage drainage)
         {
-            var queryResult = from coordinate in _databaseContext.GpsCoordinates
+            var queryResultCoord = from coordinate in _databaseContext.GpsCoordinates
                               join drainagePar in _databaseContext.DrainageLines on coordinate.PosId equals drainagePar.PosId
                               where drainagePar.DrainageId == drainage.DrainageId
                               select coordinate;
-            _databaseContext.GpsCoordinates.DeleteAllOnSubmit(queryResult);
+            _databaseContext.GpsCoordinates.DeleteAllOnSubmit(queryResultCoord);
+            var queryResultLine = from drainageLine in _databaseContext.DrainageLines
+                          where drainageLine.DrainageId == drainage.DrainageId
+                          select drainageLine;
+            _databaseContext.DrainageLines.DeleteAllOnSubmit(queryResultLine);
             _databaseContext.Drainages.DeleteOnSubmit(drainage);
         }
 
