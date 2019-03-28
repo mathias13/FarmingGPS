@@ -260,7 +260,7 @@ namespace FarmingGPS
 
         private void _sbpReceiverSender_ReadExceptionEvent(object sender, SBPReadExceptionEventArgs e)
         {
-            Log.Error("SBPReaderException", e.Exception);
+            Log.Warn("SBPReaderException", e.Exception);
         }
         
         #region Private Methods

@@ -387,7 +387,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                 }
                 catch(Exception e)
                 {
-                    Log.Debug("Failed to read value with command: " + command, e);
+                    Log.Warn("Failed to read value with command: " + command, e);
                     _noAnswerCount++;
                     return string.Empty;
                 }
@@ -444,7 +444,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                 }
                 catch(Exception e)
                 {
-                    Log.Error("Failed to write value with command: " + command, e);
+                    Log.Warn("Failed to write value with command: " + command, e);
                     _noAnswerCount++;
                     return false;
                 }
