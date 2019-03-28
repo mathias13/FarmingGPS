@@ -136,11 +136,7 @@ namespace FarmingGPS.Visualization
         private double _viewBehindZoomLevel = 7.0;
 
         private TrackingLine _focusedTrackline = null;
-
-        private long TotalMeshChanges = 0;
-
-        private long CurrentMeshChanges = 0;
-
+        
         #endregion
 
         public FarmingVisualizer()
@@ -491,89 +487,35 @@ namespace FarmingGPS.Visualization
                 {
                     PolygonData polygonData = GetPolygonData(e.Polygon.Shell.Coordinates, FIELD_TRACK_Z_INDEX);
                     if (polygonData.PolygonSum != _trackSums[e.ID])
-                    {
-                        MeshVisual3D mesh = _trackMesh[e.ID];
-                        GeometryModel3D geometry = mesh.Content as GeometryModel3D;
-                        _viewPort.Children.Remove(mesh);
-                        Mesh3D mesh3D = new Mesh3D(polygonData.Polygon, CuttingEarsTriangulator.Triangulate(polygonData.Polygon2D));
-                        mesh.Mesh = mesh3D;
-                        _viewPort.Children.Add(mesh);
-                        _trackSums[e.ID] = polygonData.PolygonSum;
-                        CurrentMeshChanges++;
-                    }
-                    TotalMeshChanges++;
+                        Dispatcher.Invoke(new Action<PolygonData, int>(UpdatePolygon), System.Windows.Threading.DispatcherPriority.Normal, polygonData, e.ID);
+
                     IList<ulong> holePolygonSums = new List<ulong>(_trackSumsHoles[e.ID]);
                     for (int i = 0; i < e.Polygon.Holes.Length; i++)
                     {
-                        TotalMeshChanges++;
                         PolygonData holePolygonData = GetPolygonData(e.Polygon.Holes[i].Coordinates, FIELD_TRACK_HOLES_Z_INDEX);
                         int holeIndex = _trackSumsHoles[e.ID].IndexOf(holePolygonData.PolygonSum);
                         if (holeIndex > -1)
                             holePolygonSums.Remove(holePolygonData.PolygonSum);
                         else
                         {
-                            CurrentMeshChanges++;
                             double area = Math.Abs(DotSpatial.Topology.Algorithm.CgAlgorithms.SignedArea(e.Polygon.Holes[i].Coordinates));
-                            Mesh3D holeMesh3D = new Mesh3D(holePolygonData.Polygon, CuttingEarsTriangulator.Triangulate(holePolygonData.Polygon2D));
-                            MeshVisual3D holeMesh = new MeshVisual3D();
-                            holeMesh.FaceMaterial = area > FIELD_TRACK_HOLE_RED_MAX_AREA ? _fieldFillMaterial : _fieldTrackHoleMaterial;
-                            holeMesh.EdgeDiameter = 0;
-                            holeMesh.VertexRadius = 0;
-                            holeMesh.Mesh = holeMesh3D;
-                            _trackMeshHoles[e.ID].Add(holeMesh);
-                            _trackSumsHoles[e.ID].Add(holePolygonData.PolygonSum);
-                            _viewPort.Children.Add(holeMesh);
+                            Dispatcher.Invoke(new Action<PolygonData, int, bool>(AddPolygonHole), System.Windows.Threading.DispatcherPriority.Normal, holePolygonData, e.ID, area > FIELD_TRACK_HOLE_RED_MAX_AREA);
                         }
                     }
 
                     foreach(ulong holePolygonSum in holePolygonSums)
                     {
-                        CurrentMeshChanges++;
                         int holeIndex = _trackSumsHoles[e.ID].IndexOf(holePolygonSum);
-                        MeshVisual3D holeMesh = _trackMeshHoles[e.ID][holeIndex];
-                        _viewPort.Children.Remove(holeMesh);
+                        Dispatcher.Invoke(new Action<int, int>(RemovePolygonHole), System.Windows.Threading.DispatcherPriority.Normal, e.ID, holeIndex);
                         _trackMeshHoles[e.ID].RemoveAt(holeIndex);
                         _trackSumsHoles[e.ID].RemoveAt(holeIndex);
                     }
 
                 }
                 else
-                {
-                    PolygonData polygonData = GetPolygonData(e.Polygon.Shell.Coordinates, FIELD_TRACK_Z_INDEX);
-                    Mesh3D mesh3D = new Mesh3D(polygonData.Polygon, CuttingEarsTriangulator.Triangulate(polygonData.Polygon2D));
-                    MeshVisual3D mesh = new MeshVisual3D();
-                    mesh.FaceMaterial = _fieldTrackMaterial;
-                    mesh.EdgeDiameter = 0;
-                    mesh.VertexRadius = 0;
-                    mesh.Mesh = mesh3D;
-
-                    IList<MeshVisual3D> holes = new List<MeshVisual3D>();
-                    IList<ulong> holeSums = new List<ulong>();
-                    foreach (DotSpatial.Topology.ILinearRing hole in e.Polygon.Holes)
-                    {
-                        double area = Math.Abs(DotSpatial.Topology.Algorithm.CgAlgorithms.SignedArea(hole.Coordinates));
-                        PolygonData holePolygonData = GetPolygonData(hole.Coordinates, FIELD_TRACK_HOLES_Z_INDEX);
-                        Mesh3D holeMesh3D = new Mesh3D(holePolygonData.Polygon, CuttingEarsTriangulator.Triangulate(holePolygonData.Polygon2D));
-                        MeshVisual3D holeMesh = new MeshVisual3D();
-                        holeMesh.FaceMaterial = area > FIELD_TRACK_HOLE_RED_MAX_AREA ? _fieldFillMaterial : _fieldTrackHoleMaterial;
-                        holeMesh.EdgeDiameter = 0;
-                        holeMesh.VertexRadius = 0;
-                        holeMesh.Mesh = holeMesh3D;
-                        holes.Add(holeMesh);
-                        holeSums.Add(holePolygonData.PolygonSum);
-                    }
-
-                    _trackMesh.Add(e.ID, mesh);
-                    _trackSums.Add(e.ID, polygonData.PolygonSum);
-                    _viewPort.Children.Add(mesh);
-                    _trackMeshHoles.Add(e.ID, holes);
-                    _trackSumsHoles.Add(e.ID, holeSums);
-                    foreach (MeshVisual3D hole in holes)
-                        _viewPort.Children.Add(hole);
-                }
-
-                if ((TotalMeshChanges % 5000) == 1)
-                    Log.Error(String.Format("TotalMeshChanges={0} CurrentMeshChanges={1}", TotalMeshChanges, CurrentMeshChanges));
+                    Dispatcher.Invoke(new Action<PolygonUpdatedEventArgs>(AddCompletePolygon), System.Windows.Threading.DispatcherPriority.Normal, e);
+                
+                
             }
             catch (Exception exception)
             {
@@ -599,6 +541,71 @@ namespace FarmingGPS.Visualization
             return data;
         }
 
+        private void AddCompletePolygon(PolygonUpdatedEventArgs e)
+        {
+            PolygonData polygonData = GetPolygonData(e.Polygon.Shell.Coordinates, FIELD_TRACK_Z_INDEX);
+            Mesh3D mesh3D = new Mesh3D(polygonData.Polygon, CuttingEarsTriangulator.Triangulate(polygonData.Polygon2D));
+            MeshVisual3D mesh = new MeshVisual3D();
+            mesh.FaceMaterial = _fieldTrackMaterial;
+            mesh.EdgeDiameter = 0;
+            mesh.VertexRadius = 0;
+            mesh.Mesh = mesh3D;
+
+            IList<MeshVisual3D> holes = new List<MeshVisual3D>();
+            IList<ulong> holeSums = new List<ulong>();
+            foreach (DotSpatial.Topology.ILinearRing hole in e.Polygon.Holes)
+            {
+                double area = Math.Abs(DotSpatial.Topology.Algorithm.CgAlgorithms.SignedArea(hole.Coordinates));
+                PolygonData holePolygonData = GetPolygonData(hole.Coordinates, FIELD_TRACK_HOLES_Z_INDEX);
+                Mesh3D holeMesh3D = new Mesh3D(holePolygonData.Polygon, CuttingEarsTriangulator.Triangulate(holePolygonData.Polygon2D));
+                MeshVisual3D holeMesh = new MeshVisual3D();
+                holeMesh.FaceMaterial = area > FIELD_TRACK_HOLE_RED_MAX_AREA ? _fieldFillMaterial : _fieldTrackHoleMaterial;
+                holeMesh.EdgeDiameter = 0;
+                holeMesh.VertexRadius = 0;
+                holeMesh.Mesh = holeMesh3D;
+                holes.Add(holeMesh);
+                holeSums.Add(holePolygonData.PolygonSum);
+            }
+
+            _trackMesh.Add(e.ID, mesh);
+            _trackSums.Add(e.ID, polygonData.PolygonSum);
+            _viewPort.Children.Add(mesh);
+            _trackMeshHoles.Add(e.ID, holes);
+            _trackSumsHoles.Add(e.ID, holeSums);
+            foreach (MeshVisual3D hole in holes)
+                _viewPort.Children.Add(hole);
+        }
+
+        private void UpdatePolygon(PolygonData polygonData, int polygonId)
+        {
+            MeshVisual3D mesh = _trackMesh[polygonId];
+            GeometryModel3D geometry = mesh.Content as GeometryModel3D;
+            _viewPort.Children.Remove(mesh);
+            Mesh3D mesh3D = new Mesh3D(polygonData.Polygon, CuttingEarsTriangulator.Triangulate(polygonData.Polygon2D));
+            mesh.Mesh = mesh3D;
+            _viewPort.Children.Add(mesh);
+            _trackSums[polygonId] = polygonData.PolygonSum;
+        }
+        
+        private void AddPolygonHole(PolygonData polygonData, int polygonId, bool redArea)
+        {
+            Mesh3D holeMesh3D = new Mesh3D(polygonData.Polygon, CuttingEarsTriangulator.Triangulate(polygonData.Polygon2D));
+            MeshVisual3D holeMesh = new MeshVisual3D();
+            holeMesh.FaceMaterial = redArea ? _fieldFillMaterial : _fieldTrackHoleMaterial;
+            holeMesh.EdgeDiameter = 0;
+            holeMesh.VertexRadius = 0;
+            holeMesh.Mesh = holeMesh3D;
+            _trackMeshHoles[polygonId].Add(holeMesh);
+            _trackSumsHoles[polygonId].Add(polygonData.PolygonSum);
+            _viewPort.Children.Add(holeMesh);
+        }
+
+        private void RemovePolygonHole(int polygonId, int holeIndex)
+        {
+            MeshVisual3D holeMesh = _trackMeshHoles[polygonId][holeIndex];
+            _viewPort.Children.Remove(holeMesh);
+        }
+
         private void fieldTracker_PolygonUpdated(object sender, PolygonUpdatedEventArgs e)
         {
             _trackUpdateQueue.Enqueue(e);
@@ -610,10 +617,12 @@ namespace FarmingGPS.Visualization
             {
                 while (_trackUpdateQueue.Count > 1)
                     _trackUpdateQueue.Dequeue();
-                if (Dispatcher.Thread.Equals(Thread.CurrentThread))
-                    UpdateFieldtrack(e);
-                else
-                    Dispatcher.Invoke(new Action<PolygonUpdatedEventArgs>(UpdateFieldtrack), System.Windows.Threading.DispatcherPriority.Normal, _trackUpdateQueue.Dequeue());
+
+                UpdateFieldtrack(_trackUpdateQueue.Dequeue());
+                //if (Dispatcher.Thread.Equals(Thread.CurrentThread))
+                //    UpdateFieldtrack(e);
+                //else
+                //    Dispatcher.Invoke(new Action<PolygonUpdatedEventArgs>(UpdateFieldtrack), System.Windows.Threading.DispatcherPriority.Normal, _trackUpdateQueue.Dequeue());
             }
             _trackUpdatePending = false;
         }
