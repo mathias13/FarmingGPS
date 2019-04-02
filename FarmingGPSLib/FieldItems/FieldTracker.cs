@@ -163,15 +163,15 @@ namespace FarmingGPSLib.FieldItems
                             }
                             _polygons[_currentPolygonIndex].Holes = holes.ToArray();
 
-                            //if (_polygons[_currentPolygonIndex].Coordinates.Count > _polygonSimplifierCount[_currentPolygonIndex])
-                            //{
-                            //    IGeometry geometry = DotSpatial.Topology.Simplify.TopologyPreservingSimplifier.Simplify(_polygons[_currentPolygonIndex], 0.04);
-                            //    if (geometry is Polygon)
-                            //    {
-                            //        _polygons[_currentPolygonIndex] = geometry as Polygon;
-                            //        _polygonSimplifierCount[_currentPolygonIndex] = geometry.Coordinates.Count + SIMPLIFIER_COUNT_LIMIT;
-                            //    }
-                            //}
+                            if (_polygons[_currentPolygonIndex].Coordinates.Count > _polygonSimplifierCount[_currentPolygonIndex])
+                            {
+                                IGeometry geometry = DotSpatial.Topology.Simplify.TopologyPreservingSimplifier.Simplify(_polygons[_currentPolygonIndex], 0.04);
+                                if (geometry is Polygon)
+                                {
+                                    _polygons[_currentPolygonIndex] = geometry as Polygon;
+                                    _polygonSimplifierCount[_currentPolygonIndex] = geometry.Coordinates.Count + SIMPLIFIER_COUNT_LIMIT;
+                                }
+                            }
 
                             for (int i = 0; i < _polygons.Count; i++)
                             {

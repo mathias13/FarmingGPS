@@ -124,9 +124,7 @@ namespace FarmingGPS.Visualization
         private MeshVisual3D _fieldMesh = null;
 
         private Queue<PolygonUpdatedEventArgs> _trackUpdateQueue = new Queue<PolygonUpdatedEventArgs>();
-
-        private bool _trackUpdatePending = false;
-
+        
         private bool _viewTopActive = false;
 
         private bool _viewTrackLine = false;
@@ -136,11 +134,14 @@ namespace FarmingGPS.Visualization
         private double _viewBehindZoomLevel = 7.0;
 
         private TrackingLine _focusedTrackline = null;
+
+        private Thread _fieldTrackThread;
         
         #endregion
 
         public FarmingVisualizer()
         {
+            _fieldTrackThread = new Thread(new ThreadStart(FieldTrackThread));
             InitializeComponent();
             _fieldFillMaterial.Freeze();
             _fieldTrackMaterial.Freeze();
@@ -606,25 +607,27 @@ namespace FarmingGPS.Visualization
             _viewPort.Children.Remove(holeMesh);
         }
 
+        private void FieldTrackThread()
+        {
+            while (_trackUpdateQueue.Count > 0)
+            {
+
+                while (_trackUpdateQueue.Count > 1)
+                    _trackUpdateQueue.Dequeue();
+                
+                UpdateFieldtrack(_trackUpdateQueue.Dequeue());
+            }
+        }
+
         private void fieldTracker_PolygonUpdated(object sender, PolygonUpdatedEventArgs e)
         {
             _trackUpdateQueue.Enqueue(e);
-            if (_trackUpdatePending)
-                return;
-
-            _trackUpdatePending = true;
-            while (_trackUpdateQueue.Count > 0)
+            if (!_fieldTrackThread.IsAlive)
             {
-                while (_trackUpdateQueue.Count > 1)
-                    _trackUpdateQueue.Dequeue();
-
-                UpdateFieldtrack(_trackUpdateQueue.Dequeue());
-                //if (Dispatcher.Thread.Equals(Thread.CurrentThread))
-                //    UpdateFieldtrack(e);
-                //else
-                //    Dispatcher.Invoke(new Action<PolygonUpdatedEventArgs>(UpdateFieldtrack), System.Windows.Threading.DispatcherPriority.Normal, _trackUpdateQueue.Dequeue());
+                _fieldTrackThread = new Thread(new ThreadStart(FieldTrackThread));
+                _fieldTrackThread.Start();
             }
-            _trackUpdatePending = false;
+                    
         }
 
         private void fieldTracker_PolygonDeleted(object sender, PolygonDeletedEventArgs e)
