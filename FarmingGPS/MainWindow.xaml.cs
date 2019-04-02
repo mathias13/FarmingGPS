@@ -117,7 +117,6 @@ namespace FarmingGPS
         {
             InitializeComponent();
 
-            Application.Current.Exit += Current_Exit;
             Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             WindowState = WindowState.Maximized;
@@ -167,34 +166,31 @@ namespace FarmingGPS
         protected static readonly DependencyProperty DBState = DependencyProperty.Register("DBState", typeof(bool), typeof(MainWindow));
 
         #endregion
+        
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {   
+            YesNoDialog dialog = new YesNoDialog("Vill du radera all sessions data?");
+            if (dialog.ShowDialog().Value)
+                _stateRecovery.Clear();
 
-        void Current_Exit(object sender, ExitEventArgs e)
-        {
             if (_equipment != null)
                 if (_equipment is IDisposable)
                     (_equipment as IDisposable).Dispose();
             if (_camera != null)
                 if (_camera is IDisposable)
                     (_camera as IDisposable).Dispose();
-            if(_ntripClient != null)
+            if (_ntripClient != null)
                 _ntripClient.Dispose();
             if (_receiver != null)
                 if (_receiver is IDisposable)
                     (_receiver as IDisposable).Dispose();
-            if(_sbpReceiverSender != null)
+            if (_sbpReceiverSender != null)
                 _sbpReceiverSender.Dispose();
-            if(_database != null)
+            if (_database != null)
                 _database.Dispose();
 
             if (_stateRecovery != null)
                 _stateRecovery.Dispose();
-        }
-
-        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {   
-            YesNoDialog dialog = new YesNoDialog("Vill du radera all sessions data?");
-            if (dialog.ShowDialog().Value)
-                _stateRecovery.Clear();
         }
 
         private void MainWindow_ContentRendered(object sender, EventArgs e)
@@ -242,7 +238,6 @@ namespace FarmingGPS
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
             _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
-            BogballeCalibrator calibrator = new BogballeCalibrator(new Calibrator("COM3", 20000));
             if (_field == null)
             {
                 List<Position> positions = new List<Position>();
@@ -873,7 +868,7 @@ namespace FarmingGPS
 
             if (_equipmentChoosen.EquipmentClass == null)
             {
-                _equipment = new Harrow(Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromCentimeters(userControl.Overlap));
+                _equipment = new Harrow(Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromMeters(userControl.Overlap));
                 _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, userControl.Headlands);
             }
             else
@@ -882,11 +877,11 @@ namespace FarmingGPS
                 {
                     Type equipmentClass = AppDomain.CurrentDomain.GetAssemblies().SelectMany(t => t.GetTypes()).Where(t => String.Equals(t.FullName, _equipmentChoosen.EquipmentClass, StringComparison.Ordinal)).First();
                     if (equipmentClass == null)
-                        _equipment = new Harrow(Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromCentimeters(userControl.Overlap));
+                        _equipment = new Harrow(Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromMeters(userControl.Overlap));
                     else if (equipmentClass.IsAssignableFrom(typeof(IEquipment)))
-                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromCentimeters(userControl.Overlap));
+                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromMeters(userControl.Overlap));
                     else
-                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromCentimeters(userControl.Overlap));
+                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromMeters(userControl.Overlap));
 
                     if (_equipment is IEquipmentControl)
                     {
@@ -947,12 +942,15 @@ namespace FarmingGPS
 
             CheckAllTrackingLines();
 
-            YesNoDialog dialogFieldTracker = new YesNoDialog("Vill du radera körd area?");
-            if (dialogFieldTracker.ShowDialog().Value)
+            if (_fieldTracker.Area.Value > 0.0)
             {
-                if (_fieldTrackerActive)
-                    ToggleFieldTracker();
-                _fieldTracker.ClearTrack();
+                YesNoDialog dialogFieldTracker = new YesNoDialog("Vill du radera körd area?");
+                if (dialogFieldTracker.ShowDialog().Value)
+                {
+                    if (_fieldTrackerActive)
+                        ToggleFieldTracker();
+                    _fieldTracker.ClearTrack();
+                }
             }
 
             _stateRecovery.AddStateObject(_farmingMode);

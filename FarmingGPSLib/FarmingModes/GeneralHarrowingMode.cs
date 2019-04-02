@@ -83,9 +83,9 @@ namespace FarmingGPSLib.FarmingModes
             double distanceFromShell = _equipment.CenterToTip.ToMeters().Value;
             for (int i = 1; i < _headlandTurns; i++)
                 distanceFromShell += _equipment.WidthExclOverlap.ToMeters().Value;
-            distanceFromShell += _equipment.CenterToTip.ToMeters().Value;
-            ILineString headLandCoordinates = GetHeadLandCoordinates(distanceFromShell + 0.02); //add 2cm to make sure we dont get trackingline over headline
+            distanceFromShell += _equipment.WidthExclOverlap.ToMeters().Value / 2.0;
             Polygon headLandToCheck = new Polygon(GetHeadLandCoordinates(distanceFromShell).Coordinates);
+            ILineString headLandCoordinates = GetHeadLandCoordinates(distanceFromShell + 0.2); //add 2cm to make sure we dont get trackingline over headline
             IList<LineSegment> headLandLines = HelperClassLines.CreateLines(headLandCoordinates.Coordinates);
 
             IEnvelope fieldEnvelope = _fieldPolygon.Envelope;
