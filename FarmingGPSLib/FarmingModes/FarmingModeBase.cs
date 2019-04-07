@@ -70,102 +70,40 @@ namespace FarmingGPSLib.FarmingModes
 
         #region private Methods
 
-        protected ILineString GetHeadLandCoordinates(double distance)
+        protected IList<ILineString> GetHeadLandCoordinates(double distance)
         {
             LineString newRing = new LineString(GetHeadlandAroundPoints(distance));
-            IList<LineSegment> newLines = HelperClassLines.CreateLines(newRing.Coordinates);
-            if (!newRing.IsSimple)
-            {
-                for (int i = 1; i < newLines.Count; i++)
-                {
-                    for (int k = 0; k < newLines.Count; k++)
-                    {
-                        if (k >= i - 1 && k <= i + 1)
-                            continue;
 
-                        Coordinate intersection = newLines[i].Intersection(newLines[k]);
+            IList<ILineString> rings = TestRing(newRing);
 
-                        if (intersection != null)
-                        {
-                            //TODO check if polygons turns into two polygons.
-                            int first = newRing.Coordinates.IndexOf(newLines[i].P1);
-                            int second = newRing.Coordinates.IndexOf(newLines[k].P1);
-                            if (first > second)
-                            {
-                                while (newRing.Coordinates.Count > first)
-                                    newRing.Coordinates.RemoveAt(first);
-
-                                int coordinateToRemove = second - 1;
-                                for (int l = 0; l < coordinateToRemove; l++)
-                                    newRing.Coordinates.RemoveAt(0);
-
-                                newRing.Coordinates.Insert(0, intersection);
-                            }
-                            else
-                            {
-                                int indexToRemove = first;
-                                while (first < second)
-                                {
-                                    newRing.Coordinates.RemoveAt(indexToRemove);
-                                    first++;
-                                }
-                                newRing.Coordinates.Insert(indexToRemove, intersection);
-                            }
-                            newLines = HelperClassLines.CreateLines(newRing.Coordinates);
-                        }
-                    }
-                }
-
-                if (!newRing.IsSimple)
-                    throw new InvalidOperationException("Headland has an selfintersection");
-            }
-            return newRing;
+            return rings;
         }
-
+        
         protected IList<LineString> GetHeadlandLines(double distance)
         {
-            ILineString newRing = GetHeadLandCoordinates(distance);
+            IList<ILineString> newRing = GetHeadLandCoordinates(distance);
             List<LineString> lines = new List<LineString>();
-            IList<LineSegment> oldLines = HelperClassLines.CreateLines(_fieldPolygon.Shell.Coordinates);
-            IList<LineSegment> newLines = HelperClassLines.CreateLines(newRing.Coordinates);
 
-            int lastNewLine = 0;
-            for (int i = 0; i < oldLines.Count; i++)
+            foreach (ILineString ring in newRing)
             {
-                bool exist = false;
-                for (int j = lastNewLine; j < newLines.Count; j++)
-                    if (Math.Round(oldLines[i].Angle, 4) == Math.Round(newLines[j].Angle, 4))
-                    {
-                        exist = true;
-                        lastNewLine = j + 1;
-                        break;
-                    }
-                if (exist)
-                    continue;
-                oldLines.RemoveAt(i);
-                i--;
-            }
-
-            List<Coordinate> coordNextResultLine = new List<Coordinate>();
-            coordNextResultLine.Add(newLines[0].P0);
-            int lastOldLine = 0;
-            for (int i = 0; i < newLines.Count; i++)
-            {
-                coordNextResultLine.Add(newLines[i].P1);
-                for (int j = lastOldLine; j < oldLines.Count; j++)
+                IList<LineSegment> lineSegments = HelperClassLines.CreateLines(ring.Coordinates);
+                IList<Coordinate> coordinates = new List<Coordinate>();
+                foreach(LineSegment segment in lineSegments)
                 {
-                    if (Math.Round(newLines[i].Angle, 4) == Math.Round(oldLines[j].Angle, 4))
-                    {
-                        lines.Add(new LineString(coordNextResultLine.CloneList()));
-                        coordNextResultLine.Clear();
-                        coordNextResultLine.Add(newLines[i].P1);
-                        lastOldLine = j + 1;
-                        break;
-                    }
+                    coordinates.Add(segment.P0);
+                    if (segment.Length < 10.0)
+                        continue;
+                    coordinates.Add(segment.P1);
+                    lines.Add(new LineString(coordinates.CloneList()));
+                    coordinates.Clear();
+                }
+                if(coordinates.Count > 0)
+                {
+                    coordinates.Add(lineSegments[lineSegments.Count - 1].P1);
+                    lines.Add(new LineString(coordinates.CloneList()));
                 }
             }
-            if (coordNextResultLine.Count > 1)
-                lines.Add(new LineString(coordNextResultLine.CloneList()));
+            
             return lines;
         }
 
@@ -176,6 +114,86 @@ namespace FarmingGPSLib.FarmingModes
             return (IList<Coordinate>)list[0];
         }
         
+        protected IList<ILineString> TestRing(LineString ring)
+        {
+            List<ILineString> rings = new List<ILineString>();
+            if (!ring.IsSimple)
+            {
+                IList<LineSegment> newLines = HelperClassLines.CreateLines(ring.Coordinates);
+                for (int i = 1; i < newLines.Count; i++)
+                {
+                    for (int k = 0; k < newLines.Count; k++)
+                    {
+                        if (newLines[i].P0 == newLines[k].P0 ||
+                            newLines[i].P0 == newLines[k].P1 ||
+                            newLines[i].P1 == newLines[k].P0 ||
+                            newLines[i].P1 == newLines[k].P1)
+                            continue;
+
+                        Coordinate intersection = newLines[i].Intersection(newLines[k]);
+
+                        if (intersection != null)
+                        {
+                            List<Coordinate> subRingCoords = new List<Coordinate>();
+                            int first = ring.Coordinates.IndexOf(newLines[i].P1);
+                            int second = ring.Coordinates.IndexOf(newLines[k].P1);
+                            subRingCoords.Add(intersection);
+                            if (first > second)
+                            {
+                                while (ring.Coordinates.Count > first)
+                                {
+                                    if (!subRingCoords.Contains(ring.Coordinates[first]))
+                                        subRingCoords.Add(ring.Coordinates[first]);
+                                    ring.Coordinates.RemoveAt(first);
+                                }
+
+                                int coordinateToRemove = second - 1;
+                                for (int l = 0; l < coordinateToRemove; l++)
+                                {
+                                    if (!subRingCoords.Contains(ring.Coordinates[0]))
+                                        subRingCoords.Add(ring.Coordinates[0]);
+                                    ring.Coordinates.RemoveAt(0);
+                                }
+
+                                ring.Coordinates.Insert(0, intersection);
+                                subRingCoords.Add(intersection);
+                            }
+                            else
+                            {
+                                int indexToRemove = first;
+                                while (first < second)
+                                {
+                                    subRingCoords.Add(ring.Coordinates[indexToRemove]);
+                                    ring.Coordinates.RemoveAt(indexToRemove);
+                                    first++;
+                                }
+                                ring.Coordinates.Insert(indexToRemove, intersection);
+                                subRingCoords.Add(intersection);
+                            }
+                            if (!ring.Coordinates[0].Equals(ring.Coordinates[ring.Coordinates.Count - 1]))
+                                ring.Coordinates.Add(ring.Coordinates[0]);
+
+                            newLines = HelperClassLines.CreateLines(ring.Coordinates);
+                            i = 0;
+                            k = 0;
+                            LineString subRing = new LineString(subRingCoords);
+                            if (CgAlgorithms.IsCounterClockwise(subRing.Coordinates))
+                                rings.Add(subRing);
+                            else
+                                rings.AddRange(TestRing(subRing));
+                        }
+                    }
+                }
+
+                if (CgAlgorithms.IsCounterClockwise(ring.Coordinates))
+                    rings.Add(ring);
+            }
+            else if (CgAlgorithms.IsCounterClockwise(ring.Coordinates))
+                rings.Add(ring);
+
+            return rings;
+        }
+
         protected void OnFarmingEvent(string message)
         {
             if (FarmingEvent != null)

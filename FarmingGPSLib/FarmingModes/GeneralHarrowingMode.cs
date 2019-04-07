@@ -84,9 +84,15 @@ namespace FarmingGPSLib.FarmingModes
             for (int i = 1; i < _headlandTurns; i++)
                 distanceFromShell += _equipment.WidthExclOverlap.ToMeters().Value;
             distanceFromShell += _equipment.CenterToTip.ToMeters().Value;
-            ILineString headLandCoordinates = GetHeadLandCoordinates(distanceFromShell + 0.02); //add 2cm to make sure we dont get trackingline over headline
-            Polygon headLandToCheck = new Polygon(GetHeadLandCoordinates(distanceFromShell).Coordinates);
-            IList<LineSegment> headLandLines = HelperClassLines.CreateLines(headLandCoordinates.Coordinates);
+            IList<ILineString> headLandCoordinates = GetHeadLandCoordinates(distanceFromShell + 0.02); //add 2cm to make sure we dont get trackingline over headline
+            List<LineSegment> headLandLines = new List<LineSegment>();
+            foreach(ILineString headLand in headLandCoordinates)
+                headLandLines.AddRange(HelperClassLines.CreateLines(headLand.Coordinates));
+
+            List<Polygon> headLandToCheck = new List<Polygon>();
+            IList<ILineString> headLands = GetHeadLandCoordinates(distanceFromShell);
+            foreach (ILineString headLand in headLands)
+                headLandToCheck.Add(new Polygon(headLand.Coordinates));
 
             IEnvelope fieldEnvelope = _fieldPolygon.Envelope;
             //Get longest projection to make sure we cover the whole field
@@ -128,7 +134,11 @@ namespace FarmingGPSLib.FarmingModes
 
                 for (int j = 0; j < lineCoordinates.Count; j++)
                 {
-                    if (!CgAlgorithms.IsPointInRing(lineCoordinates[j], headLandToCheck.Coordinates))
+                    bool remove = true;
+                    foreach (Polygon polygonToCheck in headLandToCheck)
+                        if (!CgAlgorithms.IsPointInRing(lineCoordinates[j], polygonToCheck.Coordinates))
+                            remove = false;
+                    if(remove)
                         lineCoordinates.RemoveAt(j);
                 }
               
@@ -147,15 +157,18 @@ namespace FarmingGPSLib.FarmingModes
                         }
 
                         LineString lineToCheck = new LineString(new Coordinate[] { lineCoordinates[0], lineCoordinates[j] });
-                        if (headLandToCheck.Contains(lineToCheck))
+                        foreach (Polygon polygonToCheck in headLandToCheck)
                         {
-                            trackingLines.Add(new LineString(new List<Coordinate>() { lineCoordinates[0], lineCoordinates[j] }));
-                            lineCoordinates.RemoveAt(j);
-                            lineCoordinates.RemoveAt(0);
-                            j = 1;
+                            if (polygonToCheck.Contains(lineToCheck))
+                            {
+                                trackingLines.Add(new LineString(new List<Coordinate>() { lineCoordinates[0], lineCoordinates[j] }));
+                                lineCoordinates.RemoveAt(j);
+                                lineCoordinates.RemoveAt(0);
+                                j = 1;
+                            }
+                            else
+                                j++;
                         }
-                        else
-                            j++;
 
                     }                
                 }
