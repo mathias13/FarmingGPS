@@ -74,6 +74,8 @@ namespace FarmingGPSLib.FieldItems
 
         private int _currentPolygonIndex = -1;
 
+        private int _areaChangedLimitCounter = 0;
+
         private object _syncObject = new object();
 
         private bool _hasChanged = true;
@@ -185,7 +187,12 @@ namespace FarmingGPSLib.FieldItems
                             }
                             if (!insidePolygon)
                             {
-                                OnAreaChanged();
+                                if (_areaChangedLimitCounter > 15)
+                                {
+                                    OnAreaChanged();
+                                    _areaChangedLimitCounter = 0;
+                                }
+                                _areaChangedLimitCounter++;
                                 OnPolygonUpdated(_currentPolygonIndex);
                             }
                         }

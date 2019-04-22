@@ -27,7 +27,7 @@ namespace FarmingGPS.Usercontrols.Equipments
             if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
                 SetValue(ConnectedState, e);
             else
-                Dispatcher.Invoke(new Action<object, bool>(Calibrator_IsConnectedChanged), DispatcherPriority.Render, sender, e);
+                Dispatcher.BeginInvoke(new Action<object, bool>(Calibrator_IsConnectedChanged), DispatcherPriority.Render, sender, e);
         }
 
         private void Calibrator_ValuesUpdated(object sender, EventArgs e)
@@ -43,7 +43,7 @@ namespace FarmingGPS.Usercontrols.Equipments
                 SetValue(HopperContents, _calibrator.HopperContents);
             }
             else
-                Dispatcher.Invoke(new Action<object, EventArgs>(Calibrator_ValuesUpdated), DispatcherPriority.Render, sender, e);
+                Dispatcher.BeginInvoke(new Action<object, EventArgs>(Calibrator_ValuesUpdated), DispatcherPriority.Render, sender, e);
         }
 
         #region Dependency Properties
