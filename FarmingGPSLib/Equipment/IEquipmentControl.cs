@@ -11,6 +11,8 @@ namespace FarmingGPSLib.Equipment
 
         void SetRate(double rate);
 
+        bool Running { get; }
+
         double StartDistance
         {
             get;

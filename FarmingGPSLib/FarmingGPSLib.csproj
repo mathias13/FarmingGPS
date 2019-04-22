@@ -92,6 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Equipment\BogBalle\Calibrator.cs" />
+    <Compile Include="Equipment\IEquipmentStat.cs" />
     <Compile Include="FieldItems\FieldRateTracker.cs" />
     <Compile Include="Settings\BogBalle\Calibrator.cs" />
     <Compile Include="Equipment\BogBalle\L2Plus.cs" />

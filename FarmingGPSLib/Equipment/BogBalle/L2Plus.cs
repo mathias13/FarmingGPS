@@ -5,16 +5,22 @@ using FarmingGPSLib.Settings;
 
 namespace FarmingGPSLib.Equipment.BogBalle
 {
-    public class L2Plus : EquipmentBase , IEquipmentControl, IDisposable
+    public class L2Plus : EquipmentBase, IEquipmentControl, IEquipmentStat, IDisposable
     {
         private readonly double[,] STOP_START_DISTANCES = new double[2, 3] { { 12, 0, 10 }, { 24, -6, 10 } };
+
+        private static double FULL_CONTENT = 1500.0;
 
         private double _stopDistance = 0.0;
 
         private double _startDistance = 0.0;
 
-        private Calibrator _calibrator;
+        private double _startWeight = double.MinValue;
 
+        private double _endWeight = 0.0;
+
+        private Calibrator _calibrator;
+        
         public L2Plus(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel)
             : base(width, distanceFromVechile, fromDirectionOfTravel)
         {
@@ -30,16 +36,28 @@ namespace FarmingGPSLib.Equipment.BogBalle
         private void SetDistances()
         {
             double lastDiffWidth = double.MaxValue;
-            for(int i = 0; i < STOP_START_DISTANCES.GetLength(0); i++)
+            for (int i = 0; i < STOP_START_DISTANCES.GetLength(0); i++)
             {
                 double diff = Math.Abs((STOP_START_DISTANCES[i, 0] - Width.ToMeters().Value));
-                if(diff < lastDiffWidth)
+                if (diff < lastDiffWidth)
                 {
                     lastDiffWidth = diff;
                     _stopDistance = STOP_START_DISTANCES[i, 1];
                     _startDistance = STOP_START_DISTANCES[i, 2];
                 }
-            }                
+            }
+        }
+
+        private void _calibrator_ValuesUpdated(object sender, EventArgs e)
+        {
+            if (_startWeight == double.MinValue)
+            {
+                _startWeight = _calibrator.Tara;
+                _endWeight = _startWeight;
+            }
+
+            if (StatUpdated != null)
+                StatUpdated.Invoke(this, new EventArgs());
         }
 
         #region IDisposable interface
@@ -81,6 +99,14 @@ namespace FarmingGPSLib.Equipment.BogBalle
                 _calibrator.Stop();
         }
 
+        public bool Running
+        {
+            get
+            {
+                return _calibrator.Started;
+            }
+        }
+
         public Type ControllerSettingsType
         {
             get { return typeof(Settings.BogBalle.Calibrator); }
@@ -98,6 +124,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                 Settings.BogBalle.Calibrator calibratorSettings = settings as Settings.BogBalle.Calibrator;
                 _calibrator = new Calibrator(calibratorSettings.COMPort, calibratorSettings.ReadInterval);
                 _calibrator.ChangeWidth((float)Width.ToMeters().Value);
+                _calibrator.ValuesUpdated += _calibrator_ValuesUpdated;
                 return _calibrator;
             }
             else
@@ -111,6 +138,37 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         #endregion
 
+        #region IEquipmentStat interface
+
+        public event EventHandler StatUpdated;
+
+        public double Content
+        {
+            get { return _endWeight - _calibrator.Tara; }
+        }
+
+        public double ContentLeft
+        {
+            get { return (Content / FULL_CONTENT) * 100.0; }
+        }
+
+        public double TotalInput
+        {
+            get { return _calibrator.Tara - _startWeight; }
+        }
+
+        public void ResetTotal()
+        {
+            _startWeight = _calibrator.Tara;
+        }
+        
+        public void AddedContent(double content)
+        {
+            _endWeight += content;
+        }
+
+        #endregion
+
         public override Type FarmingMode
         {
             get
@@ -118,5 +176,6 @@ namespace FarmingGPSLib.Equipment.BogBalle
                 return typeof(FertilizingMode);
             }
         }
+
     }
 }

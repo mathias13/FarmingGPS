@@ -64,8 +64,15 @@
                 </Grid>
             </StackPanel>
         </Border>
-        <Grid Grid.Row="1" x:Name="_equipmentControlGrid" x:FieldModifier="private" Visibility="Hidden" VerticalAlignment="Center" HorizontalAlignment="Left" Width="Auto" Margin="10">
-            <ContentControl Template="{StaticResource MenuBorder}"/>
+        <Grid Grid.Row="1" Visibility="Hidden" VerticalAlignment="Center" HorizontalAlignment="Left" x:Name="_equipmentGrid" x:FieldModifier="private">
+            <StackPanel Orientation="Vertical">
+                <Grid x:Name="_equipmentControlGrid" x:FieldModifier="private"  Width="Auto" Margin="10">
+                    <ContentControl Template="{StaticResource MenuBorder}"/>
+                </Grid>
+                <Grid x:Name="_equipmentStatGrid" x:FieldModifier="private"  Width="Auto" Margin="10">
+                    <ContentControl Template="{StaticResource MenuBorder}"/>
+                </Grid>
+            </StackPanel>
         </Grid>
         <Grid Grid.Row="1" Style="{Binding Path=CameraSize, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" MouseLeftButtonUp="Camera_MouseLeftButtonUp">
             <Border Background="White" BorderThickness="2" CornerRadius="5" BorderBrush="Black">
