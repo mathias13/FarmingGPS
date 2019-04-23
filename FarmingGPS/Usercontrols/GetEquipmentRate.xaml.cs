@@ -51,12 +51,15 @@ namespace FarmingGPS.Usercontrols
         private void ListBoxDates_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             EquipmentRateFile equipmentRate = ListBoxDates.SelectedItem as EquipmentRateFile;
-            BitmapImage image = new BitmapImage();
-            image.BeginInit();
-            image.StreamSource = new MemoryStream(equipmentRate.OverviewImage.ToArray());
-            image.EndInit();
-            SetValue(ImageUnavilableProperty, Visibility.Collapsed);
-            SetValue(ImageProperty, image);
+            if (equipmentRate.OverviewImage != null)
+            {
+                BitmapImage image = new BitmapImage();
+                image.BeginInit();
+                image.StreamSource = new MemoryStream(equipmentRate.OverviewImage.ToArray());
+                image.EndInit();
+                SetValue(ImageUnavilableProperty, Visibility.Collapsed);
+                SetValue(ImageProperty, image);
+            }
         }
 
         private void ButtonChoose_Click(object sender, RoutedEventArgs e)

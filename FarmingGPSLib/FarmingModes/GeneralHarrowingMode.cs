@@ -138,8 +138,11 @@ namespace FarmingGPSLib.FarmingModes
                     foreach (Polygon polygonToCheck in headLandToCheck)
                         if (!CgAlgorithms.IsPointInRing(lineCoordinates[j], polygonToCheck.Coordinates))
                             remove = false;
-                    if(remove)
+                    if (remove)
+                    {
                         lineCoordinates.RemoveAt(j);
+                        j--;
+                    }
                 }
               
                 if (lineCoordinates.Count == 2)
