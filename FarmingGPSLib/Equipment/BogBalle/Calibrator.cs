@@ -1,14 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.IO.Ports;
+using FarmingGPSLib.Equipment.Win32;
 using System.Threading;
 using log4net;
+using System.Runtime.InteropServices;
 
 namespace FarmingGPSLib.Equipment.BogBalle
 {
     public class Calibrator : IDisposable
     {
+        private struct ReadMessage
+        {
+            public ReadMessage(string command)
+            {
+                Command = command;
+                ReturnValue = String.Empty;
+                Finished = false;
+                Success = false;
+            }
+
+            public string Command { get; set; }
+            public string ReturnValue { get; set; }
+            public bool Finished { get; set; }
+            public bool Success { get; set; }
+        }
+
+        private struct WriteMessage
+        {
+            public WriteMessage(string command, string value)
+            {
+                Command = command;
+                Value = value;
+                Finished = false;
+                Success = false;
+            }
+
+            public string Command { get; set; }
+            public string Value { get; set; }
+            public bool Finished { get; set; }
+            public bool Success { get; set; }
+        }
+
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         #region Private Variables
@@ -57,14 +90,22 @@ namespace FarmingGPSLib.Equipment.BogBalle
         private const string STATUS_READ = "S";
 
         private const int DISCONNECTED_COUNT = 10;
-
-        private SerialPort _serialPort;
-
+        
+        private string _comPort = String.Empty;
+        
         private object _syncObject = new object();
+
+        private Thread _receiveSendThread;
+
+        private bool _receiveSendThreadStopped = false;
 
         private Thread _readThread;
 
         private bool _readThreadStop = false;
+
+        private WriteMessage _writeMessage;
+
+        private ReadMessage _readMessage;
 
         private int _readInterval = 1000;
 
@@ -108,15 +149,14 @@ namespace FarmingGPSLib.Equipment.BogBalle
         {
             lock (_syncObject)
             {
+                _readMessage = new ReadMessage();
+                _readMessage.Finished = true;
+                _writeMessage = new WriteMessage();
+                _writeMessage.Finished = true;
+                _comPort = comPort;
                 _readInterval = readInterval;
-                _serialPort = new SerialPort(comPort);
-                _serialPort.BaudRate = 9600;
-                _serialPort.DataBits = 8;
-                _serialPort.Parity = Parity.None;
-                _serialPort.StopBits = StopBits.One;
-                _serialPort.ReadTimeout = 500;
-                _serialPort.WriteTimeout = 500;
-                _serialPort.Handshake = Handshake.None;
+                _receiveSendThread = new Thread(new ThreadStart(ReceiveSendThreadSerial));
+                _receiveSendThread.Start();
                 _readThread = new Thread(new ThreadStart(ReadThread));
                 _readThread.Start();
             }
@@ -130,11 +170,8 @@ namespace FarmingGPSLib.Equipment.BogBalle
         {
             _readThreadStop = true;
             _readThread.Join();
-            if (_serialPort != null)
-            {
-                _serialPort.Close();
-                _serialPort.Dispose();
-            }
+            _receiveSendThreadStopped = true;
+            _receiveSendThread.Join();
         }
 
         public bool Start()
@@ -166,7 +203,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
             get
             {
                 lock (_syncObject)
-                    return _serialPort.IsOpen && _noAnswerCount < DISCONNECTED_COUNT;
+                    return _noAnswerCount < DISCONNECTED_COUNT;
             }
         }
 
@@ -223,6 +260,160 @@ namespace FarmingGPSLib.Equipment.BogBalle
         #endregion
 
         #region Private Methods
+
+        private void ReceiveSendThreadSerial()
+        {
+            byte[] buffer = new byte[32];
+            IntPtr portHandle = IntPtr.Zero;
+            Thread.Sleep(1000);
+
+            while (!_receiveSendThreadStopped)
+            {
+                try
+                {
+                    if (portHandle == IntPtr.Zero)
+                    {
+                        int portnumber = Int32.Parse(_comPort.Replace("COM", String.Empty));
+                        string comPort = _comPort;
+                        if (portnumber > 9)
+                            comPort = String.Format("\\\\.\\{0}", _comPort);
+                        portHandle = Win32Com.CreateFile(comPort, Win32Com.GENERIC_READ | Win32Com.GENERIC_WRITE, 0, IntPtr.Zero,
+                            Win32Com.OPEN_EXISTING, 0, IntPtr.Zero);
+
+                        if (portHandle == (IntPtr)Win32Com.INVALID_HANDLE_VALUE)
+                        {
+                            if (Marshal.GetLastWin32Error() == Win32Com.ERROR_ACCESS_DENIED)
+                                throw new Exception(String.Format("Access denied for port {0}", _comPort));
+                            else
+                                throw new Exception(String.Format("Failed to open port {0}", _comPort));
+                        }
+
+                        COMMTIMEOUTS commTimeouts = new COMMTIMEOUTS();
+                        commTimeouts.ReadIntervalTimeout = uint.MaxValue;
+                        commTimeouts.ReadTotalTimeoutConstant = 0;
+                        commTimeouts.ReadTotalTimeoutMultiplier = 0;
+                        commTimeouts.WriteTotalTimeoutConstant = 0;
+                        commTimeouts.WriteTotalTimeoutMultiplier = 0;
+                        DCB dcb = new DCB();
+                        dcb.Init(false, false, false, 0, false, false, false, false, 0);
+                        dcb.BaudRate = 9600;
+                        dcb.ByteSize = 8;
+                        dcb.Parity = 0;
+                        dcb.StopBits = 0;
+                        if (!Win32Com.SetupComm(portHandle, 8192, 4096))
+                            throw new Exception(String.Format("Failed to set queue settings for port {0}", _comPort));
+                        if (!Win32Com.SetCommState(portHandle, ref dcb))
+                            throw new Exception(String.Format("Failed to set comm settings for port {0}", _comPort));
+                        if (!Win32Com.SetCommTimeouts(portHandle, ref commTimeouts))
+                            throw new Exception(String.Format("Failed to set comm timeouts for port {0}", _comPort));
+                    }
+
+                    uint lpdwFlags = 0;
+                    if (!Win32Com.GetHandleInformation(portHandle, out lpdwFlags))
+                        throw new Exception(String.Format("Port {0} went offline", _comPort));
+
+                    if (!_writeMessage.Finished)
+                    {
+                        byte[] writeBytes = BuildMessage(COMMAND_INIT + _writeMessage.Command + _writeMessage.Value);
+
+                        uint bytesWritten = 0;
+                        DateTime sendTimeout = DateTime.Now.AddMilliseconds(500);
+                        while (bytesWritten != writeBytes.Length && DateTime.Now < sendTimeout)
+                        {
+                            if (!Win32Com.WriteFile(portHandle, writeBytes, (uint)writeBytes.Length, out bytesWritten, IntPtr.Zero))
+                            {
+                                _writeMessage.Finished = true;
+                                throw new Exception(String.Format("Failed to write port {0}", _comPort));
+                            }
+                        }
+
+                        if (bytesWritten == writeBytes.Length)
+                        {
+                            string answer = string.Empty;
+                            DateTime readTimeout = DateTime.Now.AddMilliseconds(500);
+                            while (!answer.Contains(END_CHAR) && DateTime.Now < readTimeout)
+                            {
+                                uint bytesRead = 0;
+                                if (!Win32Com.ReadFile(portHandle, buffer, (uint)buffer.Length, out bytesRead, IntPtr.Zero))
+                                {
+                                    _writeMessage.Finished = true;
+                                    throw new Exception(String.Format("Failed to read port {0}", _comPort));
+                                }
+
+                                if (bytesRead > 0)
+                                {
+                                    byte[] bytes = new byte[bytesRead];
+                                    Buffer.BlockCopy(buffer, 0, bytes, 0, (int)bytesRead);
+                                }
+                            }
+                            if (ValidateMessage(ref answer))
+                            {
+                                if (answer.Contains(COMMAND_ANSWER + _writeMessage.Command))
+                                    _writeMessage.Success = true;
+                            }
+                            _writeMessage.Finished = true;
+                        }
+                    }
+                    else if (!_readMessage.Finished)
+                    {
+                        byte[] writeBytes = BuildMessage(READ_INIT + _readMessage.Command);
+
+                        uint bytesWritten = 0;
+                        DateTime sendTimeout = DateTime.Now.AddMilliseconds(500);
+                        while (bytesWritten != writeBytes.Length && DateTime.Now < sendTimeout)
+                        {
+                            if (!Win32Com.WriteFile(portHandle, writeBytes, (uint)writeBytes.Length, out bytesWritten, IntPtr.Zero))
+                            {
+                                _readMessage.Finished = true;
+                                throw new Exception(String.Format("Failed to write port {0}", _comPort));
+                            }
+                        }
+
+                        if (bytesWritten == writeBytes.Length)
+                        {
+                            string answer = string.Empty;
+                            DateTime readTimeout = DateTime.Now.AddMilliseconds(500);
+                            while (!answer.Contains(END_CHAR) && DateTime.Now < readTimeout)
+                            {
+                                uint bytesRead = 0;
+                                if (!Win32Com.ReadFile(portHandle, buffer, (uint)buffer.Length, out bytesRead, IntPtr.Zero))
+                                {
+                                    _readMessage.Finished = true;
+                                    throw new Exception(String.Format("Failed to read port {0}", _comPort));
+                                }
+
+                                if (bytesRead > 0)
+                                {
+                                    byte[] bytes = new byte[bytesRead];
+                                    Buffer.BlockCopy(buffer, 0, bytes, 0, (int)bytesRead);
+                                }
+                            }
+                            if (ValidateMessage(ref answer))
+                            {
+                                string commandAnswer = _readMessage.Command;
+                                if (_readMessage.Command == STATUS_READ)
+                                    commandAnswer = "P";
+                                if (answer.StartsWith(READ_ANSWER + commandAnswer))
+                                {
+                                    _readMessage.ReturnValue = answer.Replace(READ_ANSWER + commandAnswer, String.Empty);
+                                    _readMessage.Success = true;
+                                }
+                            }
+                            _readMessage.Finished = true;
+                        }
+                    }
+                    else
+                        Thread.Sleep(1);         
+                }
+                catch (Exception e)
+                {
+                    Log.Warn(e);
+                    Thread.Sleep(5000);
+                }
+            }
+            Win32Com.CancelIo(portHandle);
+            Win32Com.CloseHandle(portHandle);
+        }
 
         private void ReadThread()
         {
@@ -334,120 +525,44 @@ namespace FarmingGPSLib.Equipment.BogBalle
         
         private string ReadValue(string command)
         {
-            string answer = string.Empty;
-            byte[] bytes = BuildMessage(READ_INIT + command);
-            DateTime timeout = DateTime.MinValue;
             lock (_syncObject)
             {
-                try
+                _readMessage = new ReadMessage(command);
+
+                while (!_readMessage.Finished)
+                    Thread.Sleep(1);
+
+                if (_readMessage.Success)
                 {
-                    if (!_serialPort.IsOpen)
-                        _serialPort.Open();
-
-                    _serialPort.Write(bytes, 0, bytes.Length);
-
-                    timeout = DateTime.Now.AddSeconds(1.0);
-                    while (!answer.Contains(END_CHAR))
-                    {
-                        byte[] readBuffer = new byte[1];
-                        int bytesRead = _serialPort.Read(readBuffer, 0, 1);
-                        if (bytesRead < 1)
-                        {
-                            Thread.Sleep(1);
-                            continue;
-                        }
-                        else
-                        {
-                            answer += Encoding.ASCII.GetString(readBuffer, 0, bytesRead);
-                        }
-                        if (timeout < DateTime.Now)
-                            break;
-                    }
-                    if (ValidateMessage(ref answer))
-                    {
-                        string commandAnswer = command;
-                        if (command == STATUS_READ)
-                            commandAnswer = "P";
-                        if (answer.StartsWith(READ_ANSWER + commandAnswer))
-                        {
-                            _noAnswerCount = 0;
-                            return answer.Replace(READ_ANSWER + commandAnswer, String.Empty);
-                        }
-                        else
-                        {
-                            _noAnswerCount++;
-                            return string.Empty;
-                        }
-                    }
-                    else
-                    {
-                        _noAnswerCount++;
-                        return string.Empty;
-                    }
+                    _noAnswerCount = 0;
+                    return _readMessage.ReturnValue;
                 }
-                catch(Exception e)
+                else
                 {
-                    Log.Warn("Failed to read value with command: " + command, e);
                     _noAnswerCount++;
-                    return string.Empty;
+                    Log.Warn("Failed to read value with command: " + command);
+                    return String.Empty;
                 }
             }
         }
             
         private bool WriteValue(string command, string value)
         {
-            string answer = string.Empty;
-            byte[] bytes = BuildMessage(COMMAND_INIT + command + value);
-            DateTime timeout = DateTime.MinValue;
-            lock (_syncObject)
+            _writeMessage = new WriteMessage(command, value);
+
+            while (!_writeMessage.Finished)
+                Thread.Sleep(1);
+
+            if (_writeMessage.Success)
             {
-                try
-                {
-                    if (!_serialPort.IsOpen)
-                        _serialPort.Open();
-
-                    _serialPort.Write(bytes, 0, bytes.Length);
-
-                    timeout = DateTime.Now.AddSeconds(1.0);
-                    while (!answer.Contains(END_CHAR))
-                    {
-                        byte[] readBuffer = new byte[10];
-                        int bytesRead = _serialPort.Read(readBuffer, 0, 10);
-                        if (bytesRead < 1)
-                        {
-                            Thread.Sleep(1);
-                            continue;
-                        }
-                        else
-                            answer += Encoding.ASCII.GetString(readBuffer, 0, bytesRead);
-                        if (timeout < DateTime.Now)
-                            break;
-                    }
-                    if (ValidateMessage(ref answer))
-                    {
-                        if (answer.Contains(COMMAND_ANSWER + command))
-                        {
-                            _noAnswerCount = 0;
-                            return true;
-                        }
-                        else
-                        {
-                            _noAnswerCount++;
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        _noAnswerCount++;
-                        return false;
-                    }
-                }
-                catch(Exception e)
-                {
-                    Log.Warn("Failed to write value with command: " + command, e);
-                    _noAnswerCount++;
-                    return false;
-                }
+                _noAnswerCount = 0;
+                return true;
+            }
+            else
+            {
+                _noAnswerCount++;
+                Log.Warn("Failed to write value with command: " + command);
+                return false;
             }
         }
 
