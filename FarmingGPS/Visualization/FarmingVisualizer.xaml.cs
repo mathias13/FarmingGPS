@@ -544,37 +544,44 @@ namespace FarmingGPS.Visualization
 
         private void AddCompletePolygon(PolygonUpdatedEventArgs e)
         {
-            PolygonData polygonData = GetPolygonData(e.Polygon.Shell.Coordinates, FIELD_TRACK_Z_INDEX);
-            Mesh3D mesh3D = new Mesh3D(polygonData.Polygon, CuttingEarsTriangulator.Triangulate(polygonData.Polygon2D));
-            MeshVisual3D mesh = new MeshVisual3D();
-            mesh.FaceMaterial = _fieldTrackMaterial;
-            mesh.EdgeDiameter = 0;
-            mesh.VertexRadius = 0;
-            mesh.Mesh = mesh3D;
-
-            IList<MeshVisual3D> holes = new List<MeshVisual3D>();
-            IList<ulong> holeSums = new List<ulong>();
-            foreach (DotSpatial.Topology.ILinearRing hole in e.Polygon.Holes)
+            try
             {
-                double area = Math.Abs(DotSpatial.Topology.Algorithm.CgAlgorithms.SignedArea(hole.Coordinates));
-                PolygonData holePolygonData = GetPolygonData(hole.Coordinates, FIELD_TRACK_HOLES_Z_INDEX);
-                Mesh3D holeMesh3D = new Mesh3D(holePolygonData.Polygon, CuttingEarsTriangulator.Triangulate(holePolygonData.Polygon2D));
-                MeshVisual3D holeMesh = new MeshVisual3D();
-                holeMesh.FaceMaterial = area > FIELD_TRACK_HOLE_RED_MAX_AREA ? _fieldFillMaterial : _fieldTrackHoleMaterial;
-                holeMesh.EdgeDiameter = 0;
-                holeMesh.VertexRadius = 0;
-                holeMesh.Mesh = holeMesh3D;
-                holes.Add(holeMesh);
-                holeSums.Add(holePolygonData.PolygonSum);
-            }
+                PolygonData polygonData = GetPolygonData(e.Polygon.Shell.Coordinates, FIELD_TRACK_Z_INDEX);
+                Mesh3D mesh3D = new Mesh3D(polygonData.Polygon, CuttingEarsTriangulator.Triangulate(polygonData.Polygon2D));
+                MeshVisual3D mesh = new MeshVisual3D();
+                mesh.FaceMaterial = _fieldTrackMaterial;
+                mesh.EdgeDiameter = 0;
+                mesh.VertexRadius = 0;
+                mesh.Mesh = mesh3D;
 
-            _trackMesh.Add(e.ID, mesh);
-            _trackSums.Add(e.ID, polygonData.PolygonSum);
-            _viewPort.Children.Add(mesh);
-            _trackMeshHoles.Add(e.ID, holes);
-            _trackSumsHoles.Add(e.ID, holeSums);
-            foreach (MeshVisual3D hole in holes)
-                _viewPort.Children.Add(hole);
+                IList<MeshVisual3D> holes = new List<MeshVisual3D>();
+                IList<ulong> holeSums = new List<ulong>();
+                foreach (DotSpatial.Topology.ILinearRing hole in e.Polygon.Holes)
+                {
+                    double area = Math.Abs(DotSpatial.Topology.Algorithm.CgAlgorithms.SignedArea(hole.Coordinates));
+                    PolygonData holePolygonData = GetPolygonData(hole.Coordinates, FIELD_TRACK_HOLES_Z_INDEX);
+                    Mesh3D holeMesh3D = new Mesh3D(holePolygonData.Polygon, CuttingEarsTriangulator.Triangulate(holePolygonData.Polygon2D));
+                    MeshVisual3D holeMesh = new MeshVisual3D();
+                    holeMesh.FaceMaterial = area > FIELD_TRACK_HOLE_RED_MAX_AREA ? _fieldFillMaterial : _fieldTrackHoleMaterial;
+                    holeMesh.EdgeDiameter = 0;
+                    holeMesh.VertexRadius = 0;
+                    holeMesh.Mesh = holeMesh3D;
+                    holes.Add(holeMesh);
+                    holeSums.Add(holePolygonData.PolygonSum);
+                }
+
+                _trackMesh.Add(e.ID, mesh);
+                _trackSums.Add(e.ID, polygonData.PolygonSum);
+                _viewPort.Children.Add(mesh);
+                _trackMeshHoles.Add(e.ID, holes);
+                _trackSumsHoles.Add(e.ID, holeSums);
+                foreach (MeshVisual3D hole in holes)
+                    _viewPort.Children.Add(hole);
+            }
+            catch(Exception e1)
+            {
+                Log.Error("Failed to Add polygon", e1);
+            }
         }
 
         private void UpdatePolygon(PolygonData polygonData, int polygonId)
