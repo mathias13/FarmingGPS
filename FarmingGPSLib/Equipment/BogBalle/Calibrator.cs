@@ -407,7 +407,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                 }
                 catch (Exception e)
                 {
-                    Log.Warn(e);
+                    Log.Error("Com port failiure", e);
                     Thread.Sleep(5000);
                 }
             }
