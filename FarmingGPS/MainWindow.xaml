@@ -64,7 +64,7 @@
                 </Grid>
             </StackPanel>
         </Border>
-        <Grid Grid.Row="1" Visibility="Hidden" VerticalAlignment="Center" HorizontalAlignment="Left" x:Name="_equipmentGrid" x:FieldModifier="private">
+        <Grid Grid.Row="1" Visibility="Hidden" VerticalAlignment="Center" Margin="30,0,0,0" HorizontalAlignment="Left" x:Name="_equipmentGrid" x:FieldModifier="private">
             <StackPanel Orientation="Vertical">
                 <Grid x:Name="_equipmentControlGrid" x:FieldModifier="private"  Width="Auto" Margin="10">
                     <ContentControl Template="{StaticResource MenuBorder}"/>
