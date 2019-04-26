@@ -344,6 +344,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                                 {
                                     byte[] bytes = new byte[bytesRead];
                                     Buffer.BlockCopy(buffer, 0, bytes, 0, (int)bytesRead);
+                                    answer += Encoding.ASCII.GetString(bytes, 0, bytes.Length);
                                 }
                             }
                             if (ValidateMessage(ref answer))
@@ -386,6 +387,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                                 {
                                     byte[] bytes = new byte[bytesRead];
                                     Buffer.BlockCopy(buffer, 0, bytes, 0, (int)bytesRead);
+                                    answer += Encoding.ASCII.GetString(bytes, 0, bytes.Length);
                                 }
                             }
                             if (ValidateMessage(ref answer))
@@ -408,6 +410,10 @@ namespace FarmingGPSLib.Equipment.BogBalle
                 catch (Exception e)
                 {
                     Log.Error("Com port failiure", e);
+                    _readMessage.Success = false;
+                    _readMessage.Finished = true;
+                    _writeMessage.Success = false;
+                    _writeMessage.Finished = true;
                     Thread.Sleep(5000);
                 }
             }
