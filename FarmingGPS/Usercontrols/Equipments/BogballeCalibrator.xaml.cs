@@ -40,7 +40,6 @@ namespace FarmingGPS.Usercontrols.Equipments
                 SetValue(PTO, _calibrator.PTO);
                 SetValue(Speed, _calibrator.Speed);
                 SetValue(Tara, _calibrator.Tara);
-                SetValue(HopperContents, _calibrator.HopperContents);
             }
             else
                 Dispatcher.BeginInvoke(new Action<object, EventArgs>(Calibrator_ValuesUpdated), DispatcherPriority.Render, sender, e);
@@ -61,9 +60,7 @@ namespace FarmingGPS.Usercontrols.Equipments
         protected static readonly DependencyProperty Speed = DependencyProperty.Register("Speed", typeof(float), typeof(BogballeCalibrator));
 
         protected static readonly DependencyProperty Tara = DependencyProperty.Register("Tara", typeof(int), typeof(BogballeCalibrator));
-
-        protected static readonly DependencyProperty HopperContents = DependencyProperty.Register("HopperContents", typeof(int), typeof(BogballeCalibrator));
-
+        
         #endregion
 
         private void BTN_START_Click(object sender, RoutedEventArgs e)

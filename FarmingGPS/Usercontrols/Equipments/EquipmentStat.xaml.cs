@@ -33,7 +33,7 @@ namespace FarmingGPS.Usercontrols.Equipments
 
         private void EquipmentStat_StatUpdated(object sender, EventArgs e)
         {
-            Dispatcher.Invoke(new Action(UpdateValues), DispatcherPriority.Render);
+            Dispatcher.BeginInvoke(new Action(UpdateValues), DispatcherPriority.Render);
         }
 
         private void UpdateValues()
@@ -47,7 +47,7 @@ namespace FarmingGPS.Usercontrols.Equipments
 
         protected static readonly DependencyProperty TotalInput = DependencyProperty.Register("TotalInput", typeof(int), typeof(EquipmentStat));
 
-        protected static readonly DependencyProperty LeftInEquipment = DependencyProperty.Register("LeftInEquipment", typeof(int), typeof(BogballeCalibrator));
+        protected static readonly DependencyProperty LeftInEquipment = DependencyProperty.Register("LeftInEquipment", typeof(int), typeof(EquipmentStat));
 
         protected static readonly DependencyProperty LeftInEquipmentPercent = DependencyProperty.Register("LeftInEquipmentPercent", typeof(int), typeof(EquipmentStat));
 
