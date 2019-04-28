@@ -144,7 +144,7 @@ namespace FarmingGPSLib.FarmingModes
 
                             if (first > second)
                             {
-                                int temp = second;
+                                int temp = Math.Max(second - 1, 0);
                                 second = first;
                                 first = temp;
                             }
