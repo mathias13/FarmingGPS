@@ -139,8 +139,8 @@ namespace FarmingGPSLib.FarmingModes
                             List<Coordinate> ring1 = new List<Coordinate>();
                             List<Coordinate> ring2 = new List<Coordinate>();
 
-                            int first = ring.Coordinates.IndexOf(newLines[i].P1);
-                            int second = ring.Coordinates.IndexOf(newLines[k].P1);
+                            int first = i + 1;
+                            int second = k + 1;
 
                             if (first > second)
                             {
