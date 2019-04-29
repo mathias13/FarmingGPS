@@ -170,28 +170,28 @@ namespace FarmingGPS
 
         void Current_Exit(object sender, ExitEventArgs e)
         {
+            if (_stateRecovery != null)
+                _stateRecovery.Dispose();
+        }
+
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
             if (_equipment != null)
                 if (_equipment is IDisposable)
                     (_equipment as IDisposable).Dispose();
             if (_camera != null)
                 if (_camera is IDisposable)
                     (_camera as IDisposable).Dispose();
-            if(_ntripClient != null)
+            if (_ntripClient != null)
                 _ntripClient.Dispose();
             if (_receiver != null)
                 if (_receiver is IDisposable)
                     (_receiver as IDisposable).Dispose();
-            if(_sbpReceiverSender != null)
+            if (_sbpReceiverSender != null)
                 _sbpReceiverSender.Dispose();
-            if(_database != null)
+            if (_database != null)
                 _database.Dispose();
 
-            if (_stateRecovery != null)
-                _stateRecovery.Dispose();
-        }
-
-        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {   
             YesNoDialog dialog = new YesNoDialog("Vill du radera all sessions data?");
             if (dialog.ShowDialog().Value)
                 _stateRecovery.Clear();
