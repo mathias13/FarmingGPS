@@ -93,6 +93,12 @@
   <ItemGroup>
     <Compile Include="Equipment\BogBalle\Calibrator.cs" />
     <Compile Include="Equipment\IEquipmentStat.cs" />
+    <Compile Include="Equipment\Win32\COMMPROP.cs" />
+    <Compile Include="Equipment\Win32\COMMTIMEOUTS.cs" />
+    <Compile Include="Equipment\Win32\COMSTAT.cs" />
+    <Compile Include="Equipment\Win32\DCB.cs" />
+    <Compile Include="Equipment\Win32\OVERLAPPED.cs" />
+    <Compile Include="Equipment\Win32\Win32Com.cs" />
     <Compile Include="FieldItems\FieldRateTracker.cs" />
     <Compile Include="Settings\BogBalle\Calibrator.cs" />
     <Compile Include="Equipment\BogBalle\L2Plus.cs" />
