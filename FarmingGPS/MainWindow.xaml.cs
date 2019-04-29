@@ -882,11 +882,11 @@ namespace FarmingGPS
                 {
                     Type equipmentClass = AppDomain.CurrentDomain.GetAssemblies().SelectMany(t => t.GetTypes()).Where(t => String.Equals(t.FullName, _equipmentChoosen.EquipmentClass, StringComparison.Ordinal)).First();
                     if (equipmentClass == null)
-                        _equipment = new Harrow(Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromCentimeters(userControl.Overlap));
+                        _equipment = new Harrow(Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromMeters(userControl.Overlap));
                     else if (equipmentClass.IsAssignableFrom(typeof(IEquipment)))
-                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromCentimeters(userControl.Overlap));
+                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromMeters(userControl.Overlap));
                     else
-                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromCentimeters(userControl.Overlap));
+                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromMeters(userControl.Overlap));
 
                     if (_equipment is IEquipmentControl)
                     {
