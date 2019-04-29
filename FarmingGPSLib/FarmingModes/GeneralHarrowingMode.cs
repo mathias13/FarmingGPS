@@ -136,7 +136,7 @@ namespace FarmingGPSLib.FarmingModes
                 {
                     bool remove = true;
                     foreach (Polygon polygonToCheck in headLandToCheck)
-                        if (!CgAlgorithms.IsPointInRing(lineCoordinates[j], polygonToCheck.Coordinates))
+                        if (CgAlgorithms.IsPointInRing(lineCoordinates[j], polygonToCheck.Coordinates))
                             remove = false;
                     if (remove)
                     {
