@@ -713,9 +713,14 @@ namespace FarmingGPS
                 _equipmentGrid.Visibility = System.Windows.Visibility.Hidden;
         }
 
-        private void BTN_START_STOP_AUTO_Checked(object sender, RoutedEventArgs e)
+        private void BTN_START_STOP_AUTO_Click(object sender, RoutedEventArgs e)
         {
             _startStopAuto = BTN_START_STOP_AUTO.IsChecked.Value;
+        }
+
+        private void BTN_RATE_AUTO_Click(object sender, RoutedEventArgs e)
+        {
+            _fieldRateTracker.Auto = BTN_RATE_AUTO.IsChecked.Value;
         }
 
         #endregion
@@ -910,6 +915,7 @@ namespace FarmingGPS
                         if (EQUIPMENTCONTROL_VISUALIZATION.ContainsKey(equipmentControl.ControllerType))
                         {
                             BTN_START_STOP_AUTO.Visibility = Visibility.Visible;
+                            BTN_RATE_AUTO.Visibility = Visibility.Visible;
                             BTN_EQUIPMENT.Visibility = Visibility.Visible;
                             _equipmentControlGrid.Children.Add(Activator.CreateInstance(EQUIPMENTCONTROL_VISUALIZATION[equipmentControl.ControllerType], controller) as UserControl);
                             if (_equipment is IEquipmentStat)
@@ -918,6 +924,7 @@ namespace FarmingGPS
                         else
                         {
                             BTN_START_STOP_AUTO.Visibility = Visibility.Hidden;
+                            BTN_RATE_AUTO.Visibility = Visibility.Hidden;
                             BTN_EQUIPMENT.Visibility = Visibility.Hidden;
                             _equipmentGrid.Visibility = Visibility.Hidden;
                         }

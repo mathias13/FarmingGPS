@@ -24,6 +24,8 @@ namespace FarmingGPSLib.FieldItems
 
         private IEquipmentControl _equipmentToControl;
 
+        private bool _auto = false;
+
         #endregion
 
         public FieldRateTracker()
@@ -38,6 +40,21 @@ namespace FarmingGPSLib.FieldItems
             _rateColumn = rateColumn;
             _shapeFile.Reproject(field.Projection);
         }
+
+        #region Public Properties
+
+        public bool Auto
+        {
+            get { return _auto; }
+            set
+            {
+                if(value)
+                    _equipmentToControl.SetRate(_currentRate);
+                _auto = value;
+            }
+        }
+
+        #endregion
 
         #region Public Methods
 
@@ -71,7 +88,8 @@ namespace FarmingGPSLib.FieldItems
             if (rateToSet > _currentRate + _minimumChangeOfRate || rateToSet < _currentRate - _minimumChangeOfRate)
             {
                 _currentRate = rateToSet;
-                _equipmentToControl.SetRate(_currentRate);
+                if(_auto)
+                    _equipmentToControl.SetRate(_currentRate);
             }
         }
         
