@@ -448,45 +448,48 @@ namespace FarmingGPSLib.Equipment.BogBalle
                     }
                 }
 
-                value = ReadValue(ACT_VALUE_READ);
-                if (!int.TryParse(value, out _actValue))
-                    _actValue = -1;
-
-                value = ReadValue(SET_VALUE_READ);
-                if (!int.TryParse(value, out _setValue))
-                    _setValue = -1;
-
-                value = ReadValue(SPREAD_WIDTH_READ);
-                if (float.TryParse(value, out _spreadWidth))
-                    _spreadWidth = _spreadWidth / 10;
-                else
-                    _spreadWidth = -1.0f;
-
-                if (_activeField > -1)
+                if (!isConnected)
                 {
-                    value = ReadValue(HA_READ + _activeField.ToString());
-                    if (float.TryParse(value, out _ha))
-                        _ha = _ha / 100;
+                    value = ReadValue(ACT_VALUE_READ);
+                    if (!int.TryParse(value, out _actValue))
+                        _actValue = -1;
+
+                    value = ReadValue(SET_VALUE_READ);
+                    if (!int.TryParse(value, out _setValue))
+                        _setValue = -1;
+
+                    value = ReadValue(SPREAD_WIDTH_READ);
+                    if (float.TryParse(value, out _spreadWidth))
+                        _spreadWidth = _spreadWidth / 10;
                     else
-                        _ha = -1.0f;
+                        _spreadWidth = -1.0f;
+
+                    if (_activeField > -1)
+                    {
+                        value = ReadValue(HA_READ + _activeField.ToString());
+                        if (float.TryParse(value, out _ha))
+                            _ha = _ha / 100;
+                        else
+                            _ha = -1.0f;
+                    }
+
+                    value = ReadValue(TARA_READ);
+                    if (!int.TryParse(value, out _tara))
+                        _tara = -1;
+
+                    value = ReadValue(SPEED_READ);
+                    if (float.TryParse(value, out _speed))
+                        _speed = _speed / 10;
+                    else
+                        _speed = -1.0f;
+
+                    value = ReadValue(PTO_READ);
+                    if (!int.TryParse(value, out _pto))
+                        _pto = -1;
+
+                    if (ValuesUpdated != null)
+                        ValuesUpdated.Invoke(this, new EventArgs());
                 }
-
-                value = ReadValue(TARA_READ);
-                if (!int.TryParse(value, out _tara))
-                    _tara = -1;
-
-                value = ReadValue(SPEED_READ);
-                if (float.TryParse(value, out _speed))
-                    _speed = _speed / 10;
-                else
-                    _speed = -1.0f;
-
-                value = ReadValue(PTO_READ);
-                if (!int.TryParse(value, out _pto))
-                    _pto = -1;
-
-                if (ValuesUpdated != null)
-                    ValuesUpdated.Invoke(this, new EventArgs());
 
                 if (isConnected != IsConnected)
                     if (IsConnectedChanged != null)
