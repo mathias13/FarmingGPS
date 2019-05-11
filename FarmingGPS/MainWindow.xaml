@@ -45,6 +45,7 @@
         <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Vertical" Grid.Row="1">
             <visualization:SpeedBar Width="Auto" Height="Auto" x:FieldModifier="private" x:Name="_speedBar"/>
             <visualization:WorkedAreaBar Width="Auto" Height="Auto" x:FieldModifier="private" x:Name="_workedAreaBar"/>
+            <visualization:EquipmentLevelBar Width="Auto" Height="Auto" x:FieldModifier="private" Visibility="Hidden" x:Name="_equipmentLevelBar"/>
             <ToggleButton Height="40" x:FieldModifier="private" x:Name="BTN_START_STOP_AUTO" Style="{StaticResource GENERAL_TOGGLE_BUTTON}" Click="BTN_START_STOP_AUTO_Click" Visibility="Hidden">Auto Start/Stopp</ToggleButton>
             <ToggleButton Height="40" x:FieldModifier="private" x:Name="BTN_RATE_AUTO" Style="{StaticResource GENERAL_TOGGLE_BUTTON}" Click="BTN_RATE_AUTO_Click" Visibility="Hidden">Auto Giva</ToggleButton>
             <Button Grid.Row="1" x:Name="BTN_EQUIPMENT" Style="{StaticResource BUTTON_TRACTOR}" Width="60" Height="60" Margin="10,10,10,10" VerticalAlignment="Center" HorizontalAlignment="Left" Click="BTN_EQUIPMENT_Click" Visibility="Hidden"/>

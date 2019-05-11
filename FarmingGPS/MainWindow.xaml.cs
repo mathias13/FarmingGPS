@@ -850,6 +850,7 @@ namespace FarmingGPS
 
         private void SetEquipmentRate(GetEquipmentRate usercontrol)
         {
+            BTN_RATE_AUTO.Visibility = Visibility.Visible;
             _fieldRateTracker = new FieldRateTracker(usercontrol.DefaultRate, 5.0, usercontrol.ShapeFile, 1, _field);
             if (_equipment is IEquipmentControl)
                 _fieldRateTracker.RegisterEquipmentControl(_equipment as IEquipmentControl);
@@ -919,18 +920,30 @@ namespace FarmingGPS
                         if (EQUIPMENTCONTROL_VISUALIZATION.ContainsKey(equipmentControl.ControllerType))
                         {
                             BTN_START_STOP_AUTO.Visibility = Visibility.Visible;
-                            BTN_RATE_AUTO.Visibility = Visibility.Visible;
                             BTN_EQUIPMENT.Visibility = Visibility.Visible;
+                            while(_equipmentControlGrid.Children.Count > 1)
+                                _equipmentControlGrid.Children.RemoveAt(1);
                             _equipmentControlGrid.Children.Add(Activator.CreateInstance(EQUIPMENTCONTROL_VISUALIZATION[equipmentControl.ControllerType], controller) as UserControl);
                             if (_equipment is IEquipmentStat)
+                            {
+                                while (_equipmentStatGrid.Children.Count > 1)
+                                    _equipmentStatGrid.Children.RemoveAt(1);
                                 _equipmentStatGrid.Children.Add(new EquipmentStat((IEquipmentStat)_equipment));
+                                _equipmentLevelBar.Visibility = Visibility.Visible;
+                                _equipmentLevelBar.RegisterEquipmentStat((IEquipmentStat)_equipment);
+                            }
+                            else
+                            {
+                                _equipmentLevelBar.Visibility = Visibility.Hidden;
+                                _equipmentStatGrid.Visibility = Visibility.Hidden;
+                            }
                         }
                         else
                         {
                             BTN_START_STOP_AUTO.Visibility = Visibility.Hidden;
-                            BTN_RATE_AUTO.Visibility = Visibility.Hidden;
                             BTN_EQUIPMENT.Visibility = Visibility.Hidden;
                             _equipmentGrid.Visibility = Visibility.Hidden;
+                            _equipmentStatGrid.Visibility = Visibility.Hidden;
                         }
                     }
 
