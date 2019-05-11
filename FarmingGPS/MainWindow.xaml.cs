@@ -242,7 +242,7 @@ namespace FarmingGPS
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
             _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
-            BogballeCalibrator calibrator = new BogballeCalibrator(new Calibrator("COM3", 20000));
+
             if (_field == null)
             {
                 List<Position> positions = new List<Position>();
@@ -875,6 +875,10 @@ namespace FarmingGPS
                 foreach (TrackingLine trackingLine in _farmingMode.TrackingLinesHeadland)
                     _visualization.DeleteLine(trackingLine);
             }
+
+            if (_equipment != null)
+                if (_equipment is IDisposable)
+                    (_equipment as IDisposable).Dispose();
 
             if (_equipmentChoosen.EquipmentClass == null)
             {
