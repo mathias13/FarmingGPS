@@ -32,25 +32,25 @@ namespace FarmingGPSLib.FarmingModes.Tools
             _events[0].Left = new Angle(MainLine.Angle + (Math.PI / 3.0));
             _events[0].Right = new Angle(MainLine.Angle - (Math.PI / 3.0));
             Coordinate coord = HelperClassCoordinate.ComputePoint(MainLine.P0, MainLine.Angle, startEventDistance);
-            _events[0].LineToCross = new LineSegment(HelperClassCoordinate.ComputePoint(coord, angleLeft.Radians, 2.0), HelperClassCoordinate.ComputePoint(coord, angleRight.Radians, 2.0));
+            _events[0].LineToCross = new LineSegment(HelperClassCoordinate.ComputePoint(coord, angleLeft.Radians, 2.5), HelperClassCoordinate.ComputePoint(coord, angleRight.Radians, 2.5));
             _events[0].LastDistance = double.NaN;
             _events[0].Message = START_EVENT;
             _events[1].Left = _events[0].Left.Copy();
             _events[1].Right = _events[0].Right.Copy();
             coord = HelperClassCoordinate.ComputePoint(MainLine.P1, MainLine.Angle, stopEventDistance * -1.0);
-            _events[1].LineToCross = new LineSegment(HelperClassCoordinate.ComputePoint(coord, angleLeft.Radians, 2.0), HelperClassCoordinate.ComputePoint(coord, angleRight.Radians, 2.0));
+            _events[1].LineToCross = new LineSegment(HelperClassCoordinate.ComputePoint(coord, angleLeft.Radians, 2.5), HelperClassCoordinate.ComputePoint(coord, angleRight.Radians, 2.5));
             _events[1].LastDistance = double.NaN;
             _events[1].Message = STOP_EVENT;
             _events[2].Left = new Angle(MainLine.Angle - (Math.PI / 1.5));
             _events[2].Right = new Angle(MainLine.Angle + (Math.PI / 1.5));
             coord = HelperClassCoordinate.ComputePoint(MainLine.P0, MainLine.Angle, stopEventDistance);
-            _events[2].LineToCross = new LineSegment(HelperClassCoordinate.ComputePoint(coord, angleLeft.Radians, 2.0), HelperClassCoordinate.ComputePoint(coord, angleRight.Radians, 2.0));
+            _events[2].LineToCross = new LineSegment(HelperClassCoordinate.ComputePoint(coord, angleLeft.Radians, 2.5), HelperClassCoordinate.ComputePoint(coord, angleRight.Radians, 2.5));
             _events[2].LastDistance = double.NaN;
             _events[2].Message = STOP_EVENT;
             _events[3].Left = _events[2].Left.Copy();
             _events[3].Right = _events[2].Right.Copy();
             coord = HelperClassCoordinate.ComputePoint(MainLine.P1, MainLine.Angle, startEventDistance * -1.0);
-            _events[3].LineToCross = new LineSegment(HelperClassCoordinate.ComputePoint(coord, angleLeft.Radians, 2.0), HelperClassCoordinate.ComputePoint(coord, angleRight.Radians, 2.0));
+            _events[3].LineToCross = new LineSegment(HelperClassCoordinate.ComputePoint(coord, angleLeft.Radians, 2.5), HelperClassCoordinate.ComputePoint(coord, angleRight.Radians, 2.5));
             _events[3].LastDistance = double.NaN;
             _events[3].Message = START_EVENT;
         }
@@ -81,7 +81,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
                     {
                         if (_events[i].ToBeTriggered)
                         {
-                            if (_events[i].LastDistance < distanceToLine && distanceToLine < 1.0)
+                            if (_events[i].LastDistance < distanceToLine && distanceToLine < 2.0)
                             {
                                 _events[i].ToBeTriggered = false;
                                 _message = _events[i].Message;
