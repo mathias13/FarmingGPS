@@ -509,7 +509,7 @@
                 <ControlTemplate TargetType="Control">
                     <Grid>
                         <Popup x:Name="Popup" Placement="Right" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
-                            <Grid x:Name="DropDown" SnapsToDevicePixels="True" MinWidth="30" Height="{Binding ActualHeight, ElementName=PART_TextBox}">
+                            <Grid x:Name="DropDown" SnapsToDevicePixels="True" MinWidth="50" MinHeight="80" Height="{Binding ActualHeight, ElementName=PART_TextBox}">
                                 <local:ButtonSpinner x:Name="PART_Spinner"
                                     IsTabStop="False"
                                     BorderThickness="{TemplateBinding BorderThickness}"
@@ -523,7 +523,7 @@
                                         <ControlTemplate>
                                             <Border x:Name="Border" SnapsToDevicePixels="True" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" >
                                                 <Grid>
-                                                    <Grid x:Name="gridContent" Grid.Column="1" Visibility="Visible" Width="{TemplateBinding Width}">
+                                                    <Grid x:Name="gridContent" Grid.Column="1" Visibility="Visible" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}">
                                                         <Grid.RowDefinitions>
                                                             <RowDefinition Height="*" />
                                                             <RowDefinition Height="*" />
