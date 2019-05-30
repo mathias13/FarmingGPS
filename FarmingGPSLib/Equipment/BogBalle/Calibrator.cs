@@ -448,7 +448,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                     }
                 }
 
-                if (!isConnected)
+                if (isConnected)
                 {
                     value = ReadValue(ACT_VALUE_READ);
                     if (!int.TryParse(value, out _actValue))
