@@ -55,9 +55,7 @@ namespace FarmingGPSLib.FieldItems
         #endregion
 
         #region Consts
-
-        private const int SIMPLIFIER_COUNT_LIMIT = 50;
-
+        
         #endregion
 
         #region Private Variables
@@ -65,9 +63,7 @@ namespace FarmingGPSLib.FieldItems
         private IField _fieldToCalculateAreaWithin = null;
         
         private IDictionary<int, Polygon> _polygons = new Dictionary<int, Polygon>();
-
-        private IDictionary<int, int> _polygonSimplifierCount = new Dictionary<int, int>();
-                
+        
         private Coordinate _prevLeftPoint = Coordinate.Empty;
 
         private Coordinate _prevRightPoint = Coordinate.Empty;
@@ -152,17 +148,7 @@ namespace FarmingGPSLib.FieldItems
                             }
                         }
                         _polygons[_currentPolygonIndex].Holes = holes.ToArray();
-
-                        if (_polygons[_currentPolygonIndex].Coordinates.Count > _polygonSimplifierCount[_currentPolygonIndex])
-                        {
-                            IGeometry geometry = DotSpatial.Topology.Simplify.TopologyPreservingSimplifier.Simplify(_polygons[_currentPolygonIndex], 0.04);
-                            if (geometry is Polygon)
-                            {
-                                _polygons[_currentPolygonIndex] = geometry as Polygon;
-                                _polygonSimplifierCount[_currentPolygonIndex] = geometry.Coordinates.Count + SIMPLIFIER_COUNT_LIMIT;
-                            }
-                        }
-
+                        
                         for (int i = 0; i < _polygons.Count; i++)
                         {
                             if (i == _currentPolygonIndex || !_polygons.ContainsKey(i))
@@ -171,7 +157,6 @@ namespace FarmingGPSLib.FieldItems
                             {
                                 _polygons[_currentPolygonIndex] = (Polygon)_polygons[_currentPolygonIndex].Union(_polygons[i]);
                                 _polygons.Remove(i);
-                                _polygonSimplifierCount.Remove(i);
                                 OnPolygonDeleted(i);
                             }
                         }
@@ -202,7 +187,6 @@ namespace FarmingGPSLib.FieldItems
                             while (_polygons.Keys.Contains(id))
                                 id++;
                             _polygons.Add(id, polygon);
-                            _polygonSimplifierCount.Add(id, SIMPLIFIER_COUNT_LIMIT);
                             _currentPolygonIndex = id;
                             OnPolygonUpdated(_currentPolygonIndex);
                             OnAreaChanged();
@@ -254,7 +238,6 @@ namespace FarmingGPSLib.FieldItems
                     OnPolygonDeleted(polygon.Key);
 
                 _polygons.Clear();
-                _polygonSimplifierCount.Clear();
             }
         }
 
