@@ -122,6 +122,8 @@ namespace FarmingGPSLib.Equipment.BogBalle
             if (settings is Settings.BogBalle.Calibrator)
             {
                 Settings.BogBalle.Calibrator calibratorSettings = settings as Settings.BogBalle.Calibrator;
+                if (_calibrator != null)
+                    _calibrator.Dispose();
                 _calibrator = new Calibrator(calibratorSettings.COMPort, calibratorSettings.ReadInterval);
                 _calibrator.ChangeWidth((float)Width.ToMeters().Value);
                 _calibrator.ValuesUpdated += _calibrator_ValuesUpdated;
@@ -134,6 +136,10 @@ namespace FarmingGPSLib.Equipment.BogBalle
         public void SetRate(double rate)
         {
             _calibrator.ChangeSpreadingRate((int)rate);
+        }
+
+        public void RelaySpeed(double speed)
+        {
         }
 
         #endregion

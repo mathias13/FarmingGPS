@@ -414,6 +414,9 @@ namespace FarmingGPSLib.Equipment.BogBalle
                     _readMessage.Finished = true;
                     _writeMessage.Success = false;
                     _writeMessage.Finished = true;
+                    Win32Com.CancelIo(portHandle);
+                    Win32Com.CloseHandle(portHandle);
+                    portHandle = IntPtr.Zero;
                     Thread.Sleep(5000);
                 }
             }
