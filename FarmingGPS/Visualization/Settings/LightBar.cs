@@ -13,12 +13,12 @@ namespace FarmingGPS.Visualization.Settings
         ISettingsCollection _parent;
 
         private static ConfigurationProperty _tolerance =
-            new ConfigurationProperty("Tolerance", typeof(double), 0.2, ConfigurationPropertyOptions.IsRequired);
+            new ConfigurationProperty("Tolerance", typeof(int), 20, ConfigurationPropertyOptions.IsRequired);
                 
         public LightBar()
         {
             _settings = new SettingsCollection("Lightbar");
-            _settings.Add(new Setting("Tolerans", typeof(double), Tolerance));
+            _settings.Add(new Setting("Tolerance", "Tolerans", typeof(int), Tolerance));
             foreach (ISetting setting in _settings)
                 setting.SettingChanged += Setting_SettingChanged;
         }
@@ -27,13 +27,13 @@ namespace FarmingGPS.Visualization.Settings
         {
             ISetting setting = sender as ISetting;
             if (setting.Name == "Tolerance")
-                Tolerance = (double)setting.Value;
+                Tolerance = (int)setting.Value;
         }
-
+        
         [ConfigurationProperty("Tolerance", IsRequired = true)]
-        public double Tolerance
+        public int Tolerance
         {
-            get { return (double)this[_tolerance]; }
+            get { return (int)this[_tolerance]; }
             set { this[_tolerance] = value; }
         }
         

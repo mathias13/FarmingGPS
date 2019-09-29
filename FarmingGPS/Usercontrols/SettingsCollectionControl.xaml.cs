@@ -38,7 +38,7 @@ namespace FarmingGPS.Usercontrols
             foreach (ISetting setting in _settingCollection)
             {
                 TextBlock settingHeader = new TextBlock();
-                settingHeader.Text = setting.Name;
+                settingHeader.Text = setting.DisplayName;
                 settingHeader.Style = (Style)this.FindResource("SETTING_HEADER");
                 SettingPanel.Children.Add(settingHeader);
                 FrameworkElement settingControl = null;
@@ -96,7 +96,8 @@ namespace FarmingGPS.Usercontrols
                     settingControl = textBox;
                     settingControl.Style = (Style)FindResource("TEXTBOX");
                 }
-                        SettingPanel.Children.Add(settingControl);
+                settingControl.Tag = setting.Name;
+                SettingPanel.Children.Add(settingControl);
             }
         }
 
@@ -106,7 +107,7 @@ namespace FarmingGPS.Usercontrols
             {
                 if (SettingPanel.Children[i] is TextBlock)
                 {
-                    ISetting setting = _settingCollection[(SettingPanel.Children[i] as TextBlock).Text];
+                    ISetting setting = _settingCollection[(SettingPanel.Children[i + 1] as FrameworkElement).Tag as string];
                     if (setting.ValueType == typeof(double) || setting.ValueType == typeof(float))
                         setting.Value = Convert.ChangeType((SettingPanel.Children[i + 1] as DoubleUpDown).Value, setting.ValueType);
                     else if (setting.ValueType == typeof(int))

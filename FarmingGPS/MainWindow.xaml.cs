@@ -825,10 +825,14 @@ namespace FarmingGPS
                 if (settingControl.Settings is ConfigurationSection)
                 {
                     ConfigurationSection configSection = _config.Sections[settingControl.Settings.GetType().FullName];
-                    if (configSection != null)
+                    if (configSection == null)
+                        _config.Sections.Add(settingControl.Settings.GetType().FullName, settingControl.Settings as ConfigurationSection);
+                    else if (!configSection.Equals(settingControl.Settings))
+                    {
                         _config.Sections.Remove(settingControl.Settings.GetType().FullName);
+                        _config.Sections.Add(settingControl.Settings.GetType().FullName, settingControl.Settings as ConfigurationSection);
+                    }
 
-                    _config.Sections.Add(settingControl.Settings.GetType().FullName, settingControl.Settings as ConfigurationSection);
                     _config.Save(ConfigurationSaveMode.Modified, true);
                 }
                 if (settingControl.Settings is DatabaseConn)
@@ -838,7 +842,7 @@ namespace FarmingGPS
                 else if (settingControl.Settings is SBPSerial)
                     SetupReceiver(settingControl.Settings as SBPSerial);
                 else if (settingControl.Settings is Visualization.Settings.LightBar)
-                    _lightBar.Tolerance = new Distance((settingControl.Settings as Visualization.Settings.LightBar).Tolerance, DistanceUnit.Meters);
+                    _lightBar.Tolerance = new Distance((settingControl.Settings as Visualization.Settings.LightBar).Tolerance, DistanceUnit.Centimeters);
                 else if (_equipment is IEquipmentControl)
                 {
                     IEquipmentControl equipmentControl = _equipment as IEquipmentControl;

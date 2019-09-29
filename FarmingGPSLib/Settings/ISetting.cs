@@ -9,6 +9,11 @@ namespace FarmingGPSLib.Settings
             get;
         }
 
+        string DisplayName
+        {
+            get;
+        }
+
         Type ValueType
         {
             get;

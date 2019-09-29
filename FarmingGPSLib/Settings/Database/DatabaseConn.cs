@@ -32,12 +32,12 @@ namespace FarmingGPSLib.Settings.Database
         public DatabaseConn()
         {
             _settings = new SettingsCollection("Databas");
-            _settings.Add(new Setting("Kryptering", _encrypt.Type, Encrypt));
-            _settings.Add(new Setting("Betrott certifikat", _trustServerCertificate.Type, TrustServerCertificate));
-            _settings.Add(new Setting("Windows inloggning", _integratedSecurity.Type, IntegratedSecurity));
-            _settings.Add(new Setting("Användarnamn", _userName.Type, UserName));
-            _settings.Add(new Setting("URL", _url.Type, Url));
-            _settings.Add(new Setting("Databas", _databaseName.Type, DatabaseName));
+            _settings.Add(new Setting("Encryption", "Kryptering", _encrypt.Type, Encrypt));
+            _settings.Add(new Setting("TrustedCertificate", "Betrott certifikat", _trustServerCertificate.Type, TrustServerCertificate));
+            _settings.Add(new Setting("WindowsLogon", "Windows inloggning", _integratedSecurity.Type, IntegratedSecurity));
+            _settings.Add(new Setting("UserName", "Användarnamn", _userName.Type, UserName));
+            _settings.Add(new Setting("URL", "URL", _url.Type, Url));
+            _settings.Add(new Setting("Database", "Databas", _databaseName.Type, DatabaseName));
             foreach(ISetting setting in _settings)
                 setting.SettingChanged += Setting_SettingChanged;
 
@@ -51,28 +51,28 @@ namespace FarmingGPSLib.Settings.Database
             UserName = databaseSettings.UserName;
             Url = databaseSettings.Url;
             DatabaseName = databaseSettings.DatabaseName;
-            _settings["Kryptering"].Value = Encrypt;
-            _settings["Betrott certifikat"].Value = TrustServerCertificate;
-            _settings["Windows inloggning"].Value = IntegratedSecurity;
-            _settings["Användarnamn"].Value = UserName;
+            _settings["Encryption"].Value = Encrypt;
+            _settings["TrustedCertificate"].Value = TrustServerCertificate;
+            _settings["WindowsLogon"].Value = IntegratedSecurity;
+            _settings["UserName"].Value = UserName;
             _settings["URL"].Value = Url;
-            _settings["Databas"].Value = DatabaseName;
+            _settings["Database"].Value = DatabaseName;
         }
 
         private void Setting_SettingChanged(object sender, EventArgs e)
         {
             ISetting setting = sender as ISetting;
-            if (setting.Name == "Kryptering")
+            if (setting.Name == "Encryption")
                 Encrypt = (bool)setting.Value;
-            else if (setting.Name == "Betrott certifikat")
+            else if (setting.Name == "TrustedCertificate")
                 TrustServerCertificate = (bool)setting.Value;
-            else if (setting.Name == "Windows inloggning")
+            else if (setting.Name == "WindowsLogon")
                 IntegratedSecurity = (bool)setting.Value;
-            else if (setting.Name == "Användarnamn")
+            else if (setting.Name == "UserName")
                 UserName = (string)setting.Value;
             else if (setting.Name == "URL")
                 Url = (string)setting.Value;
-            else if (setting.Name == "Databas")
+            else if (setting.Name == "Database")
                 DatabaseName = (string)setting.Value;
         }
         

@@ -32,9 +32,9 @@ namespace FarmingGPSLib.Settings.Receiver
         public SBPSerial()
         {
             _settings = new SettingsCollection("SBPSeriell");
-            _settings.Add(new Setting("COMPort", _comport.Type, COMPort));
-            _settings.Add(new Setting("Baudrate", _baudrate.Type, Baudrate));
-            _settings.Add(new Setting("RtsCts", _rtsCts.Type, RtsCts));
+            _settings.Add(new Setting("COMPort", "COM Port", _comport.Type, COMPort));
+            _settings.Add(new Setting("Baudrate", "Hastighet", _baudrate.Type, Baudrate));
+            _settings.Add(new Setting("RtsCts", "Rts/Cts", _rtsCts.Type, RtsCts));
             foreach(ISetting setting in _settings)
                 setting.SettingChanged += Setting_SettingChanged;
         }

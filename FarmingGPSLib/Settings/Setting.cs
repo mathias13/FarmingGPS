@@ -6,6 +6,8 @@ namespace FarmingGPSLib.Settings
     {
         private string _name = String.Empty;
 
+        private string _displayName = String.Empty;
+
         private Type _valueType = typeof(string);
 
         private object _value = String.Empty;
@@ -14,9 +16,10 @@ namespace FarmingGPSLib.Settings
         {
         }
 
-        public Setting(string name, Type valueType, object value)
+        public Setting(string name, string displayName, Type valueType, object value)
         {
             _name = name;
+            _displayName = displayName;
             _valueType = valueType;
             _value = value;
         }
@@ -27,6 +30,12 @@ namespace FarmingGPSLib.Settings
         {
             get { return _name; }
             set { _name = value; }
+        }
+
+        public string DisplayName
+        {
+            get { return _displayName; }
+            set { _displayName = value; }
         }
 
         public Type ValueType
