@@ -1,12 +1,15 @@
 ﻿using System;
-
+using DotSpatial.Positioning;
+using GpsUtilities.Reciever;
 
 namespace FarmingGPSLib.Vechile
 {
-    public delegate void PosistionUpdateDelegate(object sender, PositionUpdateEventArgs e);
-
-    interface IVechile
+    public interface IVechile
     {
-        event PosistionUpdateDelegate PositionUpdate;
+        Azimuth OffsetDirection { get; }
+
+        Distance OffsetDistance { get; }
+
+        IReceiver Receiver { get; }
     }
 }
