@@ -496,8 +496,8 @@ namespace FarmingGPS
                 _sbpReceiverSender = new SBPReceiverSender(receiver.COMPort, (int)receiver.Baudrate, receiver.RtsCts);
             
             _sbpReceiverSender.ReadExceptionEvent += _sbpReceiverSender_ReadExceptionEvent;
-            _receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(1000));
-            _receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(2.0);
+            _receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(2000));
+            _receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0);
             _receiver.BearingUpdate += _receiver_BearingUpdate;
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
@@ -739,16 +739,6 @@ namespace FarmingGPS
             else
                 ntripClient = new ClientSettingsExt();
 
-            DatabaseConn sectionDatabase = (DatabaseConn)_config.Sections[typeof(DatabaseConn).FullName];
-            ISettingsCollection database;
-            if (sectionDatabase != null)
-            {
-                database = new DatabaseConn(sectionDatabase);
-                SetupDatabase(sectionDatabase);
-            }
-            else
-                database = new DatabaseConn();
-            
             SBPSerial sectionReceiver = (SBPSerial)_config.Sections[typeof(SBPSerial).FullName];
             ISettingsCollection receiver;
             if (sectionReceiver != null)
@@ -758,6 +748,16 @@ namespace FarmingGPS
             }
             else
                 receiver = new SBPSerial();
+
+            DatabaseConn sectionDatabase = (DatabaseConn)_config.Sections[typeof(DatabaseConn).FullName];
+            ISettingsCollection database;
+            if (sectionDatabase != null)
+            {
+                database = new DatabaseConn(sectionDatabase);
+                SetupDatabase(sectionDatabase);
+            }
+            else
+                database = new DatabaseConn();
 
             ISettingsCollection visual = new SettingsCollection("Visualisering");
             visual.ChildSettings.Add(new FarmingGPS.Visualization.Settings.LightBar());
