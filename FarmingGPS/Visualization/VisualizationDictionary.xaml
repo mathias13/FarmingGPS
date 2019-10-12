@@ -740,8 +740,8 @@
     <RadialGradientBrush Center="0.4,0.4" x:Key="LIGHT_BULB_GREEN_OFF">
         <RadialGradientBrush.GradientStops>
             <GradientStopCollection>
-                <GradientStop Color="Green" Offset="0.01"/>
-                <GradientStop Color="DarkGreen" Offset="0.95"/>
+                <GradientStop Color="LightGray" Offset="0.01"/>
+                <GradientStop Color="DarkGray" Offset="0.95"/>
             </GradientStopCollection>
         </RadialGradientBrush.GradientStops>
     </RadialGradientBrush>
@@ -758,8 +758,8 @@
     <RadialGradientBrush Center="0.4,0.4" x:Key="LIGHT_BULB_RED_OFF">
         <RadialGradientBrush.GradientStops>
             <GradientStopCollection>
-                <GradientStop Color="#FFAB0000" Offset="0.01"/>
-                <GradientStop Color="DarkRed" Offset="0.95"/>
+                <GradientStop Color="DarkGray" Offset="0.01"/>
+                <GradientStop Color="Gray" Offset="0.95"/>
             </GradientStopCollection>
         </RadialGradientBrush.GradientStops>
     </RadialGradientBrush>
