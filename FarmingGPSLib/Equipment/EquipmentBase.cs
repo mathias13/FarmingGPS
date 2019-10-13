@@ -6,6 +6,19 @@ namespace FarmingGPSLib.Equipment
 {
     public class EquipmentBase: IEquipment
     {
+        [Serializable]
+        public struct EquipmentState
+        {
+            public double Width;
+
+            public double DistanceFromVechile;
+
+            public double FromDirectionOfTravel;
+
+            public double Overlap;
+
+        }
+
         #region Private Variables
 
         protected Distance _width;
@@ -112,6 +125,35 @@ namespace FarmingGPSLib.Equipment
         public Position GetCenter(Position attachedPosition, Azimuth directionOfTravel)
         {
             return attachedPosition.TranslateTo(directionOfTravel.Add(FromDirectionOfTravel), DistanceFromVechileToCenter);
+        }
+
+        #endregion
+        
+        #region IStateObject
+
+        public object StateObject
+        {
+            get
+            {
+                HasChanged = false;
+                return new EquipmentState() { Width = Width.ToMeters().Value, DistanceFromVechile = DistanceFromVechileToCenter.ToMeters().Value, FromDirectionOfTravel = FromDirectionOfTravel.DecimalDegrees, Overlap = Overlap.ToMeters().Value };
+            }
+        }
+
+        public bool HasChanged { get; private set; } = false;
+
+        public Type StateType
+        {
+            get { return typeof(EquipmentState); }
+        }
+
+        public void RestoreObject(object restoredState)
+        {
+            EquipmentState equipmentState = (EquipmentState)restoredState;
+            _width = Distance.FromMeters(equipmentState.Width);
+            _distanceFromVechile = Distance.FromMeters(equipmentState.DistanceFromVechile);
+            _fromDirectionOfTravel = new Azimuth(equipmentState.FromDirectionOfTravel);
+            _overlap = Distance.FromMeters(equipmentState.Overlap);
         }
 
         #endregion

@@ -5,7 +5,7 @@ using FarmingGPSLib.StateRecovery;
 
 namespace FarmingGPSLib.Vechile
 {
-    public class VechileBase : IVechile, IStateObject
+    public class VechileBase : IVechile
     {
         [Serializable]
         public struct VechileState
@@ -14,6 +14,11 @@ namespace FarmingGPSLib.Vechile
 
             public double OffsetDistance;
         }
+
+        private IReceiver _receiver;
+
+        public VechileBase()
+        { }
 
         public VechileBase(Azimuth offsetDirection, Distance offsetDistance, IReceiver receiver)
         {
@@ -27,7 +32,21 @@ namespace FarmingGPSLib.Vechile
 
         public Distance OffsetDistance { get; private set; }
 
-        public IReceiver Receiver { get; private set; }
+        public IReceiver Receiver
+        {
+            get
+            {
+                return _receiver;
+            }
+            set
+            {
+                _receiver = value;
+                _receiver.OffsetDirection = OffsetDirection;
+                _receiver.OffsetDistance = OffsetDistance;
+            }
+        }
+
+        #region IStateObject
 
         public object StateObject
         {
@@ -51,5 +70,7 @@ namespace FarmingGPSLib.Vechile
             OffsetDirection = new Azimuth(vechileState.OffsetDirection);
             OffsetDistance = new Distance(vechileState.OffsetDistance, DistanceUnit.Meters);
         }
+
+        #endregion
     }
 }

@@ -16,6 +16,7 @@ using FarmingGPSLib.Equipment.BogBalle;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
 using FarmingGPSLib.StateRecovery;
+using FarmingGPSLib.Vechile;
 using GpsUtilities.Filter;
 using GpsUtilities.Reciever;
 using log4net;
@@ -100,6 +101,8 @@ namespace FarmingGPS
         private FarmingGPSLib.FarmingModes.IFarmingMode _farmingMode;
 
         private IEquipment _equipment;
+
+        private IVechile _vechile;
         
         private Database.Equipment _equipmentChoosen;
 
@@ -227,10 +230,16 @@ namespace FarmingGPS
                             _visualization.SetField(_field);
                             _stateRecovery.AddStateObject(_field);
                         }
-                        if (recoveredObject.Key == typeof(FieldTracker))
+                        else if (recoveredObject.Key == typeof(FieldTracker))
                         {
                             _fieldTracker.RestoreObject(recoveredObject.Value);
                             _stateRecovery.AddStateObject(_fieldTracker);
+                        }
+                        else if(recoveredObject.Key.IsSubclassOf(typeof(VechileBase)))
+                        {
+                            _vechile = new Tractor();
+                            _vechile.RestoreObject(recoveredObject.Value);
+
                         }
                     }
                 }
@@ -502,6 +511,8 @@ namespace FarmingGPS
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
             _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
+            if (_vechile != null)
+                _vechile.Receiver = _receiver;
         }
 
         private void _receiver_FixQualityUpdate(object sender, FixQuality fixQuality)
@@ -995,14 +1006,15 @@ namespace FarmingGPS
         private void GetVechileEquipment(GetVechileEquipment userControl)
         {
             _equipmentChoosen = userControl.Equipment;
+            _stateRecovery.RemoveStateObject(_vechile);
             if (_receiver != null)
             {
                 Position originPosition = new Position( new Latitude(0.0), new Longitude(0.0));
                 Position newPosition = originPosition.TranslateTo(new Azimuth(userControl.Vechile.ReceiverAngleFromCenter), Distance.FromMeters(userControl.Vechile.ReceiverDistFromCenter), Ellipsoid.Wgs1984);
                 newPosition = newPosition.TranslateTo(new Azimuth(userControl.VechileAttach.AttachAngleFromCenter), Distance.FromMeters(userControl.VechileAttach.AttachDistFromCenter), Ellipsoid.Wgs1984);
                 newPosition = newPosition.TranslateTo(new Azimuth(userControl.Equipment.AngleFromAttach), Distance.FromMeters(userControl.Equipment.DistFromAttach), Ellipsoid.Wgs1984);
-                _receiver.OffsetDirection = originPosition.BearingTo(newPosition);
-                _receiver.OffsetDistance = originPosition.DistanceTo(newPosition);
+                _vechile = new Tractor(originPosition.BearingTo(newPosition), originPosition.DistanceTo(newPosition),  _receiver);
+                _stateRecovery.AddStateObject(_vechile);
             }
         }
 

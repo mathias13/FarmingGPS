@@ -149,6 +149,7 @@
     <Compile Include="StateRecovery\StateRecoveryManager.cs" />
     <Compile Include="Vechile\IVechile.cs" />
     <Compile Include="Vechile\PositionUpdateEventArgs.cs" />
+    <Compile Include="Vechile\Tractor.cs" />
     <Compile Include="Vechile\VechileBase.cs" />
   </ItemGroup>
   <ItemGroup>
