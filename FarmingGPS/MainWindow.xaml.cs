@@ -239,7 +239,13 @@ namespace FarmingGPS
                         {
                             _vechile = new Tractor();
                             _vechile.RestoreObject(recoveredObject.Value);
-
+                        }
+                        else if (recoveredObject.Key.IsSubclassOf(typeof(EquipmentBase)))
+                        {
+                            _equipment = Activator.CreateInstance(recoveredObject.Key) as IEquipment;
+                            _equipment.RestoreObject(recoveredObject.Value);
+                            if (_equipment is IEquipmentControl)
+                                SetIEquipmentControl();
                         }
                     }
                 }
@@ -881,6 +887,7 @@ namespace FarmingGPS
             }
             
             _stateRecovery.RemoveStateObject(_farmingMode);
+            _stateRecovery.RemoveStateObject(_equipment);
             if (_equipmentChoosen == null)
                 return;
 
@@ -914,53 +921,7 @@ namespace FarmingGPS
                         _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromMeters(userControl.Overlap));
 
                     if (_equipment is IEquipmentControl)
-                    {
-                        IEquipmentControl equipmentControl = _equipment as IEquipmentControl;
-                        object settings = _config.Sections[equipmentControl.ControllerSettingsType.FullName];
-                        if (settings == null)
-                            settings = Activator.CreateInstance(equipmentControl.ControllerSettingsType);
-
-                        object controller = equipmentControl.RegisterController(settings);
-
-                        ISettingsCollection settingsCollection = settings as ISettingsCollection;
-                        SettingGroup controllerSettings = new SettingGroup(settingsCollection.Name, null, new SettingsCollectionControl(settingsCollection));
-                        (controllerSettings.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
-
-                        SettingGroup settingRoot = _settingsTree.ItemsSource as SettingGroup;
-                        ((SettingsCollectionControl)settingRoot.Items[0].SettingControl).Settings.ChildSettings.Add(settingsCollection);
-                        settingRoot.Items[0].Items.Add(controllerSettings);
-                        _settingsTree.ItemsSource = null;
-                        _settingsTree.ItemsSource = settingRoot;
-
-                        if (EQUIPMENTCONTROL_VISUALIZATION.ContainsKey(equipmentControl.ControllerType))
-                        {
-                            BTN_START_STOP_AUTO.Visibility = Visibility.Visible;
-                            BTN_EQUIPMENT.Visibility = Visibility.Visible;
-                            while(_equipmentControlGrid.Children.Count > 1)
-                                _equipmentControlGrid.Children.RemoveAt(1);
-                            _equipmentControlGrid.Children.Add(Activator.CreateInstance(EQUIPMENTCONTROL_VISUALIZATION[equipmentControl.ControllerType], controller) as UserControl);
-                            if (_equipment is IEquipmentStat)
-                            {
-                                while (_equipmentStatGrid.Children.Count > 1)
-                                    _equipmentStatGrid.Children.RemoveAt(1);
-                                _equipmentStatGrid.Children.Add(new EquipmentStat((IEquipmentStat)_equipment));
-                                _equipmentLevelBar.Visibility = Visibility.Visible;
-                                _equipmentLevelBar.RegisterEquipmentStat((IEquipmentStat)_equipment);
-                            }
-                            else
-                            {
-                                _equipmentLevelBar.Visibility = Visibility.Hidden;
-                                _equipmentStatGrid.Visibility = Visibility.Hidden;
-                            }
-                        }
-                        else
-                        {
-                            BTN_START_STOP_AUTO.Visibility = Visibility.Hidden;
-                            BTN_EQUIPMENT.Visibility = Visibility.Hidden;
-                            _equipmentGrid.Visibility = Visibility.Hidden;
-                            _equipmentStatGrid.Visibility = Visibility.Hidden;
-                        }
-                    }
+                        SetIEquipmentControl();
 
                     _farmingMode = (FarmingGPSLib.FarmingModes.IFarmingMode)Activator.CreateInstance(_equipment.FarmingMode, _field, _equipment, userControl.Headlands);
                 }
@@ -970,6 +931,8 @@ namespace FarmingGPS
                     return;
                 }
             }
+
+            _stateRecovery.AddStateObject(_equipment);
 
             _visualization.SetEquipmentWidth(_equipment.Width);
             
@@ -1001,6 +964,55 @@ namespace FarmingGPS
             _settingsGrid.Visibility = Visibility.Hidden;
             ShowTrackingLineSettings();
             _farmingMode.FarmingEvent += FarmingEvent;
+        }
+
+        private void SetIEquipmentControl()
+        {
+            IEquipmentControl equipmentControl = _equipment as IEquipmentControl;
+            object settings = _config.Sections[equipmentControl.ControllerSettingsType.FullName];
+            if (settings == null)
+                settings = Activator.CreateInstance(equipmentControl.ControllerSettingsType);
+
+            object controller = equipmentControl.RegisterController(settings);
+
+            ISettingsCollection settingsCollection = settings as ISettingsCollection;
+            SettingGroup controllerSettings = new SettingGroup(settingsCollection.Name, null, new SettingsCollectionControl(settingsCollection));
+            (controllerSettings.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+
+            SettingGroup settingRoot = _settingsTree.ItemsSource as SettingGroup;
+            ((SettingsCollectionControl)settingRoot.Items[0].SettingControl).Settings.ChildSettings.Add(settingsCollection);
+            settingRoot.Items[0].Items.Add(controllerSettings);
+            _settingsTree.ItemsSource = null;
+            _settingsTree.ItemsSource = settingRoot;
+
+            if (EQUIPMENTCONTROL_VISUALIZATION.ContainsKey(equipmentControl.ControllerType))
+            {
+                BTN_START_STOP_AUTO.Visibility = Visibility.Visible;
+                BTN_EQUIPMENT.Visibility = Visibility.Visible;
+                while (_equipmentControlGrid.Children.Count > 1)
+                    _equipmentControlGrid.Children.RemoveAt(1);
+                _equipmentControlGrid.Children.Add(Activator.CreateInstance(EQUIPMENTCONTROL_VISUALIZATION[equipmentControl.ControllerType], controller) as UserControl);
+                if (_equipment is IEquipmentStat)
+                {
+                    while (_equipmentStatGrid.Children.Count > 1)
+                        _equipmentStatGrid.Children.RemoveAt(1);
+                    _equipmentStatGrid.Children.Add(new EquipmentStat((IEquipmentStat)_equipment));
+                    _equipmentLevelBar.Visibility = Visibility.Visible;
+                    _equipmentLevelBar.RegisterEquipmentStat((IEquipmentStat)_equipment);
+                }
+                else
+                {
+                    _equipmentLevelBar.Visibility = Visibility.Hidden;
+                    _equipmentStatGrid.Visibility = Visibility.Hidden;
+                }
+            }
+            else
+            {
+                BTN_START_STOP_AUTO.Visibility = Visibility.Hidden;
+                BTN_EQUIPMENT.Visibility = Visibility.Hidden;
+                _equipmentGrid.Visibility = Visibility.Hidden;
+                _equipmentStatGrid.Visibility = Visibility.Hidden;
+            }
         }
 
         private void GetVechileEquipment(GetVechileEquipment userControl)

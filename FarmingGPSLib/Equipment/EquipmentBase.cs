@@ -16,7 +16,6 @@ namespace FarmingGPSLib.Equipment
             public double FromDirectionOfTravel;
 
             public double Overlap;
-
         }
 
         #region Private Variables
@@ -39,6 +38,9 @@ namespace FarmingGPSLib.Equipment
 
         #endregion
 
+        public EquipmentBase()
+        { }
+
         public EquipmentBase(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel)
         {
             _width = width;
@@ -53,6 +55,7 @@ namespace FarmingGPSLib.Equipment
             _bearingToRightTip = attachedPoint.BearingTo(rightTip);
             _distanceToLeftTip = attachedPoint.DistanceTo(leftTip);
             _distanceToRightTip = attachedPoint.DistanceTo(rightTip);
+            HasChanged = true;
         }
 
         public EquipmentBase(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, Distance overlap)
@@ -131,7 +134,7 @@ namespace FarmingGPSLib.Equipment
         
         #region IStateObject
 
-        public object StateObject
+        public virtual object StateObject
         {
             get
             {
@@ -140,14 +143,14 @@ namespace FarmingGPSLib.Equipment
             }
         }
 
-        public bool HasChanged { get; private set; } = false;
+        public virtual bool HasChanged { get; private set; } = false;
 
-        public Type StateType
+        public virtual Type StateType
         {
             get { return typeof(EquipmentState); }
         }
 
-        public void RestoreObject(object restoredState)
+        public virtual void RestoreObject(object restoredState)
         {
             EquipmentState equipmentState = (EquipmentState)restoredState;
             _width = Distance.FromMeters(equipmentState.Width);

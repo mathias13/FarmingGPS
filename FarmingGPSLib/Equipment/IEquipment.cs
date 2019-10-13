@@ -1,9 +1,10 @@
 ﻿using System;
 using DotSpatial.Positioning;
+using FarmingGPSLib.StateRecovery;
 
 namespace FarmingGPSLib.Equipment
 {
-    public interface IEquipment
+    public interface IEquipment : IStateObject
     {
         Distance DistanceFromVechileToCenter
         {

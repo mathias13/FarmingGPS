@@ -1,7 +1,6 @@
 ﻿using System;
 using DotSpatial.Positioning;
 using GpsUtilities.Reciever;
-using FarmingGPSLib.StateRecovery;
 
 namespace FarmingGPSLib.Vechile
 {
