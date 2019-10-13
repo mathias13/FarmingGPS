@@ -234,6 +234,7 @@ namespace FarmingGPS
                         {
                             _fieldTracker.RestoreObject(recoveredObject.Value);
                             _stateRecovery.AddStateObject(_fieldTracker);
+                            _visualization.AddFieldTracker(_fieldTracker);
                         }
                         else if(recoveredObject.Key.IsSubclassOf(typeof(VechileBase)))
                         {
@@ -246,7 +247,23 @@ namespace FarmingGPS
                             _equipment.RestoreObject(recoveredObject.Value);
                             if (_equipment is IEquipmentControl)
                                 SetIEquipmentControl();
+
+                            _visualization.SetEquipmentWidth(_equipment.Width);
                         }
+                        else if (recoveredObject.Key.IsSubclassOf(typeof(FarmingGPSLib.FarmingModes.FarmingModeBase)))
+                        {
+                            _farmingMode = Activator.CreateInstance(recoveredObject.Key) as FarmingGPSLib.FarmingModes.IFarmingMode;
+                            _farmingMode.RestoreObject(recoveredObject.Value);
+                        }
+                    }
+                    if(_farmingMode != null)
+                    {
+                        foreach (TrackingLine line in _farmingMode.TrackingLinesHeadland)
+                            _visualization.AddLine(line);
+
+                        foreach (TrackingLine line in _farmingMode.TrackingLines)
+                            _visualization.AddLine(line);
+                        CheckAllTrackingLines();
                     }
                 }
             }
@@ -936,13 +953,6 @@ namespace FarmingGPS
 
             _visualization.SetEquipmentWidth(_equipment.Width);
             
-
-            if (_stateRecovery.ObjectsRecovered.ContainsKey(typeof(FarmingGPSLib.FarmingModes.IFarmingMode)))
-            {
-                YesNoDialog dialog = new YesNoDialog("Vill du återställa tidigare spårlinjer?");
-                if (dialog.ShowDialog().Value)
-                    _farmingMode.RestoreObject(_stateRecovery.ObjectsRecovered[typeof(FarmingGPSLib.FarmingModes.IFarmingMode)]);
-            }
             foreach (TrackingLine line in _farmingMode.TrackingLinesHeadland)
                 _visualization.AddLine(line);
 

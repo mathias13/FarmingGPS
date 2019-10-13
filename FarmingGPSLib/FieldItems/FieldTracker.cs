@@ -404,24 +404,32 @@ namespace FarmingGPSLib.FieldItems
         {
             get
             {
-                lock(_syncObject)
+                Dictionary<int, IGeometry> simplifiedPolygons = new Dictionary<int, IGeometry>();
+                _hasChanged = false;
+                List<SimpleCoordinateArray> polygons = new List<SimpleCoordinateArray>();
+                List<SimpleCoordinateArray> holes = new List<SimpleCoordinateArray>();
+                lock (_syncObject)
                 {
-                    _hasChanged = false;
-                    List<SimpleCoordinateArray> polygons = new List<SimpleCoordinateArray>();
-                    List<SimpleCoordinateArray> holes = new List<SimpleCoordinateArray>();
                     foreach (KeyValuePair<int, Polygon> polygon in _polygons)
-                    {
-                        polygons.Add(new SimpleCoordinateArray(polygon.Key, new List<Coordinate>(polygon.Value.Shell.Coordinates)));
-
-                        foreach (ILinearRing hole in polygon.Value.Holes)
-                        {
-                            holes.Add(new SimpleCoordinateArray(polygon.Key, new List<Coordinate>(hole.Coordinates)));
-                        }                        
-                    }
-
-                    FieldTrackerState state = new FieldTrackerState(polygons, holes);
-                    return state;
+                        simplifiedPolygons.Add(polygon.Key, DotSpatial.Topology.Simplify.TopologyPreservingSimplifier.Simplify(_polygons[_currentPolygonIndex], 0.04));
                 }
+
+                foreach (KeyValuePair<int, IGeometry> simplifiedPolygon in simplifiedPolygons)
+                {
+                    if (simplifiedPolygon.Value is IPolygon)
+                    {
+                        IPolygon polygon = simplifiedPolygon.Value as IPolygon;
+                        polygons.Add(new SimpleCoordinateArray(simplifiedPolygon.Key, new List<Coordinate>(polygon.Shell.Coordinates)));
+
+                        foreach (ILinearRing hole in polygon.Holes)
+                        {
+                            holes.Add(new SimpleCoordinateArray(simplifiedPolygon.Key, new List<Coordinate>(hole.Coordinates)));
+                        }
+                    }
+                }
+
+                FieldTrackerState state = new FieldTrackerState(polygons, holes);
+                return state;
             }
         }
 
