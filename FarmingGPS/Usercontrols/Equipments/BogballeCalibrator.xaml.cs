@@ -20,6 +20,7 @@ namespace FarmingGPS.Usercontrols.Equipments
             _calibrator = calibrator;
             _calibrator.ValuesUpdated += Calibrator_ValuesUpdated;
             _calibrator.IsConnectedChanged += Calibrator_IsConnectedChanged;
+            Calibrator_IsConnectedChanged(this, calibrator.IsConnected);
         }
 
         private void Calibrator_IsConnectedChanged(object sender, bool e)
