@@ -1,6 +1,7 @@
 ﻿using System;
 using DotSpatial.Positioning;
 using FarmingGPSLib.FarmingModes;
+using FarmingGPSLib.HelperClasses;
 
 namespace FarmingGPSLib.Equipment
 {
@@ -99,19 +100,19 @@ namespace FarmingGPSLib.Equipment
             get { return null; }
         }
 
-        public Position GetLeftTip(Position attachedPosition, Azimuth directionOfTravel)
+        public DotSpatial.Topology.Coordinate GetLeftTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel)
         {
-            return attachedPosition.TranslateTo(directionOfTravel.Add(_bearingToLeftTip), _distanceToLeftTip);
+            return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_bearingToLeftTip)).Radians, _distanceToLeftTip.ToMeters().Value);
         }
 
-        public Position GetRightTip(Position attachedPosition, Azimuth directionOfTravel)
+        public DotSpatial.Topology.Coordinate GetRightTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel)
         {
-            return attachedPosition.TranslateTo(directionOfTravel.Add(_bearingToRightTip), _distanceToRightTip);
+            return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_bearingToRightTip)).Radians, _distanceToRightTip.ToMeters().Value);
         }
 
-        public Position GetCenter(Position attachedPosition, Azimuth directionOfTravel)
+        public DotSpatial.Topology.Coordinate GetCenter(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel)
         {
-            return attachedPosition.TranslateTo(directionOfTravel.Add(FromDirectionOfTravel), DistanceFromVechileToCenter);
+            return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(FromDirectionOfTravel)).Radians, DistanceFromVechileToCenter.ToMeters().Value);
         }
 
         #endregion

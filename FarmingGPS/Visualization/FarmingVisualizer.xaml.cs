@@ -670,11 +670,7 @@ namespace FarmingGPS.Visualization
             {
                 FieldCreator fieldCreator = sender as FieldCreator;
                 _minPoint = fieldCreator.GetField().Polygon.Envelope.Minimum;
-                IList<DotSpatial.Topology.Coordinate> coordinates = new List<DotSpatial.Topology.Coordinate>();
-                foreach (Position position in e.Boundary)
-                    coordinates.Add(fieldCreator.GetField().GetPositionInField(position));
-
-                DrawOutline(coordinates);
+                DrawOutline(e.Boundary);
             }
             else
                 Dispatcher.Invoke(new Action<object, FieldBoundaryUpdatedEventArgs>(FieldCreator_FieldBoundaryUpdated), System.Windows.Threading.DispatcherPriority.Normal, sender, e);

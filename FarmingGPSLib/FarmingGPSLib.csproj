@@ -126,7 +126,6 @@
     <Compile Include="FieldItems\FieldCreator.cs" />
     <Compile Include="FieldItems\FieldCut.cs" />
     <Compile Include="FieldItems\FieldTracker.cs" />
-    <Compile Include="FieldItems\HelperClass.cs" />
     <Compile Include="FieldItems\IField.cs" />
     <Compile Include="FieldItems\PolygonDeletedEventArgs.cs" />
     <Compile Include="FieldItems\FieldBoundaryUpdatedEventArgs.cs" />

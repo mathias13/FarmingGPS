@@ -336,7 +336,8 @@ namespace FarmingGPS
         {
             _stateRecovery.RemoveStateObject(_field);
             _stateRecovery.RemoveStateObject(_fieldTracker);
-            _field = new Field(e, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
+            DotSpatial.Projections.ProjectionInfo projection = HelperClass.GetUtmProjectionZone(e[0]);
+            _field = new Field(e, projection);
             _fieldTracker.FieldToCalculateAreaWithin = _field;
             _workedAreaBar.SetField(_field);
             _visualization.SetField(_field);
@@ -500,6 +501,7 @@ namespace FarmingGPS
             _receiver.MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0);
             _receiver.BearingUpdate += _receiver_BearingUpdate;
             _receiver.PositionUpdate += _receiver_PositionUpdate;
+            _receiver.CoordinateUpdate += _receiver_CoordinateUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
             _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
         }
@@ -514,27 +516,25 @@ namespace FarmingGPS
             else
                 Dispatcher.Invoke(new Action<object, FixQuality>(_receiver_FixQualityUpdate), System.Windows.Threading.DispatcherPriority.Render, this, fixQuality);
         }
-
-        private void _receiver_PositionUpdate(object sender, Position actualPosition)
+        
+        private void _receiver_CoordinateUpdate(object sender, Coordinate actualPosition)
         {
             IReceiver receiver = sender as IReceiver;
             if (_field == null)
                 return;
-            Coordinate actualCoordinate;
-            if (_equipment == null)
-                actualCoordinate = _field.GetPositionInField(actualPosition);
-            else
-                actualCoordinate = _field.GetPositionInField(_equipment.GetCenter(actualPosition, receiver.CurrentBearing));
+            Coordinate actualCoordinate = actualPosition;
+            if (_equipment != null)
+                actualCoordinate = _equipment.GetCenter(actualPosition, receiver.CurrentBearing);
 
 
             Azimuth actualHeading = receiver.CurrentBearing;
             _visualization.UpdatePosition(actualCoordinate, actualHeading);
-            if(_farmingMode != null)
+            if (_farmingMode != null)
                 _farmingMode.UpdateEvents(actualCoordinate, actualHeading);
             if (_equipment != null)
             {
-                Coordinate leftTip = _field.GetPositionInField(_equipment.GetLeftTip(actualPosition, actualHeading));
-                Coordinate rightTip = _field.GetPositionInField(_equipment.GetRightTip(actualPosition, actualHeading));
+                Coordinate leftTip = _equipment.GetLeftTip(actualPosition, actualHeading);
+                Coordinate rightTip = _equipment.GetRightTip(actualPosition, actualHeading);
 
                 if (_fieldRateTracker != null)
                     _fieldRateTracker.UpdatePosition(leftTip, rightTip);
@@ -567,11 +567,11 @@ namespace FarmingGPS
                         _activeTrackingLine = newTrackingLine;
                     }
                 }
-                
+
                 //TODO Make this a setting instead 
                 _trackingLineEvaluationTimeout = DateTime.Now.AddSeconds(3.0);
             }
-            
+
             if (_activeTrackingLine != null)
             {
                 OrientationToLine orientationToLine;
@@ -586,6 +586,10 @@ namespace FarmingGPS
 
                 _lightBar.SetDistance(Distance.FromMeters(orientationToLine.DistanceTo), lightBarDirection);
             }
+        }
+
+        private void _receiver_PositionUpdate(object sender, Position actualPosition)
+        {
         }
         
         private void _receiver_BearingUpdate(object sender, Azimuth actualBearing)
@@ -620,7 +624,8 @@ namespace FarmingGPS
         {
             if (_fieldCreator == null)
             {
-                _fieldCreator = new FieldCreator(DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N, FieldCreator.Orientation.Lefthand, _receiver, _equipment);
+                DotSpatial.Projections.ProjectionInfo projection = HelperClass.GetUtmProjectionZone(_receiver.CurrentPosition);
+                _fieldCreator = new FieldCreator(projection, FieldCreator.Orientation.Lefthand, _receiver, _equipment);
                 _fieldCreator.FieldCreated += _fieldCreator_FieldCreated;
                 _field = _fieldCreator.GetField();
                 _visualization.AddFieldCreator(_fieldCreator);

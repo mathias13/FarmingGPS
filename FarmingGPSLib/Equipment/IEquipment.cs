@@ -45,10 +45,10 @@ namespace FarmingGPSLib.Equipment
             get;
         }
 
-        Position GetLeftTip(Position attachedPosition, Azimuth directionOfTravel);
+        DotSpatial.Topology.Coordinate GetLeftTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel);
 
-        Position GetRightTip(Position attachedPosition, Azimuth directionOfTravel);
+        DotSpatial.Topology.Coordinate GetRightTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel);
 
-        Position GetCenter(Position attachedPosition, Azimuth directionOfTravel);
+        DotSpatial.Topology.Coordinate GetCenter(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel);
     }
 }

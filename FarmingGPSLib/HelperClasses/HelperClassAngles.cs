@@ -26,6 +26,13 @@ namespace FarmingGPSLib.HelperClasses
 
         }
 
+        public static Angle NormalizeAzimuthHeading(DotSpatial.Positioning.Azimuth azimuth)
+        {
+            Angle angle = new Angle();
+            angle.DegreesPos = azimuth.Subtract(90.0).Normalize().DecimalDegrees;
+            return angle;
+        }
+
         private static double NormalizeRadian(double radian)
         {
             double newRadian = radian;

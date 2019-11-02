@@ -43,7 +43,7 @@ namespace FarmingGPSLib.FieldItems
 
         private IEquipment _equipment;
 
-        private List<Position> _track = new List<Position>();
+        private List<Coordinate> _track = new List<Coordinate>();
 
         private Field _field;
 
@@ -66,25 +66,25 @@ namespace FarmingGPSLib.FieldItems
             fieldPoints.Add(receiver.CurrentPosition.TranslateTo(Azimuth.Northeast, Distance.FromMeters(1.0)));
             fieldPoints.Add(receiver.CurrentPosition.TranslateTo(Azimuth.Northwest, Distance.FromMeters(1.0)));
             _distanceTrigger = new DistanceTrigger(MINIMUM_DISTANCE_BETWEEN_POINTS, MAXIMUM_DISTANCE_BETWEEN_POINTS, MINIMUM_CHANGE_DIRECTION, MAXIMUM_CHANGE_DIRECTION);
-            _distanceTrigger.Init(receiver.CurrentPosition, receiver.CurrentBearing);
-            _field = new Field(fieldPoints, DotSpatial.Projections.KnownCoordinateSystems.Projected.UtmWgs1984.WGS1984UTMZone33N);
-            Position leftTip = _equipment.GetLeftTip(receiver.CurrentPosition, receiver.CurrentBearing);
-            Position rightTip = _equipment.GetRightTip(receiver.CurrentPosition, receiver.CurrentBearing);
+            _distanceTrigger.Init(receiver.CurrentCoordinate, receiver.CurrentBearing);
+            _field = new Field(fieldPoints, projectionInfo);
+            Coordinate leftTip = _equipment.GetLeftTip(receiver.CurrentCoordinate, receiver.CurrentBearing);
+            Coordinate rightTip = _equipment.GetRightTip(receiver.CurrentCoordinate, receiver.CurrentBearing);
             AddPoint(_orientation == Orientation.Lefthand ? rightTip : leftTip);
-            receiver.PositionUpdate += Receiver_PositionUpdate;
+            receiver.CoordinateUpdate += Receiver_CoordinateUpdate;
         }
         
-        private void Receiver_PositionUpdate(object sender, Position actualPosition)
+        private void Receiver_CoordinateUpdate(object sender, Coordinate actualPosition)
         {
             IReceiver receiver = sender as IReceiver;
-            Position correctPosition = _equipment.GetCenter(actualPosition, receiver.CurrentBearing);
+            Coordinate correctPosition = _equipment.GetCenter(actualPosition, receiver.CurrentBearing);
             if(_orientation == Orientation.Lefthand)
                 correctPosition = _equipment.GetRightTip(actualPosition, receiver.CurrentBearing);
             else
                 correctPosition = _equipment.GetLeftTip(actualPosition, receiver.CurrentBearing);
 
             if (CheckFinishedField(correctPosition))
-                receiver.PositionUpdate -= Receiver_PositionUpdate;
+                receiver.CoordinateUpdate -= Receiver_CoordinateUpdate;
             else
             {
                 if (_distanceTrigger.CheckDistance(correctPosition, receiver.CurrentBearing))
@@ -96,7 +96,7 @@ namespace FarmingGPSLib.FieldItems
             }
         }
 
-        private void AddPoint(Position actualPosition)
+        private void AddPoint(Coordinate actualPosition)
         {
 
             if (_track.Count > 0)
@@ -109,16 +109,28 @@ namespace FarmingGPSLib.FieldItems
 
         }
 
-        private bool CheckFinishedField(Position actualPosition)
+        private bool CheckFinishedField(Coordinate actualPosition)
         {
+            double distance = new LineSegment(actualPosition, _track[0]).Length;
             if (!_waitForFinish)
-                _waitForFinish = _track[0].DistanceTo(actualPosition) > Distance.FromMeters(DISTANCE_TO_START_FIELD_FINISHED + 1.0);
+                _waitForFinish =  distance > Distance.FromMeters(DISTANCE_TO_START_FIELD_FINISHED + 1.0).Value;
             else
             {
-                Distance distance = _track[0].DistanceTo(actualPosition);
-                if (distance < Distance.FromMeters(DISTANCE_TO_START_FIELD_FINISHED))
+                if (distance < Distance.FromMeters(DISTANCE_TO_START_FIELD_FINISHED).Value)
                 {
-                    _field = new Field(_track, _field.Projection);                    
+                    double[] xyArray = new double[2];
+                    double[] zArray = new double[1];
+                    List<Position> coordinates = new List<Position>();
+                    foreach(Coordinate coord in _track)
+                    {
+                        xyArray[0] = coord.X;
+                        xyArray[1] = coord.Y;
+                        zArray = new double[1] { Distance.EarthsAverageRadius.ToMeters().Value };
+                        Reproject.ReprojectPoints(xyArray, zArray, _projectionInfo, KnownCoordinateSystems.Geographic.World.WGS1984, 0, zArray.Length);
+                        coordinates.Add(new Position(new Longitude(xyArray[0]), new Latitude(xyArray[1])));
+                    }
+
+                    _field = new Field(coordinates, _field.Projection);                    
                     OnFieldCreated(_field);
                     return true;
                 }
@@ -138,7 +150,7 @@ namespace FarmingGPSLib.FieldItems
 
         #region Protected Methods
 
-        protected void OnFieldBoundaryUpdated(List<Position> fieldBoundary)
+        protected void OnFieldBoundaryUpdated(List<Coordinate> fieldBoundary)
         {
             if (FieldBoundaryUpdated != null)
                 FieldBoundaryUpdated.Invoke(this, new FieldBoundaryUpdatedEventArgs(fieldBoundary));
