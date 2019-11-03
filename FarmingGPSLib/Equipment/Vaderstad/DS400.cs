@@ -9,9 +9,9 @@ namespace FarmingGPSLib.Equipment.Vaderstad
     {
         private static double FULL_CONTENT = 700.0;
 
-        private readonly double _stopDistance = -0.2;
+        private readonly double _stopDistance = 0.2;
 
-        private readonly double _startDistance = 0.2;
+        private readonly double _startDistance = -0.5;
 
         private double _startWeight = double.MinValue;
 

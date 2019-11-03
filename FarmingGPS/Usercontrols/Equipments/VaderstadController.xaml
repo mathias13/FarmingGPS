@@ -57,7 +57,9 @@
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Inställd giva</TextBlock>
                     <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg/ha" MouseLeftButtonUp="Rate_MouseLeftButtonUp" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=SetSpreadingRate, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}"/>
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Vikt</TextBlock>
-                    <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=SeedUsed, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}"/>
+                    <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=SeedUsed, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}" Margin="37,0,33,0"/>
+                    <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Max hastighet</TextBlock>
+                    <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="30" AllowSpin="False" IsReadOnly="True" FormatString="0 km/h" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=MaxRateOfTravel, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}" Margin="37,0,33,0"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2">
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Hastighet</TextBlock>

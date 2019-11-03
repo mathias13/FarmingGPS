@@ -38,6 +38,7 @@ namespace FarmingGPS.Usercontrols.Equipments
                 SetValue(Started, _controller.Started);
                 SetValue(Alarm, _controller.Alarm);
                 SetValue(ActualSeedingRate, _controller.ActualSeedingRate);
+                SetValue(MaxRateOfTavel, _controller.MaxRateOfTravel);
                 SetValue(SetSeedingRate, _controller.SetSeedingRate);
                 SetValue(Distance, _controller.Distance);
                 SetValue(Speed, _controller.Speed);
@@ -58,6 +59,8 @@ namespace FarmingGPS.Usercontrols.Equipments
         protected static readonly DependencyProperty Alarm = DependencyProperty.Register("Alarm", typeof(bool), typeof(VaderstadController));
 
         protected static readonly DependencyProperty ActualSeedingRate = DependencyProperty.Register("ActualSpreadingRate", typeof(int), typeof(VaderstadController));
+
+        protected static readonly DependencyProperty MaxRateOfTavel = DependencyProperty.Register("MaxRateOfTavel", typeof(float), typeof(VaderstadController));
 
         protected static readonly DependencyProperty SetSeedingRate = DependencyProperty.Register("SetSpreadingRate", typeof(int), typeof(VaderstadController));
 

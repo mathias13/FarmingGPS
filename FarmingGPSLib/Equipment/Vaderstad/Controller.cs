@@ -93,6 +93,8 @@ namespace FarmingGPSLib.Equipment.Vaderstad
 
         private const string STATUS_READ = "S";
 
+        private const string MAX_RATE_OF_TRAVEL = "M";
+
         private const int DISCONNECTED_COUNT = 10;
         
         private string _comPort = String.Empty;
@@ -118,9 +120,7 @@ namespace FarmingGPSLib.Equipment.Vaderstad
         private int _setValue = -1;
 
         private int _actValue = -1;
-
-        private float _spreadWidth = -1.0f;
-
+        
         private int _distance = -1;
 
         private float _ha = -1.0f;
@@ -128,6 +128,8 @@ namespace FarmingGPSLib.Equipment.Vaderstad
         private float _speed = -1.0f;
 
         private float _seedMotorSpeed = -1.0f;
+
+        private float _maxRateOfTravel = -1.0f;
 
         private float _seedUsed = -1.0f;
 
@@ -246,6 +248,11 @@ namespace FarmingGPSLib.Equipment.Vaderstad
         public float HA
         {
             get { return _ha; }
+        }
+
+        public float MaxRateOfTravel
+        {
+            get { return _maxRateOfTravel; }
         }
 
         public float Speed
@@ -486,6 +493,12 @@ namespace FarmingGPSLib.Equipment.Vaderstad
                     value = ReadValue(DISTANCE_READ);
                     if (!int.TryParse(value, out _distance))
                         _distance = -1;
+
+                    value = ReadValue(MAX_RATE_OF_TRAVEL);
+                    if (!float.TryParse(value, out floatValue))
+                        _maxRateOfTravel = -1;
+                    else
+                        _maxRateOfTravel = floatValue / 10f;
 
                     value = ReadValue(HA_READ);
                     if (!float.TryParse(value, out _ha))
