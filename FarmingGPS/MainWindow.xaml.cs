@@ -13,6 +13,7 @@ using FarmingGPS.Usercontrols.Equipments;
 using FarmingGPS.Visualization;
 using FarmingGPSLib.Equipment;
 using FarmingGPSLib.Equipment.BogBalle;
+using FarmingGPSLib.Equipment.Vaderstad;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
 using FarmingGPSLib.StateRecovery;
@@ -56,7 +57,8 @@ namespace FarmingGPS
 
         protected readonly IDictionary<Type, Type> EQUIPMENTCONTROL_VISUALIZATION = new Dictionary<Type, Type>
         {
-            {typeof(Calibrator), typeof(BogballeCalibrator) }
+            {typeof(Calibrator), typeof(BogballeCalibrator) },
+            {typeof(Controller), typeof(VaderstadController) }
         };
 
         #endregion;
@@ -599,6 +601,8 @@ namespace FarmingGPS
         private void _receiver_SpeedUpdate(object sender, Speed actualSpeed)
         {
             _speedBar.SetSpeed(actualSpeed);
+            if (_equipment is IEquipmentControl)
+                ((IEquipmentControl)_equipment).RelaySpeed(actualSpeed.ToKilometersPerHour().Value);
         }
 
         #endregion

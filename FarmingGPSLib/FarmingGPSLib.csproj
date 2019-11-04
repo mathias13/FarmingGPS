@@ -93,6 +93,8 @@
   <ItemGroup>
     <Compile Include="Equipment\BogBalle\Calibrator.cs" />
     <Compile Include="Equipment\IEquipmentStat.cs" />
+    <Compile Include="Equipment\Vaderstad\Controller.cs" />
+    <Compile Include="Equipment\Vaderstad\DS400.cs" />
     <Compile Include="Equipment\Win32\COMMPROP.cs" />
     <Compile Include="Equipment\Win32\COMMTIMEOUTS.cs" />
     <Compile Include="Equipment\Win32\COMSTAT.cs" />
@@ -144,6 +146,7 @@
     <Compile Include="Settings\Receiver\SBPSerial.cs" />
     <Compile Include="Settings\Setting.cs" />
     <Compile Include="Settings\SettingsCollection.cs" />
+    <Compile Include="Settings\Vaderstad\Controller.cs" />
     <Compile Include="StateRecovery\IStateObject.cs" />
     <Compile Include="StateRecovery\StateRecoveryManager.cs" />
     <Compile Include="Vechile\IVechile.cs" />

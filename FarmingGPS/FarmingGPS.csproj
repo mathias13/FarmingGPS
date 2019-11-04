@@ -181,6 +181,9 @@
     <Compile Include="Dialogs\ComPortDialog.xaml.cs">
       <DependentUpon>ComPortDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialogs\ValueChangeDialog.xaml.cs">
+      <DependentUpon>ValueChangeDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\OKDialog.xaml.cs">
       <DependentUpon>OKDialog.xaml</DependentUpon>
     </Compile>
@@ -192,6 +195,9 @@
     </Compile>
     <Compile Include="GeometryUtilities\Lines.cs" />
     <Compile Include="Settings\SettingGroup.cs" />
+    <Compile Include="Usercontrols\Equipments\VaderstadController.xaml.cs">
+      <DependentUpon>VaderstadController.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Usercontrols\Equipments\BogballeCalibrator.xaml.cs">
       <DependentUpon>BogballeCalibrator.xaml</DependentUpon>
     </Compile>
@@ -233,6 +239,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Dialogs\ValueChangeDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Dialogs\OKDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -260,6 +270,10 @@
     <Page Include="StyleDefault.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Usercontrols\Equipments\VaderstadController.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Usercontrols\Equipments\BogballeCalibrator.xaml">
       <SubType>Designer</SubType>
