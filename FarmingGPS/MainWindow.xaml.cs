@@ -947,11 +947,26 @@ namespace FarmingGPS
                         _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(userControl.Equipment.WorkWidth), Distance.FromMeters(userControl.Equipment.DistFromAttach), new Azimuth(userControl.Equipment.AngleFromAttach));
 
                     if (_equipment is IEquipmentControl)
-                    {
-                        IEquipmentControl equipmentControl = _equipment as IEquipmentControl;
-                        object settings = _config.Sections[equipmentControl.ControllerSettingsType.FullName];
-                        if (settings == null)
-                            settings = Activator.CreateInstance(equipmentControl.ControllerSettingsType);
+                        SetIEquipmentControl();
+
+                }
+                catch (Exception e)
+                {
+                    Log.Error("Failed to set equipment", e);
+                    return;
+                }
+
+                _stateRecovery.AddStateObject(_equipment);
+                _visualization.SetEquipmentWidth(_equipment.Width);
+            }
+        }
+
+        private void SetIEquipmentControl()
+        {
+            IEquipmentControl equipmentControl = _equipment as IEquipmentControl;
+            object settings = _config.Sections[equipmentControl.ControllerSettingsType.FullName];
+            if (settings == null)
+                settings = Activator.CreateInstance(equipmentControl.ControllerSettingsType);
 
             object controller = equipmentControl.RegisterController(settings);
 
@@ -965,45 +980,33 @@ namespace FarmingGPS
             _settingsTree.ItemsSource = null;
             _settingsTree.ItemsSource = settingRoot;
 
-                        if (EQUIPMENTCONTROL_VISUALIZATION.ContainsKey(equipmentControl.ControllerType))
-                        {
-                            BTN_START_STOP_AUTO.Visibility = Visibility.Visible;
-                            BTN_EQUIPMENT.Visibility = Visibility.Visible;
-                            while (_equipmentControlGrid.Children.Count > 1)
-                                _equipmentControlGrid.Children.RemoveAt(1);
-                            _equipmentControlGrid.Children.Add(Activator.CreateInstance(EQUIPMENTCONTROL_VISUALIZATION[equipmentControl.ControllerType], controller) as UserControl);
-                            if (_equipment is IEquipmentStat)
-                            {
-                                while (_equipmentStatGrid.Children.Count > 1)
-                                    _equipmentStatGrid.Children.RemoveAt(1);
-                                _equipmentStatGrid.Children.Add(new EquipmentStat((IEquipmentStat)_equipment));
-                                _equipmentLevelBar.Visibility = Visibility.Visible;
-                                _equipmentLevelBar.RegisterEquipmentStat((IEquipmentStat)_equipment);
-                            }
-                            else
-                            {
-                                _equipmentLevelBar.Visibility = Visibility.Hidden;
-                                _equipmentStatGrid.Visibility = Visibility.Hidden;
-                            }
-                        }
-                        else
-                        {
-                            BTN_START_STOP_AUTO.Visibility = Visibility.Hidden;
-                            BTN_EQUIPMENT.Visibility = Visibility.Hidden;
-                            _equipmentGrid.Visibility = Visibility.Hidden;
-                            _equipmentStatGrid.Visibility = Visibility.Hidden;
-                        }
-                    }
-
-                }
-                catch (Exception e)
+            if (EQUIPMENTCONTROL_VISUALIZATION.ContainsKey(equipmentControl.ControllerType))
+            {
+                BTN_START_STOP_AUTO.Visibility = Visibility.Visible;
+                BTN_EQUIPMENT.Visibility = Visibility.Visible;
+                while (_equipmentControlGrid.Children.Count > 1)
+                    _equipmentControlGrid.Children.RemoveAt(1);
+                _equipmentControlGrid.Children.Add(Activator.CreateInstance(EQUIPMENTCONTROL_VISUALIZATION[equipmentControl.ControllerType], controller) as UserControl);
+                if (_equipment is IEquipmentStat)
                 {
-                    Log.Error("Failed to set equipment", e);
-                    return;
+                    while (_equipmentStatGrid.Children.Count > 1)
+                        _equipmentStatGrid.Children.RemoveAt(1);
+                    _equipmentStatGrid.Children.Add(new EquipmentStat((IEquipmentStat)_equipment));
+                    _equipmentLevelBar.Visibility = Visibility.Visible;
+                    _equipmentLevelBar.RegisterEquipmentStat((IEquipmentStat)_equipment);
                 }
-
-                _stateRecovery.AddStateObject(_equipment);
-                _visualization.SetEquipmentWidth(_equipment.Width);
+                else
+                {
+                    _equipmentLevelBar.Visibility = Visibility.Hidden;
+                    _equipmentStatGrid.Visibility = Visibility.Hidden;
+                }
+            }
+            else
+            {
+                BTN_START_STOP_AUTO.Visibility = Visibility.Hidden;
+                BTN_EQUIPMENT.Visibility = Visibility.Hidden;
+                _equipmentGrid.Visibility = Visibility.Hidden;
+                _equipmentStatGrid.Visibility = Visibility.Hidden;
             }
         }
 
