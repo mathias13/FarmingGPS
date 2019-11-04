@@ -21,6 +21,10 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         private Calibrator _calibrator;
         
+        public L2Plus()
+        {
+        }
+
         public L2Plus(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel)
             : base(width, distanceFromVechile, fromDirectionOfTravel)
         {
@@ -183,5 +187,14 @@ namespace FarmingGPSLib.Equipment.BogBalle
             }
         }
 
+        #region IStateObject
+        
+        public override void RestoreObject(object restoredState)
+        {
+            base.RestoreObject(restoredState);
+            SetDistances();
+        }
+
+        #endregion
     }
 }

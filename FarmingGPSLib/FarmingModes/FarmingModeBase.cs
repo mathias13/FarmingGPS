@@ -242,7 +242,7 @@ namespace FarmingGPSLib.FarmingModes
 
         #region IStateObjectImplementation
         
-        public object StateObject
+        public virtual object StateObject
         {
             get
             {
@@ -256,7 +256,7 @@ namespace FarmingGPSLib.FarmingModes
             }
         }
 
-        public Type StateType
+        public virtual Type StateType
         {
             get { return typeof(FarmingModeState); }
         }
@@ -266,7 +266,7 @@ namespace FarmingGPSLib.FarmingModes
             get { return _hasChanged; }
         }
 
-        public void RestoreObject(object restoredState)
+        public virtual void RestoreObject(object restoredState)
         {
             FarmingModeState farmingModeState = (FarmingModeState)restoredState;
             foreach (SimpleLine line in farmingModeState.TrackingLines)

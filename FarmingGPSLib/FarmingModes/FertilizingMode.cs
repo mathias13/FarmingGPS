@@ -10,9 +10,29 @@ namespace FarmingGPSLib.FarmingModes
 {
     public class FertilizingMode : GeneralHarrowingMode
     {
-        private double _startDistance = double.NaN;
+        [Serializable]
+        public struct FertilizingModeState
+        {
+            public List<SimpleLine> TrackingLines;
 
-        private double _stopDistance = double.NaN;
+            public List<SimpleLine> TrackingLinesHeadLand;
+
+            public double StartDistance;
+
+            public double StopDistance;
+
+            public FertilizingModeState(List<SimpleLine> trackingLines, List<SimpleLine> trackingLinesHeadLand, double startDistance, double stopDistance)
+            {
+                TrackingLines = trackingLines;
+                TrackingLinesHeadLand = trackingLinesHeadLand;
+                StartDistance = startDistance;
+                StopDistance = stopDistance;
+            }
+        }
+
+        private double _startDistance = double.MinValue;
+
+        private double _stopDistance = double.MinValue;
 
         public FertilizingMode() : base()
         { }
@@ -45,7 +65,7 @@ namespace FarmingGPSLib.FarmingModes
         protected override void AddTrackingLines(IList<LineString> trackingLines)
         {
             _trackingLines.Clear();
-            if(Double.IsNaN(_startDistance) || Double.IsNaN(_stopDistance))
+            if(_startDistance == double.MinValue || _stopDistance == double.MinValue)
                 foreach (LineString line in trackingLines)
                     _trackingLines.Add(new TrackingLine(line));
             else
@@ -53,5 +73,41 @@ namespace FarmingGPSLib.FarmingModes
                     _trackingLines.Add(new TrackingLineStartStopEvent(line, _startDistance, _stopDistance));
 
         }
+
+        #region IStateObjectImplementation
+
+        public override object StateObject
+        {
+            get
+            {
+                List<SimpleLine> trackingLines = new List<SimpleLine>();
+                foreach (TrackingLine trackingLine in _trackingLines)
+                    trackingLines.Add(new SimpleLine(new List<Coordinate>(trackingLine.Line.Coordinates)));
+                List<SimpleLine> trackingLinesHeadland = new List<SimpleLine>();
+                foreach (TrackingLine trackingLineHeadland in _trackingLinesHeadland)
+                    trackingLinesHeadland.Add(new SimpleLine(new List<Coordinate>(trackingLineHeadland.Line.Coordinates)));
+                return new FertilizingModeState(trackingLines, trackingLinesHeadland, _startDistance, _stopDistance);
+            }
+        }
+
+        public override Type StateType
+        {
+            get { return typeof(FertilizingModeState); }
+        }
+
+        public override void RestoreObject(object restoredState)
+        {
+            FertilizingModeState fertilizingModeState = (FertilizingModeState)restoredState;
+            _startDistance = fertilizingModeState.StartDistance;
+            _stopDistance = fertilizingModeState.StopDistance;
+            List<LineString> trackingLines = new List<LineString>();
+            foreach (SimpleLine line in fertilizingModeState.TrackingLines)
+                trackingLines.Add(new LineString(line.Line));
+            AddTrackingLines(trackingLines);
+            foreach (SimpleLine line in fertilizingModeState.TrackingLinesHeadLand)
+                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line)));
+        }
+
+        #endregion
     }
 }

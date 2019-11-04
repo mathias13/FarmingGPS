@@ -7,6 +7,18 @@ namespace FarmingGPSLib.Equipment
 {
     public class EquipmentBase: IEquipment
     {
+        [Serializable]
+        public struct EquipmentState
+        {
+            public double Width;
+
+            public double DistanceFromVechile;
+
+            public double FromDirectionOfTravel;
+
+            public double Overlap;
+        }
+
         #region Private Variables
 
         protected Distance _width;
@@ -27,6 +39,9 @@ namespace FarmingGPSLib.Equipment
 
         #endregion
 
+        public EquipmentBase()
+        { }
+
         public EquipmentBase(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel)
         {
             _width = width;
@@ -41,6 +56,7 @@ namespace FarmingGPSLib.Equipment
             _bearingToRightTip = attachedPoint.BearingTo(rightTip);
             _distanceToLeftTip = attachedPoint.DistanceTo(leftTip);
             _distanceToRightTip = attachedPoint.DistanceTo(rightTip);
+            HasChanged = true;
         }
 
         public EquipmentBase(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, Distance overlap)
@@ -114,6 +130,35 @@ namespace FarmingGPSLib.Equipment
         public DotSpatial.Topology.Coordinate GetCenter(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel)
         {
             return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(FromDirectionOfTravel)).Radians, DistanceFromVechileToCenter.ToMeters().Value);
+        }
+
+        #endregion
+        
+        #region IStateObject
+
+        public virtual object StateObject
+        {
+            get
+            {
+                HasChanged = false;
+                return new EquipmentState() { Width = Width.ToMeters().Value, DistanceFromVechile = DistanceFromVechileToCenter.ToMeters().Value, FromDirectionOfTravel = FromDirectionOfTravel.DecimalDegrees, Overlap = Overlap.ToMeters().Value };
+            }
+        }
+
+        public virtual bool HasChanged { get; private set; } = false;
+
+        public virtual Type StateType
+        {
+            get { return typeof(EquipmentState); }
+        }
+
+        public virtual void RestoreObject(object restoredState)
+        {
+            EquipmentState equipmentState = (EquipmentState)restoredState;
+            _width = Distance.FromMeters(equipmentState.Width);
+            _distanceFromVechile = Distance.FromMeters(equipmentState.DistanceFromVechile);
+            _fromDirectionOfTravel = new Azimuth(equipmentState.FromDirectionOfTravel);
+            _overlap = Distance.FromMeters(equipmentState.Overlap);
         }
 
         #endregion

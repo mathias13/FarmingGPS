@@ -17,6 +17,7 @@ using FarmingGPSLib.Equipment.Vaderstad;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
 using FarmingGPSLib.StateRecovery;
+using FarmingGPSLib.Vechile;
 using GpsUtilities.Filter;
 using GpsUtilities.Reciever;
 using log4net;
@@ -102,7 +103,8 @@ namespace FarmingGPS
         private FarmingGPSLib.FarmingModes.IFarmingMode _farmingMode;
 
         private IEquipment _equipment;
-        
+        private IVechile _vechile;
+
         private bool _ntripConnected = false;
 
         private Position _trackLinePointA = Position.Empty;
@@ -227,11 +229,40 @@ namespace FarmingGPS
                             _visualization.SetField(_field);
                             _stateRecovery.AddStateObject(_field);
                         }
-                        if (recoveredObject.Key == typeof(FieldTracker))
+                        else if (recoveredObject.Key == typeof(FieldTracker))
                         {
                             _fieldTracker.RestoreObject(recoveredObject.Value);
                             _stateRecovery.AddStateObject(_fieldTracker);
+                            _visualization.AddFieldTracker(_fieldTracker);
                         }
+                        else if(recoveredObject.Key.IsSubclassOf(typeof(VechileBase)))
+                        {
+                            _vechile = new Tractor();
+                            _vechile.RestoreObject(recoveredObject.Value);
+                        }
+                        else if (recoveredObject.Key.IsSubclassOf(typeof(EquipmentBase)))
+                        {
+                            _equipment = Activator.CreateInstance(recoveredObject.Key) as IEquipment;
+                            _equipment.RestoreObject(recoveredObject.Value);
+                            if (_equipment is IEquipmentControl)
+                                SetIEquipmentControl();
+
+                            _visualization.SetEquipmentWidth(_equipment.Width);
+                        }
+                        else if (recoveredObject.Key.IsSubclassOf(typeof(FarmingGPSLib.FarmingModes.FarmingModeBase)))
+                        {
+                            _farmingMode = Activator.CreateInstance(recoveredObject.Key) as FarmingGPSLib.FarmingModes.IFarmingMode;
+                            _farmingMode.RestoreObject(recoveredObject.Value);
+                        }
+                    }
+                    if(_farmingMode != null)
+                    {
+                        foreach (TrackingLine line in _farmingMode.TrackingLinesHeadland)
+                            _visualization.AddLine(line);
+
+                        foreach (TrackingLine line in _farmingMode.TrackingLines)
+                            _visualization.AddLine(line);
+                        CheckAllTrackingLines();
                     }
                 }
             }
@@ -506,6 +537,8 @@ namespace FarmingGPS
             _receiver.CoordinateUpdate += _receiver_CoordinateUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
             _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
+            if (_vechile != null)
+                _vechile.Receiver = _receiver;
         }
 
         private void _receiver_FixQualityUpdate(object sender, FixQuality fixQuality)
@@ -891,6 +924,8 @@ namespace FarmingGPS
                 _receiver.OffsetDistance = originPosition.DistanceTo(newPosition);
             }
 
+            _stateRecovery.RemoveStateObject(_equipment);
+
             if (_equipment != null)
                 if (_equipment is IDisposable)
                     (_equipment as IDisposable).Dispose();
@@ -918,17 +953,17 @@ namespace FarmingGPS
                         if (settings == null)
                             settings = Activator.CreateInstance(equipmentControl.ControllerSettingsType);
 
-                        object controller = equipmentControl.RegisterController(settings);
+            object controller = equipmentControl.RegisterController(settings);
 
-                        ISettingsCollection settingsCollection = settings as ISettingsCollection;
-                        SettingGroup controllerSettings = new SettingGroup(settingsCollection.Name, null, new SettingsCollectionControl(settingsCollection));
-                        (controllerSettings.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+            ISettingsCollection settingsCollection = settings as ISettingsCollection;
+            SettingGroup controllerSettings = new SettingGroup(settingsCollection.Name, null, new SettingsCollectionControl(settingsCollection));
+            (controllerSettings.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
 
-                        SettingGroup settingRoot = _settingsTree.ItemsSource as SettingGroup;
-                        ((SettingsCollectionControl)settingRoot.Items[0].SettingControl).Settings.ChildSettings.Add(settingsCollection);
-                        settingRoot.Items[0].Items.Add(controllerSettings);
-                        _settingsTree.ItemsSource = null;
-                        _settingsTree.ItemsSource = settingRoot;
+            SettingGroup settingRoot = _settingsTree.ItemsSource as SettingGroup;
+            ((SettingsCollectionControl)settingRoot.Items[0].SettingControl).Settings.ChildSettings.Add(settingsCollection);
+            settingRoot.Items[0].Items.Add(controllerSettings);
+            _settingsTree.ItemsSource = null;
+            _settingsTree.ItemsSource = settingRoot;
 
                         if (EQUIPMENTCONTROL_VISUALIZATION.ContainsKey(equipmentControl.ControllerType))
                         {
@@ -967,6 +1002,7 @@ namespace FarmingGPS
                     return;
                 }
 
+                _stateRecovery.AddStateObject(_equipment);
                 _visualization.SetEquipmentWidth(_equipment.Width);
             }
         }
