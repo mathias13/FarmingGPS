@@ -66,11 +66,7 @@ namespace FarmingGPSLib.FieldItems
             fieldPoints.Add(receiver.CurrentPosition.TranslateTo(Azimuth.Northeast, Distance.FromMeters(1.0)));
             fieldPoints.Add(receiver.CurrentPosition.TranslateTo(Azimuth.Northwest, Distance.FromMeters(1.0)));
             _distanceTrigger = new DistanceTrigger(MINIMUM_DISTANCE_BETWEEN_POINTS, MAXIMUM_DISTANCE_BETWEEN_POINTS, MINIMUM_CHANGE_DIRECTION, MAXIMUM_CHANGE_DIRECTION);
-            _distanceTrigger.Init(receiver.CurrentCoordinate, receiver.CurrentBearing);
             _field = new Field(fieldPoints, projectionInfo);
-            Coordinate leftTip = _equipment.GetLeftTip(receiver.CurrentCoordinate, receiver.CurrentBearing);
-            Coordinate rightTip = _equipment.GetRightTip(receiver.CurrentCoordinate, receiver.CurrentBearing);
-            AddPoint(_orientation == Orientation.Lefthand ? rightTip : leftTip);
             receiver.CoordinateUpdate += Receiver_CoordinateUpdate;
         }
         
@@ -83,7 +79,12 @@ namespace FarmingGPSLib.FieldItems
             else
                 correctPosition = _equipment.GetLeftTip(actualPosition, receiver.CurrentBearing);
 
-            if (CheckFinishedField(correctPosition))
+            if (_track.Count < 2)
+            {
+                AddPoint(correctPosition);
+                _distanceTrigger.Init(correctPosition, receiver.CurrentBearing);
+            }
+            else if (CheckFinishedField(correctPosition))
                 receiver.CoordinateUpdate -= Receiver_CoordinateUpdate;
             else
             {
@@ -98,7 +99,6 @@ namespace FarmingGPSLib.FieldItems
 
         private void AddPoint(Coordinate actualPosition)
         {
-
             if (_track.Count > 0)
                 _track.Insert(_track.Count - 1, actualPosition);
             else

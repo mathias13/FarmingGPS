@@ -72,6 +72,7 @@ namespace FarmingGPSLib.Equipment
         public Distance Overlap
         {
             get { return _overlap; }
+            set { _overlap = value; }
         }
 
         public Distance CenterToTip

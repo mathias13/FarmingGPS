@@ -101,8 +101,6 @@ namespace FarmingGPS
 
         private IEquipment _equipment;
         
-        private Database.Equipment _equipmentChoosen;
-
         private bool _ntripConnected = false;
 
         private Position _trackLinePointA = Position.Empty;
@@ -240,6 +238,7 @@ namespace FarmingGPS
             _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.855032), new Latitude(58.512722)), false);
             _receiver.BearingUpdate += _receiver_BearingUpdate;
             _receiver.PositionUpdate += _receiver_PositionUpdate;
+            _receiver.CoordinateUpdate += _receiver_CoordinateUpdate;
             _receiver.SpeedUpdate += _receiver_SpeedUpdate;
             _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
 
@@ -337,6 +336,7 @@ namespace FarmingGPS
             _stateRecovery.RemoveStateObject(_field);
             _stateRecovery.RemoveStateObject(_fieldTracker);
             DotSpatial.Projections.ProjectionInfo projection = HelperClass.GetUtmProjectionZone(e[0]);
+            _receiver.ProjectionInfo = projection;
             _field = new Field(e, projection);
             _fieldTracker.FieldToCalculateAreaWithin = _field;
             _workedAreaBar.SetField(_field);
@@ -624,7 +624,17 @@ namespace FarmingGPS
         {
             if (_fieldCreator == null)
             {
+                if(_equipment == null)
+                {
+                    OKDialog dialog = new OKDialog("Du måste välja maskin och redskap först");
+                    dialog.Show();
+                    return;
+                }
+                _visualization.SetEquipmentWidth(_equipment.Width);
+
                 DotSpatial.Projections.ProjectionInfo projection = HelperClass.GetUtmProjectionZone(_receiver.CurrentPosition);
+                _receiver.ProjectionInfo = projection;
+
                 _fieldCreator = new FieldCreator(projection, FieldCreator.Orientation.Lefthand, _receiver, _equipment);
                 _fieldCreator.FieldCreated += _fieldCreator_FieldCreated;
                 _field = _fieldCreator.GetField();
@@ -819,9 +829,9 @@ namespace FarmingGPS
             if (sender is GetField)
                 GetFieldChanged((sender as GetField), e);
             else if (sender is GetVechileEquipment)
-                GetVechileEquipment((sender as GetVechileEquipment));
+                SetEquipment((sender as GetVechileEquipment));
             else if (sender is FarmingMode)
-                SetEquipmentAndFarmingMode((sender as FarmingMode));
+                SetFarmingMode((sender as FarmingMode));
             else if (sender is GetEquipmentRate)
                 SetEquipmentRate((sender as GetEquipmentRate));
             else if (sender is SettingsCollectionControl)
@@ -865,47 +875,37 @@ namespace FarmingGPS
                 _fieldRateTracker.RegisterEquipmentControl(_equipment as IEquipmentControl);
         }
 
-        private void SetEquipmentAndFarmingMode(FarmingMode userControl)
+        private void SetEquipment(GetVechileEquipment userControl)
         {
-            if(_field == null)
+            if (_receiver != null)
             {
-                OKDialog dialog = new OKDialog("Du måste välja fält först");
-                dialog.Show();
-                return;
-            }
-            
-            _stateRecovery.RemoveStateObject(_farmingMode);
-            if (_equipmentChoosen == null)
-                return;
-
-            if (_farmingMode != null)
-            {
-                foreach (TrackingLine trackingLine in _farmingMode.TrackingLines)
-                    _visualization.DeleteLine(trackingLine);
-                foreach (TrackingLine trackingLine in _farmingMode.TrackingLinesHeadland)
-                    _visualization.DeleteLine(trackingLine);
+                Position originPosition = new Position(new Latitude(0.0), new Longitude(0.0));
+                Position newPosition = originPosition.TranslateTo(new Azimuth(userControl.Vechile.ReceiverAngleFromCenter), Distance.FromMeters(userControl.Vechile.ReceiverDistFromCenter), Ellipsoid.Wgs1984);
+                newPosition = newPosition.TranslateTo(new Azimuth(userControl.VechileAttach.AttachAngleFromCenter), Distance.FromMeters(userControl.VechileAttach.AttachDistFromCenter), Ellipsoid.Wgs1984);
+                newPosition = newPosition.TranslateTo(new Azimuth(userControl.Equipment.AngleFromAttach), Distance.FromMeters(userControl.Equipment.DistFromAttach), Ellipsoid.Wgs1984);
+                _receiver.OffsetDirection = originPosition.BearingTo(newPosition);
+                _receiver.OffsetDistance = originPosition.DistanceTo(newPosition);
             }
 
             if (_equipment != null)
                 if (_equipment is IDisposable)
                     (_equipment as IDisposable).Dispose();
 
-            if (_equipmentChoosen.EquipmentClass == null)
+            if (userControl.Equipment.EquipmentClass == null)
             {
-                _equipment = new Harrow(Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromCentimeters(userControl.Overlap));
-                _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, userControl.Headlands);
+                _equipment = new Harrow(Distance.FromMeters(userControl.Equipment.WorkWidth), Distance.FromMeters(userControl.Equipment.DistFromAttach), new Azimuth(userControl.Equipment.AngleFromAttach));
             }
             else
             {
                 try
                 {
-                    Type equipmentClass = AppDomain.CurrentDomain.GetAssemblies().SelectMany(t => t.GetTypes()).Where(t => String.Equals(t.FullName, _equipmentChoosen.EquipmentClass, StringComparison.Ordinal)).First();
+                    Type equipmentClass = AppDomain.CurrentDomain.GetAssemblies().SelectMany(t => t.GetTypes()).Where(t => String.Equals(t.FullName, userControl.Equipment.EquipmentClass, StringComparison.Ordinal)).First();
                     if (equipmentClass == null)
-                        _equipment = new Harrow(Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromMeters(userControl.Overlap));
+                        _equipment = new Harrow(Distance.FromMeters(userControl.Equipment.WorkWidth), Distance.FromMeters(userControl.Equipment.DistFromAttach), new Azimuth(userControl.Equipment.AngleFromAttach));
                     else if (equipmentClass.IsAssignableFrom(typeof(IEquipment)))
-                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromMeters(userControl.Overlap));
+                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(userControl.Equipment.WorkWidth), Distance.FromMeters(userControl.Equipment.DistFromAttach), new Azimuth(userControl.Equipment.AngleFromAttach));
                     else
-                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(_equipmentChoosen.WorkWidth), Distance.FromMeters(_equipmentChoosen.DistFromAttach), new Azimuth(_equipmentChoosen.AngleFromAttach), Distance.FromMeters(userControl.Overlap));
+                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(userControl.Equipment.WorkWidth), Distance.FromMeters(userControl.Equipment.DistFromAttach), new Azimuth(userControl.Equipment.AngleFromAttach));
 
                     if (_equipment is IEquipmentControl)
                     {
@@ -930,7 +930,7 @@ namespace FarmingGPS
                         {
                             BTN_START_STOP_AUTO.Visibility = Visibility.Visible;
                             BTN_EQUIPMENT.Visibility = Visibility.Visible;
-                            while(_equipmentControlGrid.Children.Count > 1)
+                            while (_equipmentControlGrid.Children.Count > 1)
                                 _equipmentControlGrid.Children.RemoveAt(1);
                             _equipmentControlGrid.Children.Add(Activator.CreateInstance(EQUIPMENTCONTROL_VISUALIZATION[equipmentControl.ControllerType], controller) as UserControl);
                             if (_equipment is IEquipmentStat)
@@ -956,17 +956,54 @@ namespace FarmingGPS
                         }
                     }
 
+                }
+                catch (Exception e)
+                {
+                    Log.Error("Failed to set equipment", e);
+                    return;
+                }
+
+                _visualization.SetEquipmentWidth(_equipment.Width);
+            }
+        }
+
+        private void SetFarmingMode(FarmingMode userControl)
+        {
+            if(_field == null)
+            {
+                OKDialog dialog = new OKDialog("Du måste välja fält först");
+                dialog.Show();
+                return;
+            }
+            
+            _stateRecovery.RemoveStateObject(_farmingMode);
+            if (_equipment == null)
+                return;
+
+            if (_farmingMode != null)
+            {
+                foreach (TrackingLine trackingLine in _farmingMode.TrackingLines)
+                    _visualization.DeleteLine(trackingLine);
+                foreach (TrackingLine trackingLine in _farmingMode.TrackingLinesHeadland)
+                    _visualization.DeleteLine(trackingLine);
+            }
+            
+            _equipment.Overlap = Distance.FromMeters(userControl.Overlap);
+            if (_equipment.FarmingMode == null)
+                _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, userControl.Headlands);
+            else
+            {
+                try
+                {
                     _farmingMode = (FarmingGPSLib.FarmingModes.IFarmingMode)Activator.CreateInstance(_equipment.FarmingMode, _field, _equipment, userControl.Headlands);
                 }
                 catch(Exception e)
                 {
-                    Log.Error("Failed to set euipment and farmingmode", e);
+                    Log.Error("Failed to set farmingmode", e);
                     return;
                 }
             }
-
-            _visualization.SetEquipmentWidth(_equipment.Width);
-            
+                        
 
             if (_stateRecovery.ObjectsRecovered.ContainsKey(typeof(FarmingGPSLib.FarmingModes.IFarmingMode)))
             {
@@ -995,20 +1032,6 @@ namespace FarmingGPS
             _settingsGrid.Visibility = Visibility.Hidden;
             ShowTrackingLineSettings();
             _farmingMode.FarmingEvent += FarmingEvent;
-        }
-
-        private void GetVechileEquipment(GetVechileEquipment userControl)
-        {
-            _equipmentChoosen = userControl.Equipment;
-            if (_receiver != null)
-            {
-                Position originPosition = new Position( new Latitude(0.0), new Longitude(0.0));
-                Position newPosition = originPosition.TranslateTo(new Azimuth(userControl.Vechile.ReceiverAngleFromCenter), Distance.FromMeters(userControl.Vechile.ReceiverDistFromCenter), Ellipsoid.Wgs1984);
-                newPosition = newPosition.TranslateTo(new Azimuth(userControl.VechileAttach.AttachAngleFromCenter), Distance.FromMeters(userControl.VechileAttach.AttachDistFromCenter), Ellipsoid.Wgs1984);
-                newPosition = newPosition.TranslateTo(new Azimuth(userControl.Equipment.AngleFromAttach), Distance.FromMeters(userControl.Equipment.DistFromAttach), Ellipsoid.Wgs1984);
-                _receiver.OffsetDirection = originPosition.BearingTo(newPosition);
-                _receiver.OffsetDistance = originPosition.DistanceTo(newPosition);
-            }
         }
 
         private void GetFieldChanged(GetField userControl, string eventName)

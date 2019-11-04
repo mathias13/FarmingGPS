@@ -23,6 +23,7 @@ namespace FarmingGPSLib.Equipment
         Distance Overlap
         {
             get;
+            set;
         }
 
         Distance CenterToTip
