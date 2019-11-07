@@ -20,8 +20,8 @@ namespace FarmingGPSLib.Settings.Vaderstad
         public Controller()
         {
             _settings = new SettingsCollection("Controller");
-            _settings.Add(new Setting("COMPort", _comport.Type, COMPort));
-            _settings.Add(new Setting("ReadInterval", _readInterval.Type, ReadInterval));
+            _settings.Add(new Setting("COMPort", "COMPort", _comport.Type, COMPort));
+            _settings.Add(new Setting("ReadInterval", "Läs intervall", _readInterval.Type, ReadInterval));
             foreach (ISetting setting in _settings)
                 setting.SettingChanged += Setting_SettingChanged;
         }
