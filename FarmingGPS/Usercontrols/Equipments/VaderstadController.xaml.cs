@@ -60,7 +60,7 @@ namespace FarmingGPS.Usercontrols.Equipments
 
         protected static readonly DependencyProperty ActualSeedingRate = DependencyProperty.Register("ActualSpreadingRate", typeof(int), typeof(VaderstadController));
 
-        protected static readonly DependencyProperty MaxRateOfTavel = DependencyProperty.Register("MaxRateOfTavel", typeof(float), typeof(VaderstadController));
+        protected static readonly DependencyProperty MaxRateOfTavel = DependencyProperty.Register("MaxRateOfTravel", typeof(float), typeof(VaderstadController));
 
         protected static readonly DependencyProperty SetSeedingRate = DependencyProperty.Register("SetSpreadingRate", typeof(int), typeof(VaderstadController));
 
