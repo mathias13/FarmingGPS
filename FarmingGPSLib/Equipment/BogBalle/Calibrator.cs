@@ -537,29 +537,29 @@ namespace FarmingGPSLib.Equipment.BogBalle
         
         private string ReadValue(string command)
         {
-            lock (_syncObject)
-            {
                 _readMessage = new ReadMessage(command);
 
                 while (!_readMessage.Finished)
                     Thread.Sleep(1);
 
-                if (_readMessage.Success)
-                {
-                    _noAnswerCount = 0;
-                    return _readMessage.ReturnValue;
-                }
-                else
-                {
-                    _noAnswerCount++;
-                    Log.Warn("Failed to read value with command: " + command);
-                    return String.Empty;
-                }
+            if (_readMessage.Success)
+            {
+                _noAnswerCount = 0;
+                return _readMessage.ReturnValue;
+            }
+            else
+            {
+                _noAnswerCount++;
+                Log.Warn("Failed to read value with command: " + command);
+                return String.Empty;
             }
         }
             
         private bool WriteValue(string command, string value)
         {
+            if (!IsConnected)
+                return false;
+
             _writeMessage = new WriteMessage(command, value);
 
             while (!_writeMessage.Finished)
