@@ -26,6 +26,14 @@ namespace FarmingGPSLib.Settings.Vaderstad
                 setting.SettingChanged += Setting_SettingChanged;
         }
 
+        public Controller(Controller controllerSettings) : this()
+        {
+            COMPort = controllerSettings.COMPort;
+            ReadInterval = controllerSettings.ReadInterval;
+            _settings["COMPort"].Value = COMPort;
+            _settings["ReadInterval"].Value = ReadInterval;
+        }
+
         private void Setting_SettingChanged(object sender, EventArgs e)
         {
             ISetting setting = sender as ISetting;
@@ -84,7 +92,7 @@ namespace FarmingGPSLib.Settings.Vaderstad
         {
             get
             {
-                return _settings.Name;
+                return "Väderstad DS400";
             }
         }
 

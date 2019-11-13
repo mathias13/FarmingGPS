@@ -966,19 +966,30 @@ namespace FarmingGPS
             IEquipmentControl equipmentControl = _equipment as IEquipmentControl;
             object settings = _config.Sections[equipmentControl.ControllerSettingsType.FullName];
             if (settings == null)
+            {
                 settings = Activator.CreateInstance(equipmentControl.ControllerSettingsType);
+                _config.Sections.Add(equipmentControl.ControllerSettingsType.FullName, settings as ConfigurationSection);
+                _config.Save();
+            }
 
             object controller = equipmentControl.RegisterController(settings);
 
-            ISettingsCollection settingsCollection = settings as ISettingsCollection;
-            SettingGroup controllerSettings = new SettingGroup(settingsCollection.Name, null, new SettingsCollectionControl(settingsCollection));
-            (controllerSettings.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
-
             SettingGroup settingRoot = _settingsTree.ItemsSource as SettingGroup;
-            ((SettingsCollectionControl)settingRoot.Items[0].SettingControl).Settings.ChildSettings.Add(settingsCollection);
-            settingRoot.Items[0].Items.Add(controllerSettings);
-            _settingsTree.ItemsSource = null;
-            _settingsTree.ItemsSource = settingRoot;
+
+            bool alreadyInTree = false;
+            foreach (SettingGroup setting in settingRoot.Items[0])
+                if (setting.Name == ((ISettingsCollection)settings).Name)
+                    alreadyInTree = true;
+            if (!alreadyInTree)
+            {
+                ISettingsCollection settingsCollection = (ISettingsCollection)Activator.CreateInstance(equipmentControl.ControllerSettingsType, new object[] { settings });
+                SettingGroup controllerSettings = new SettingGroup(settingsCollection.Name, null, new SettingsCollectionControl(settingsCollection));
+                (controllerSettings.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+                ((SettingsCollectionControl)settingRoot.Items[0].SettingControl).Settings.ChildSettings.Add(settingsCollection);
+                settingRoot.Items[0].Items.Add(controllerSettings);
+                _settingsTree.ItemsSource = null;
+                _settingsTree.ItemsSource = settingRoot;
+            }
 
             if (EQUIPMENTCONTROL_VISUALIZATION.ContainsKey(equipmentControl.ControllerType))
             {

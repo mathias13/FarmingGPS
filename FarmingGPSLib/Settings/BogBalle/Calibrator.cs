@@ -26,6 +26,14 @@ namespace FarmingGPSLib.Settings.BogBalle
                 setting.SettingChanged += Setting_SettingChanged;
         }
 
+        public Calibrator(Calibrator calibratorSettings) : this()
+        {
+            COMPort = calibratorSettings.COMPort;
+            ReadInterval = calibratorSettings.ReadInterval;
+            _settings["COMPort"].Value = COMPort;
+            _settings["ReadInterval"].Value = ReadInterval;
+        }
+
         private void Setting_SettingChanged(object sender, EventArgs e)
         {
             ISetting setting = sender as ISetting;
@@ -84,7 +92,7 @@ namespace FarmingGPSLib.Settings.BogBalle
         {
             get
             {
-                return _settings.Name;
+                return "Bogballe Calbrator";
             }
         }
 
