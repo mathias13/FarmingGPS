@@ -12,7 +12,9 @@ namespace FarmingGPSLib.FarmingModes
 
         void CreateTrackingLines(Coordinate aCoord, Coordinate bCoord);
 
-        void CreateTrackingLines(TrackingLine headLine);
+        void CreateTrackingLines(TrackingLine trackingLine);
+
+        void CreateTrackingLines(TrackingLine trackingLine, Angle directionFromLine);
 
         void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction);
 

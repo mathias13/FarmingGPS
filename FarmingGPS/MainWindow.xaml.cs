@@ -709,10 +709,18 @@ namespace FarmingGPS
 
         private void BTN_CONFIRM_TRACKLINE_Click(object sender, RoutedEventArgs e)
         {
+            float heading = 0.0f;
+            ValueChangeDialog valueChangeDialog = new ValueChangeDialog(0.0f, -360.0f, 360.0f, 5.0f, "0°", "Vinkel från linje");
+            if (valueChangeDialog.ShowDialog().Value)
+                heading = valueChangeDialog.Value;
+
+            DotSpatial.Topology.Angle headingFromLine = new DotSpatial.Topology.Angle();
+            headingFromLine.DegreesPos = heading;
+
             BTN_CHOOSE_TRACKLINE.Style = (Style)this.FindResource("BUTTON_CHOOSE_TRACKLINE");
             BTN_CONFIRM_TRACKLINE.Visibility = Visibility.Collapsed;
             _trackLineGrid.Visibility = Visibility.Collapsed;
-            _farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadland[_selectedTrackingLine]);
+            _farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadland[_selectedTrackingLine], headingFromLine);
             foreach (TrackingLine trackingLine in _farmingMode.TrackingLines)
                 _visualization.AddLine(trackingLine);
             _visualization.CancelFocus();

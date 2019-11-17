@@ -231,6 +231,11 @@ namespace FarmingGPSLib.FarmingModes
             _hasChanged = true;
         }
 
+        public virtual void CreateTrackingLines(TrackingLine trackingLine, Angle directionFromLine)
+        {
+            _hasChanged = true;
+        }
+
         public virtual void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction)
         {
             throw new NotImplementedException();

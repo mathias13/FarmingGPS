@@ -51,8 +51,6 @@ namespace FarmingGPSLib.FarmingModes
         public override void CreateTrackingLines(Coordinate aCoord, DotSpatial.Topology.Angle direction)
         {
             base.CreateTrackingLines(aCoord, direction);
-            direction.DegreesPos += 90;
-            direction.Radians = direction.Radians * -1;
             FillFieldWithTrackingLines(HelperClassLines.CreateLine(aCoord, direction, 5.0));
         }
 
@@ -65,13 +63,13 @@ namespace FarmingGPSLib.FarmingModes
         public override void CreateTrackingLines(TrackingLine headLine)
         {
             base.CreateTrackingLines(headLine);
-            IList<LineSegment> lines = HelperClassLines.CreateLines(headLine.Points);
-            LineSegment baseLine = lines[0];
-            for (int i = 1; i < lines.Count; i++)
-                if (lines[i].Length > baseLine.Length)
-                    baseLine = lines[i];
+            FillFieldWithTrackingLines(headLine.MainLine);
+        }
 
-            FillFieldWithTrackingLines(baseLine);
+        public override void CreateTrackingLines(TrackingLine trackingLine, DotSpatial.Topology.Angle directionFromLine)
+        {
+            DotSpatial.Topology.Angle newAngle = new DotSpatial.Topology.Angle(trackingLine.MainLine.Angle + directionFromLine.Radians);
+            this.CreateTrackingLines(trackingLine.MainLine.P0, newAngle);
         }
 
         public override void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction)

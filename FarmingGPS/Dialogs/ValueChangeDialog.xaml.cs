@@ -21,6 +21,16 @@ namespace FarmingGPS.Dialogs
             VALUE.FormatString = format;
         }
 
+        public ValueChangeDialog(float value, float min, float max, float increment, string format, string message) : this()
+        {
+            VALUE.Value = value;
+            VALUE.Minimum = min;
+            VALUE.Maximum = max;
+            VALUE.Increment = increment;
+            VALUE.FormatString = format;
+            TEXT_MESSAGE.Text = message;
+        }
+
         public float Value
         {
             get { return VALUE.Value.Value; }
