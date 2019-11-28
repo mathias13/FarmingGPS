@@ -268,7 +268,7 @@ namespace FarmingGPS
             }
 
 #if DEBUG
-            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.855032), new Latitude(58.512722)), false);
+            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.855149568), new Latitude(58.5125995962)), false);
             _receiver.BearingUpdate += _receiver_BearingUpdate;
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.CoordinateUpdate += _receiver_CoordinateUpdate;
@@ -557,15 +557,16 @@ namespace FarmingGPS
             IReceiver receiver = sender as IReceiver;
             if (_field == null)
                 return;
-            Coordinate actualCoordinate = actualPosition;
+            Coordinate vechileCoordinate = actualPosition;
+            Coordinate equipmentCoordinate = actualPosition;
             if (_equipment != null)
-                actualCoordinate = _equipment.GetCenter(actualPosition, receiver.CurrentBearing);
+                equipmentCoordinate = _equipment.GetCenter(actualPosition, receiver.CurrentBearing);
 
 
             Azimuth actualHeading = receiver.CurrentBearing;
-            _visualization.UpdatePosition(actualCoordinate, actualHeading);
+            _visualization.UpdatePosition(vechileCoordinate, actualHeading);
             if (_farmingMode != null)
-                _farmingMode.UpdateEvents(actualCoordinate, actualHeading);
+                _farmingMode.UpdateEvents(equipmentCoordinate, actualHeading);
             if (_equipment != null)
             {
                 Coordinate leftTip = _equipment.GetLeftTip(actualPosition, actualHeading);
@@ -589,7 +590,7 @@ namespace FarmingGPS
             {
                 if (_farmingMode != null)
                 {
-                    TrackingLine newTrackingLine = _farmingMode.GetClosestLine(actualCoordinate);
+                    TrackingLine newTrackingLine = _farmingMode.GetClosestLine(vechileCoordinate);
                     if (_activeTrackingLine == null)
                         _activeTrackingLine = newTrackingLine;
                     else if (!_activeTrackingLine.Equals(newTrackingLine))
@@ -611,9 +612,9 @@ namespace FarmingGPS
             {
                 OrientationToLine orientationToLine;
                 if (_farmingMode.TrackingLinesHeadland.Contains(_activeTrackingLine))
-                    orientationToLine = _activeTrackingLine.GetOrientationToLine(actualCoordinate, actualHeading, false);
+                    orientationToLine = _activeTrackingLine.GetOrientationToLine(vechileCoordinate, actualHeading, false);
                 else
-                    orientationToLine = _activeTrackingLine.GetOrientationToLine(actualCoordinate, actualHeading, true);
+                    orientationToLine = _activeTrackingLine.GetOrientationToLine(vechileCoordinate, actualHeading, true);
                 _activeTrackingLine.Active = true;
                 LightBar.Direction lightBarDirection = LightBar.Direction.Left;
                 if (orientationToLine.SideOfLine == OrientationToLine.Side.Left)
