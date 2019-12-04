@@ -102,6 +102,9 @@ namespace FarmingGPS.Database
     partial void InsertFertilizerPlan(FertilizerPlan instance);
     partial void UpdateFertilizerPlan(FertilizerPlan instance);
     partial void DeleteFertilizerPlan(FertilizerPlan instance);
+    partial void InsertCropYearSelected(CropYearSelected instance);
+    partial void UpdateCropYearSelected(CropYearSelected instance);
+    partial void DeleteCropYearSelected(CropYearSelected instance);
     #endregion
 		
 		public FarmingGPSDataContext() : 
@@ -323,6 +326,14 @@ namespace FarmingGPS.Database
 			get
 			{
 				return this.GetTable<FertilizerPlan>();
+			}
+		}
+		
+		public System.Data.Linq.Table<CropYearSelected> CropYearSelecteds
+		{
+			get
+			{
+				return this.GetTable<CropYearSelected>();
 			}
 		}
 		
@@ -6481,6 +6492,8 @@ namespace FarmingGPS.Database
 		
 		private EntitySet<CropProductionPlan> _CropProductionPlans;
 		
+		private EntitySet<CropYearSelected> _CropYearSelecteds;
+		
     #region Extensibility Method Definitions
     partial void OnLoaded();
     partial void OnValidate(System.Data.Linq.ChangeAction action);
@@ -6496,6 +6509,7 @@ namespace FarmingGPS.Database
 		public CropYear()
 		{
 			this._CropProductionPlans = new EntitySet<CropProductionPlan>(new Action<CropProductionPlan>(this.attach_CropProductionPlans), new Action<CropProductionPlan>(this.detach_CropProductionPlans));
+			this._CropYearSelecteds = new EntitySet<CropYearSelected>(new Action<CropYearSelected>(this.attach_CropYearSelecteds), new Action<CropYearSelected>(this.detach_CropYearSelecteds));
 			OnCreated();
 		}
 		
@@ -6572,6 +6586,19 @@ namespace FarmingGPS.Database
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="CropYear_CropYearSelected", Storage="_CropYearSelecteds", ThisKey="CropYearId", OtherKey="SelectedYear")]
+		public EntitySet<CropYearSelected> CropYearSelecteds
+		{
+			get
+			{
+				return this._CropYearSelecteds;
+			}
+			set
+			{
+				this._CropYearSelecteds.Assign(value);
+			}
+		}
+		
 		public event PropertyChangingEventHandler PropertyChanging;
 		
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -6599,6 +6626,18 @@ namespace FarmingGPS.Database
 		}
 		
 		private void detach_CropProductionPlans(CropProductionPlan entity)
+		{
+			this.SendPropertyChanging();
+			entity.CropYear = null;
+		}
+		
+		private void attach_CropYearSelecteds(CropYearSelected entity)
+		{
+			this.SendPropertyChanging();
+			entity.CropYear = this;
+		}
+		
+		private void detach_CropYearSelecteds(CropYearSelected entity)
 		{
 			this.SendPropertyChanging();
 			entity.CropYear = null;
@@ -7846,6 +7885,133 @@ namespace FarmingGPS.Database
 						this._FertilizerId = default(int);
 					}
 					this.SendPropertyChanged("FertilizerType");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.CropYearSelected")]
+	public partial class CropYearSelected : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _Id;
+		
+		private int _SelectedYear;
+		
+		private EntityRef<CropYear> _CropYear;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnIdChanging(int value);
+    partial void OnIdChanged();
+    partial void OnSelectedYearChanging(int value);
+    partial void OnSelectedYearChanged();
+    #endregion
+		
+		public CropYearSelected()
+		{
+			this._CropYear = default(EntityRef<CropYear>);
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Id", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int Id
+		{
+			get
+			{
+				return this._Id;
+			}
+			set
+			{
+				if ((this._Id != value))
+				{
+					this.OnIdChanging(value);
+					this.SendPropertyChanging();
+					this._Id = value;
+					this.SendPropertyChanged("Id");
+					this.OnIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SelectedYear", DbType="Int NOT NULL")]
+		public int SelectedYear
+		{
+			get
+			{
+				return this._SelectedYear;
+			}
+			set
+			{
+				if ((this._SelectedYear != value))
+				{
+					if (this._CropYear.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnSelectedYearChanging(value);
+					this.SendPropertyChanging();
+					this._SelectedYear = value;
+					this.SendPropertyChanged("SelectedYear");
+					this.OnSelectedYearChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="CropYear_CropYearSelected", Storage="_CropYear", ThisKey="SelectedYear", OtherKey="CropYearId", IsForeignKey=true)]
+		public CropYear CropYear
+		{
+			get
+			{
+				return this._CropYear.Entity;
+			}
+			set
+			{
+				CropYear previousValue = this._CropYear.Entity;
+				if (((previousValue != value) 
+							|| (this._CropYear.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._CropYear.Entity = null;
+						previousValue.CropYearSelecteds.Remove(this);
+					}
+					this._CropYear.Entity = value;
+					if ((value != null))
+					{
+						value.CropYearSelecteds.Add(this);
+						this._SelectedYear = value.CropYearId;
+					}
+					else
+					{
+						this._SelectedYear = default(int);
+					}
+					this.SendPropertyChanged("CropYear");
 				}
 			}
 		}

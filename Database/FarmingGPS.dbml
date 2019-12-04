@@ -276,6 +276,7 @@
       <Column Name="Year" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="Comment" Type="System.String" DbType="VarChar(200) NOT NULL" CanBeNull="false" />
       <Association Name="CropYear_CropProductionPlan" Member="CropProductionPlans" ThisKey="CropYearId" OtherKey="CropYearId" Type="CropProductionPlan" />
+      <Association Name="CropYear_CropYearSelected" Member="CropYearSelecteds" ThisKey="CropYearId" OtherKey="SelectedYear" Type="CropYearSelected" />
     </Type>
   </Table>
   <Table Name="dbo.CropProductionPlan" Member="CropProductionPlans">
@@ -327,6 +328,13 @@
       <Column Name="Done" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
       <Association Name="CropProductionPlan_FertilizerPlan" Member="CropProductionPlan" ThisKey="CropProductionPlanId" OtherKey="CropProductionPlanId" Type="CropProductionPlan" IsForeignKey="true" />
       <Association Name="FertilizerType_FertilizerPlan" Member="FertilizerType" ThisKey="FertilizerId" OtherKey="FertilizerId" Type="FertilizerType" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.CropYearSelected" Member="CropYearSelecteds">
+    <Type Name="CropYearSelected">
+      <Column Name="Id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="SelectedYear" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="CropYear_CropYearSelected" Member="CropYear" ThisKey="SelectedYear" OtherKey="CropYearId" Type="CropYear" IsForeignKey="true" />
     </Type>
   </Table>
   <Function Name="dbo.GetWorkFiltered" Method="GetWorkFiltered">
