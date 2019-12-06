@@ -517,9 +517,11 @@ namespace FarmingGPSLib.Equipment.Vaderstad
                         _seedMotorSpeed = floatValue / 10f;
 
                     value = ReadValue(SEED_USED_READ);
-                    if (!float.TryParse(value, out _seedUsed))
+                    if (!float.TryParse(value, out floatValue))
                         _seedUsed = -1;
-
+                    else
+                        _seedUsed = floatValue / 10f;
+                    
                     value = ReadValue(CAL_WEIGHT_READ);
                     if (!float.TryParse(value, out floatValue))
                         _calWeight = -1;
