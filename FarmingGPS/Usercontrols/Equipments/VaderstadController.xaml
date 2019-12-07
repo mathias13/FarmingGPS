@@ -48,8 +48,8 @@
                 <StackPanel Grid.Column="0">
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Aktuell giva</TextBlock>
                     <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg/ha" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=ActualSpreadingRate, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}"/>
-                    <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Distans</TextBlock>
-                    <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 m" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=Distance, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}"/>
+                    <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Körd area</TextBlock>
+                    <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 ha" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=Area, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}"/>
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Kal. vikt</TextBlock>
                     <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="5" AllowSpin="False" IsReadOnly="True" FormatString="0.00 kg" MouseLeftButtonUp="CalWeight_MouseUp" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=CalWeight, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}"/>
                 </StackPanel>
@@ -62,16 +62,19 @@
                     <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="30" AllowSpin="False" IsReadOnly="True" FormatString="0 km/h" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=MaxRateOfTravel, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}" Margin="37,0,33,0"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2">
-                    <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Hastighet</TextBlock>
-                    <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="50" AllowSpin="False" IsReadOnly="True" FormatString="0.0 km/h" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=Speed, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}"/>
+                    <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Snitt giva</TextBlock>
+                    <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg/ha" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=AvgRate, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}"/>
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Hastighet motor</TextBlock>
                     <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="50" AllowSpin="False" IsReadOnly="True" FormatString="0.0 rpm" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=SeedMotorSpeed, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}"/>
-                    <Border Background="WhiteSmoke" ClipToBounds="True" BorderBrush="Black" BorderThickness="2" CornerRadius="5" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="13">
-                        <Grid>
-                            <Rectangle Fill="Red" Visibility="{Binding Path=Alarm, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}, Converter={StaticResource BoolToVis}}"/>
-                            <TextBlock Background="Transparent" Padding="5" FontSize="14">Larm</TextBlock>
-                        </Grid>
-                    </Border>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Grid.Row="1" x:Name="BTN_RESET" Style="{StaticResource GENERAL_BUTTON}" Width="80" Height="40" Margin="2,10,10,10" Click="BTN_RESET_Click">Rst. räkn.</Button>
+                        <Border Background="WhiteSmoke" ClipToBounds="True" BorderBrush="Black" BorderThickness="2" CornerRadius="5" Margin="13">
+                            <Grid>
+                                <Rectangle Fill="Red" Visibility="{Binding Path=Alarm, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}, Converter={StaticResource BoolToVis}}"/>
+                                <TextBlock Background="Transparent" Padding="5" FontSize="14">Larm</TextBlock>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
                 </StackPanel>
             </Grid>
         </StackPanel>

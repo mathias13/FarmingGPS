@@ -40,8 +40,8 @@ namespace FarmingGPS.Usercontrols.Equipments
                 SetValue(ActualSeedingRate, _controller.ActualSeedingRate);
                 SetValue(MaxRateOfTavel, _controller.MaxRateOfTravel);
                 SetValue(SetSeedingRate, _controller.SetSeedingRate);
-                SetValue(Distance, _controller.Distance);
-                SetValue(Speed, _controller.Speed);
+                SetValue(Area, _controller.HA);
+                SetValue(AvgRate, _controller.SeedUsed / _controller.HA);
                 SetValue(SeedMotorSpeed, _controller.SeedMotorSpeed);
                 SetValue(SeedUsed, _controller.SeedUsed);
                 SetValue(CalWeight, _controller.CalibrationWeight);
@@ -64,9 +64,9 @@ namespace FarmingGPS.Usercontrols.Equipments
 
         protected static readonly DependencyProperty SetSeedingRate = DependencyProperty.Register("SetSpreadingRate", typeof(int), typeof(VaderstadController));
 
-        protected static readonly DependencyProperty Distance = DependencyProperty.Register("Distance", typeof(float), typeof(VaderstadController));
+        protected static readonly DependencyProperty Area = DependencyProperty.Register("Area", typeof(float), typeof(VaderstadController));
 
-        protected static readonly DependencyProperty Speed = DependencyProperty.Register("Speed", typeof(float), typeof(VaderstadController));
+        protected static readonly DependencyProperty AvgRate = DependencyProperty.Register("AvgRate", typeof(float), typeof(VaderstadController));
 
         protected static readonly DependencyProperty SeedMotorSpeed = DependencyProperty.Register("SeedMotorSpeed", typeof(float), typeof(VaderstadController));
 
@@ -103,6 +103,11 @@ namespace FarmingGPS.Usercontrols.Equipments
             ValueChangeDialog valueChangeDialog = new ValueChangeDialog(_controller.SetSeedingRate, 0.0f, 500.0f, 5.0f, "0 kg/ha");
             if (valueChangeDialog.ShowDialog().Value)
                 _controller.ChangeSeedingRate((int)valueChangeDialog.Value);
+        }
+
+        private void BTN_RESET_Click(object sender, RoutedEventArgs e)
+        {
+            _controller.ResetSums();
         }
     }
 }
