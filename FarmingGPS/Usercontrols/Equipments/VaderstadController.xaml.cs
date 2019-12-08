@@ -41,7 +41,10 @@ namespace FarmingGPS.Usercontrols.Equipments
                 SetValue(MaxRateOfTavel, _controller.MaxRateOfTravel);
                 SetValue(SetSeedingRate, _controller.SetSeedingRate);
                 SetValue(Area, _controller.HA);
-                SetValue(AvgRate, _controller.SeedUsed / _controller.HA);
+                if(_controller.HA != 0.0)
+                    SetValue(AvgRate, _controller.SeedUsed / _controller.HA);
+                else
+                    SetValue(AvgRate, 0.0);
                 SetValue(SeedMotorSpeed, _controller.SeedMotorSpeed);
                 SetValue(SeedUsed, _controller.SeedUsed);
                 SetValue(CalWeight, _controller.CalibrationWeight);

@@ -22,9 +22,11 @@
         <StackPanel Orientation="Vertical">
             <Grid>
                 <Border Background="Red" ClipToBounds="True" BorderBrush="Black" BorderThickness="2" CornerRadius="5" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="13">
-                    <Grid>
+                    <Grid Width="30" Height="30">
                         <Rectangle Fill="Green" Visibility="{Binding Path=ConnectedState, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}, Converter={StaticResource BoolToVis}}"/>
-                        <TextBlock Background="Transparent" Padding="5" FontSize="14">Ansluten</TextBlock>
+                        <Viewbox Style="{StaticResource SYMBOL_VIEWBOX}">
+                            <Path Fill="Black" Data="{StaticResource SYMBOL_BT_CONN}"/>
+                        </Viewbox>
                     </Grid>
                 </Border>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -32,12 +34,28 @@
                     <Button Grid.Row="1" x:Name="BTN_STOP" Style="{StaticResource GENERAL_BUTTON}" Width="80" Height="40" Margin="2,10,10,10" Click="BTN_STOP_Click">Stoppa</Button>
                     <Button Grid.Row="1" x:Name="BTN_RATETEST" Style="{StaticResource GENERAL_BUTTON}" Width="80" Height="40" Margin="2,10,10,10" Click="BTN_RATETEST_Click">Vridprov</Button>
                 </StackPanel>
-                <Border Background="WhiteSmoke" ClipToBounds="True" BorderBrush="Black" BorderThickness="2" CornerRadius="5" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="13">
-                    <Grid>
-                        <Rectangle Fill="Green" Visibility="{Binding Path=Started, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}, Converter={StaticResource BoolToVis}}"/>
-                        <TextBlock Background="Transparent" Padding="5" FontSize="14">Startad</TextBlock>
-                    </Grid>
-                </Border>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Border Background="WhiteSmoke" ClipToBounds="True" BorderBrush="Black" BorderThickness="2" CornerRadius="5" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5,13,5,13">
+                        <Grid Width="30" Height="30">
+                            <Rectangle Fill="Green" Visibility="{Binding Path=Started, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}, Converter={StaticResource BoolToVis}}"/>
+                            <Viewbox Style="{StaticResource SYMBOL_VIEWBOX}">
+                                <Grid Width="24" Height="24">
+                                    <Path Fill="Black" Data="{StaticResource SYMBOL_ROTATE}"/>
+                                </Grid>
+                            </Viewbox>
+                        </Grid>
+                    </Border>
+                    <Border Background="WhiteSmoke" ClipToBounds="True" BorderBrush="Black" BorderThickness="2" CornerRadius="5" Margin="5,13,13,13">
+                        <Grid Width="30" Height="30">
+                            <Rectangle Fill="Red" Visibility="{Binding Path=Alarm, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}, Converter={StaticResource BoolToVis}}"/>
+                            <Viewbox Style="{StaticResource SYMBOL_VIEWBOX}">
+                                <Grid Width="32" Height="32">
+                                    <Path Fill="Black" Data="{StaticResource SYMBOL_ALARM_BELL}"/>
+                                </Grid>
+                            </Viewbox>
+                        </Grid>
+                    </Border>
+                </StackPanel>
             </Grid>
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -66,15 +84,7 @@
                     <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg/ha" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=AvgRate, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}"/>
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Hastighet motor</TextBlock>
                     <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="50" AllowSpin="False" IsReadOnly="True" FormatString="0.0 rpm" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=SeedMotorSpeed, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}"/>
-                    <StackPanel Orientation="Horizontal">
-                        <Button Grid.Row="1" x:Name="BTN_RESET" Style="{StaticResource GENERAL_BUTTON}" Width="80" Height="40" Margin="2,10,10,10" Click="BTN_RESET_Click">Rst. räkn.</Button>
-                        <Border Background="WhiteSmoke" ClipToBounds="True" BorderBrush="Black" BorderThickness="2" CornerRadius="5" Margin="13">
-                            <Grid>
-                                <Rectangle Fill="Red" Visibility="{Binding Path=Alarm, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}, Converter={StaticResource BoolToVis}}"/>
-                                <TextBlock Background="Transparent" Padding="5" FontSize="14">Larm</TextBlock>
-                            </Grid>
-                        </Border>
-                    </StackPanel>
+                    <Button Grid.Row="1" x:Name="BTN_RESET" Style="{StaticResource GENERAL_BUTTON}" Width="80" Height="40" Margin="2,10,10,10" Click="BTN_RESET_Click">Rst. räkn.</Button>
                 </StackPanel>
             </Grid>
         </StackPanel>

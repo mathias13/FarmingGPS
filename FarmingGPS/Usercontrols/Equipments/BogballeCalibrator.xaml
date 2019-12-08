@@ -22,9 +22,11 @@
         <StackPanel Orientation="Vertical">
             <Grid>
                 <Border Background="Red" ClipToBounds="True" BorderBrush="Black" BorderThickness="2" CornerRadius="5" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="13">
-                    <Grid>
+                    <Grid Width="30" Height="30">
                         <Rectangle Fill="Green" Visibility="{Binding Path=ConnectedState, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}, Converter={StaticResource BoolToVis}}"/>
-                        <TextBlock Background="Transparent" Padding="5" FontSize="14">Ansluten</TextBlock>
+                        <Viewbox Style="{StaticResource SYMBOL_VIEWBOX}">
+                            <Path Fill="Black" Data="{StaticResource SYMBOL_BT_CONN}"/>
+                        </Viewbox>
                     </Grid>
                 </Border>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -32,9 +34,13 @@
                     <Button Grid.Row="1" x:Name="BTN_STOP" Style="{StaticResource GENERAL_BUTTON}" Width="80" Height="40" Margin="2,10,10,10" Click="BTN_STOP_Click">Stoppa</Button>
                 </StackPanel>
                 <Border Background="WhiteSmoke" ClipToBounds="True" BorderBrush="Black" BorderThickness="2" CornerRadius="5" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="13">
-                    <Grid>
+                    <Grid Width="30" Height="30">
                         <Rectangle Fill="Green" Visibility="{Binding Path=Started, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}, Converter={StaticResource BoolToVis}}"/>
-                        <TextBlock Background="Transparent" Padding="5" FontSize="14">Startad</TextBlock>
+                        <Viewbox Style="{StaticResource SYMBOL_VIEWBOX}">
+                            <Grid Width="24" Height="24">
+                                <Path Fill="Black" Data="{StaticResource SYMBOL_ROTATE}"/>
+                            </Grid>                            
+                        </Viewbox>
                     </Grid>
                 </Border>
             </Grid>

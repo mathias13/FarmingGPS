@@ -45,6 +45,12 @@
         <Setter Property="Margin" Value="10,10,10,10"/>
     </Style>
 
+    <Style x:Key="SYMBOL_VIEWBOX" TargetType="{x:Type Viewbox}">
+        <Setter Property="Stretch" Value="Uniform"/>
+        <Setter Property="StretchDirection" Value="Both"/>
+        <Setter Property="Margin" Value="2,2,2,2"/>
+    </Style>
+
     <Style x:Key="BUTTON_BASE" TargetType="{x:Type Button}" >
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="IsDefault" Value="true"/>

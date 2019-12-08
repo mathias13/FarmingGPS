@@ -501,8 +501,10 @@ namespace FarmingGPSLib.Equipment.Vaderstad
                         _maxRateOfTravel = floatValue / 10f;
 
                     value = ReadValue(HA_READ);
-                    if (!float.TryParse(value, out _ha))
+                    if (!float.TryParse(value, out floatValue))
                         _ha = -1;
+                    else
+                        _ha = floatValue / 10f;
 
                     value = ReadValue(SPEED_READ);
                     if (!float.TryParse(value, out floatValue))
