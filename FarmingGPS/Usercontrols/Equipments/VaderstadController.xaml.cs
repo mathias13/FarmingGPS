@@ -44,7 +44,7 @@ namespace FarmingGPS.Usercontrols.Equipments
                 if(_controller.HA != 0.0)
                     SetValue(AvgRate, _controller.SeedUsed / _controller.HA);
                 else
-                    SetValue(AvgRate, 0.0);
+                    SetValue(AvgRate, 0.0f);
                 SetValue(SeedMotorSpeed, _controller.SeedMotorSpeed);
                 SetValue(SeedUsed, _controller.SeedUsed);
                 SetValue(CalWeight, _controller.CalibrationWeight);
