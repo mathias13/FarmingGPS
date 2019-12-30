@@ -1,7 +1,7 @@
 ﻿using System;
 using DotSpatial.Positioning;
 using FarmingGPSLib.FarmingModes;
-using FarmingGPSLib.HelperClasses;
+using GpsUtilities.HelperClasses;
 
 namespace FarmingGPSLib.Equipment
 {

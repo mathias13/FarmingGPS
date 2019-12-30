@@ -1,6 +1,6 @@
 ﻿using DotSpatial.Topology;
 using DotSpatial.Topology.Algorithm;
-using FarmingGPSLib.HelperClasses;
+using GpsUtilities.HelperClasses;
 using System;
 
 namespace FarmingGPSLib.FarmingModes.Tools

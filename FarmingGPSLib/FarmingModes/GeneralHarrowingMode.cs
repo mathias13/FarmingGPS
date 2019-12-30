@@ -5,7 +5,7 @@ using DotSpatial.Topology.GeometriesGraph;
 using FarmingGPSLib.Equipment;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
-using FarmingGPSLib.HelperClasses;
+using GpsUtilities.HelperClasses;
 using System.Collections.Generic;
 
 namespace FarmingGPSLib.FarmingModes

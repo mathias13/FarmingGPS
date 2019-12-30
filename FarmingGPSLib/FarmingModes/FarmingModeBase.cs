@@ -4,7 +4,7 @@ using DotSpatial.Topology.GeometriesGraph;
 using DotSpatial.Topology.Operation.Buffer;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
-using FarmingGPSLib.HelperClasses;
+using GpsUtilities.HelperClasses;
 using System;
 using System.Collections;
 using System.Collections.Generic;

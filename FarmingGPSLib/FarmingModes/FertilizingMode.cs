@@ -58,8 +58,9 @@ namespace FarmingGPSLib.FarmingModes
             base.UpdateEvents(position, direction);
             foreach (TrackingLine trackingLine in _trackingLines)
                 if(trackingLine is TrackingLineStartStopEvent)
-                    if ((trackingLine as TrackingLineStartStopEvent).EventFired(direction, position))
-                        OnFarmingEvent((trackingLine as TrackingLineStartStopEvent).Message);
+                    if(trackingLine.Active)
+                        if ((trackingLine as TrackingLineStartStopEvent).EventFired(direction, position))
+                            OnFarmingEvent((trackingLine as TrackingLineStartStopEvent).Message);
         }
 
         protected override void AddTrackingLines(IList<LineString> trackingLines)

@@ -78,6 +78,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\GPSUtilities\GpsUtilities\GpsUtilities.csproj">
+      <Project>{a3488bc4-4d1c-43dc-bcc3-2f39d58f2efb}</Project>
+      <Name>GpsUtilities</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\SwiftBinaryProtocol\SwiftBinaryProtocol\SwiftBinaryProtocol.csproj">
       <Project>{cab096cd-070d-45db-8340-8b4efb073bb9}</Project>
       <Name>SwiftBinaryProtocol</Name>

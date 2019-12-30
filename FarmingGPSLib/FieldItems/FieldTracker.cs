@@ -1,7 +1,7 @@
 ﻿using DotSpatial.Topology;
 using DotSpatial.Topology.Algorithm;
 using FarmingGPSLib.FarmingModes.Tools;
-using FarmingGPSLib.HelperClasses;
+using GpsUtilities.HelperClasses;
 using log4net;
 using System;
 using System.Collections.Generic;

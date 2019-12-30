@@ -1,7 +1,7 @@
 ﻿using DotSpatial.Positioning;
 using DotSpatial.Topology;
 using DotSpatial.Topology.Algorithm;
-using FarmingGPSLib.HelperClasses;
+using GpsUtilities.HelperClasses;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;

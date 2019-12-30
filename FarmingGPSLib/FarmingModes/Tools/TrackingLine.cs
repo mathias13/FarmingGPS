@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using DotSpatial.Topology;
 using DotSpatial.Topology.Algorithm;
-using FarmingGPSLib.HelperClasses;
+using GpsUtilities.HelperClasses;
 
 namespace FarmingGPSLib.FarmingModes.Tools
 {
