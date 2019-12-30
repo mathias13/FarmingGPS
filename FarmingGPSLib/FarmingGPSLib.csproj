@@ -133,9 +133,6 @@
     <Compile Include="FieldItems\FieldBoundaryUpdatedEventArgs.cs" />
     <Compile Include="FieldItems\PolygonUpdatedEventArgs.cs" />
     <Compile Include="FieldItems\SubField.cs" />
-    <Compile Include="HelperClasses\HelperClassAngles.cs" />
-    <Compile Include="HelperClasses\HelperClassCoordinate.cs" />
-    <Compile Include="HelperClasses\HelperClassLines.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings\Database\DatabaseConn.cs" />
     <Compile Include="Settings\IDatabaseSettings.cs" />

@@ -53,6 +53,8 @@ namespace FarmingGPS
             public Coordinate Center { get; set; }
 
             public Azimuth Heading { get; set; }
+
+            public bool Reversing { get; set; }
         }
 
         public struct LightBarUpdateStruct
@@ -386,18 +388,18 @@ namespace FarmingGPS
                         _trackingLineEvaluationTimeout = DateTime.Now.AddSeconds(3.0);
                     }
 
-                    if (_equipment != null)
+                    if (coordinate.Reversing)
+                        _fieldTracker.StopTrack();
+
+                    if (_fieldTracker.IsTracking && !_fieldTrackerActive)
+                        _fieldTracker.StopTrack(coordinate.LeftTip, coordinate.RightTip);
+                    else if (_fieldTrackerActive && !_fieldTracker.IsTracking && !coordinate.Reversing)
                     {
-                        if (_fieldTracker.IsTracking && !_fieldTrackerActive)
-                            _fieldTracker.StopTrack(coordinate.LeftTip, coordinate.RightTip);
-                        else if (_fieldTrackerActive && !_fieldTracker.IsTracking)
-                        {
-                            _distanceTriggerFieldTracker.Init(coordinate.Center, coordinate.Heading);
-                            _fieldTracker.InitTrack(coordinate.LeftTip, coordinate.RightTip);
-                        }
-                        else if (_fieldTrackerActive && _distanceTriggerFieldTracker.CheckDistance(coordinate.Center, coordinate.Heading))
-                            _fieldTracker.AddTrackPoint(coordinate.LeftTip, coordinate.RightTip);
+                        _distanceTriggerFieldTracker.Init(coordinate.Center, coordinate.Heading);
+                        _fieldTracker.InitTrack(coordinate.LeftTip, coordinate.RightTip);
                     }
+                    else if (_fieldTrackerActive && _distanceTriggerFieldTracker.CheckDistance(coordinate.Center, coordinate.Heading) && !coordinate.Reversing)
+                        _fieldTracker.AddTrackPoint(coordinate.LeftTip, coordinate.RightTip);
                 }
                 else
                     System.Threading.Thread.Sleep(1);
@@ -674,8 +676,8 @@ namespace FarmingGPS
 
             _vechile.UpdatePosition(receiver);
 
-            Coordinate vechileCoordinate = _vechile.CenterBackAxle;
-            Coordinate equipmentCoordinate = _vechile.CenterBackAxle;
+            Coordinate vechileCoordinate = _vechile.CenterRearAxle;
+            Coordinate equipmentCoordinate = _vechile.CenterRearAxle;
             Coordinate leftTip = equipmentCoordinate;
             Coordinate rightTip = equipmentCoordinate;
             Azimuth actualHeading = _vechile.VechileDirection;
@@ -695,8 +697,8 @@ namespace FarmingGPS
 
             lock (_syncObject)
             {
-                _coordinateUpdateStructQueueSecondaryTasks.Enqueue(new CoordinateUpdateStruct() { LeftTip = leftTip, RightTip = rightTip, Center = vechileCoordinate, Heading = actualHeading });
-                _coordinateUpdateStructQueueVisual.Enqueue(new CoordinateUpdateStruct() { LeftTip = leftTip, RightTip = rightTip, Center = vechileCoordinate, Heading = actualHeading });
+                _coordinateUpdateStructQueueSecondaryTasks.Enqueue(new CoordinateUpdateStruct() { LeftTip = leftTip, RightTip = rightTip, Center = vechileCoordinate, Heading = actualHeading, Reversing = _vechile.IsReversing });
+                _coordinateUpdateStructQueueVisual.Enqueue(new CoordinateUpdateStruct() { LeftTip = leftTip, RightTip = rightTip, Center = vechileCoordinate, Heading = actualHeading, Reversing = _vechile.IsReversing });
             }
 
             if (_activeTrackingLine != null)

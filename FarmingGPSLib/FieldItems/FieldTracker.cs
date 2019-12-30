@@ -216,6 +216,16 @@ namespace FarmingGPSLib.FieldItems
             }
         }
 
+        public void StopTrack()
+        {
+            lock (_syncObject)
+            {
+                _prevLeftPoint = Coordinate.Empty;
+                _prevRightPoint = Coordinate.Empty;
+                _currentPolygonIndex = -1;
+            }
+        }
+
         public void StopTrack(Coordinate leftPoint, Coordinate rightPoint)
         {
             lock (_syncObject)

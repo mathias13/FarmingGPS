@@ -14,16 +14,17 @@ namespace FarmingGPSLib.Vechile
             public double OffsetDistance;
         }
 
-        private IReceiver _receiver;
+        protected DotSpatial.Topology.Coordinate _position;
+
+        protected Azimuth _direction;
 
         public VechileBase()
         { }
 
-        public VechileBase(Azimuth offsetDirection, Distance offsetDistance, IReceiver receiver)
+        public VechileBase(Azimuth offsetDirection, Distance offsetDistance)
         {
             OffsetDirection = offsetDirection;
             OffsetDistance = offsetDistance;
-            Receiver = receiver;
             HasChanged = true;
         }
 
@@ -31,19 +32,31 @@ namespace FarmingGPSLib.Vechile
 
         public Distance OffsetDistance { get; private set; }
 
-        public IReceiver Receiver
+        #region IVechile
+
+        public virtual DotSpatial.Topology.Coordinate UpdatePosition(IReceiver receiver)
         {
-            get
-            {
-                return _receiver;
-            }
-            set
-            {
-                _receiver = value;
-                _receiver.OffsetDirection = OffsetDirection;
-                _receiver.OffsetDistance = OffsetDistance;
-            }
+            _position = receiver.CurrentCoordinate;
+            _direction = receiver.CurrentBearing;
+            return receiver.CurrentCoordinate;
         }
+
+        public virtual DotSpatial.Topology.Coordinate CenterRearAxle
+        {
+            get { return _position; }
+        }
+
+        public virtual Azimuth VechileDirection
+        {
+            get { return _direction; }
+        }
+
+        public virtual bool IsReversing
+        {
+            get { return false; }
+        }
+
+        #endregion
 
         #region IStateObject
 

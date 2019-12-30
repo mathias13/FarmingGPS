@@ -10,7 +10,13 @@ namespace FarmingGPSLib.Vechile
         Azimuth OffsetDirection { get; }
 
         Distance OffsetDistance { get; }
+        
+        DotSpatial.Topology.Coordinate CenterRearAxle { get; }
 
-        IReceiver Receiver { get; set; }
+        Azimuth VechileDirection { get; }
+
+        DotSpatial.Topology.Coordinate UpdatePosition(IReceiver receiver);
+
+        bool IsReversing { get; }
     }
 }
