@@ -134,14 +134,11 @@ namespace FarmingGPS.Visualization
         private double _viewBehindZoomLevel = 7.0;
 
         private TrackingLine _focusedTrackline = null;
-
-        private Thread _fieldTrackThread;
-        
+                
         #endregion
 
         public FarmingVisualizer()
         {
-            _fieldTrackThread = new Thread(new ThreadStart(FieldTrackThread));
             InitializeComponent();
             _fieldFillMaterial.Freeze();
             _fieldTrackMaterial.Freeze();
@@ -165,7 +162,7 @@ namespace FarmingGPS.Visualization
                 _lastAngle = angle;
             }
             else
-                Dispatcher.BeginInvoke(new Action<Point,double>(UpdatePosition), System.Windows.Threading.DispatcherPriority.Send, position, angle);
+                Dispatcher.BeginInvoke(new Action<Point,double>(UpdatePosition), System.Windows.Threading.DispatcherPriority.Render, position, angle);
         }
 
         public void UpdatePosition(DotSpatial.Topology.Coordinate coord, Azimuth bearing)
@@ -189,7 +186,7 @@ namespace FarmingGPS.Visualization
                 _lastAngle = (double)GetValue(ShiftHeadingProperty);
             }
             else
-                Dispatcher.BeginInvoke(new Action<DotSpatial.Topology.Coordinate, Azimuth>(UpdatePosition), System.Windows.Threading.DispatcherPriority.Send, coord, bearing);
+                Dispatcher.BeginInvoke(new Action<DotSpatial.Topology.Coordinate, Azimuth>(UpdatePosition), System.Windows.Threading.DispatcherPriority.Render, coord, bearing);
         }
        
         public void FocusTrackingLine(TrackingLine trackingLine)
@@ -479,7 +476,7 @@ namespace FarmingGPS.Visualization
         #endregion
 
         #region FieldTrackerEvents
-
+        
         private void UpdateFieldtrack(PolygonUpdatedEventArgs e)
         {
             try
@@ -488,7 +485,7 @@ namespace FarmingGPS.Visualization
                 {
                     PolygonData polygonData = GetPolygonData(e.Polygon.Shell.Coordinates, FIELD_TRACK_Z_INDEX);
                     if (polygonData.PolygonSum != _trackSums[e.ID])
-                        Dispatcher.Invoke(new Action<PolygonData, int>(UpdatePolygon), System.Windows.Threading.DispatcherPriority.Normal, polygonData, e.ID);
+                        Dispatcher.Invoke(new Action<PolygonData, int>(UpdatePolygon), System.Windows.Threading.DispatcherPriority.Render, polygonData, e.ID);
 
                     IList<ulong> holePolygonSums = new List<ulong>(_trackSumsHoles[e.ID]);
                     for (int i = 0; i < e.Polygon.Holes.Length; i++)
@@ -500,7 +497,7 @@ namespace FarmingGPS.Visualization
                         else
                         {
                             double area = Math.Abs(DotSpatial.Topology.Algorithm.CgAlgorithms.SignedArea(e.Polygon.Holes[i].Coordinates));
-                            Dispatcher.Invoke(new Action<PolygonData, int, bool>(AddPolygonHole), System.Windows.Threading.DispatcherPriority.Normal, holePolygonData, e.ID, area > FIELD_TRACK_HOLE_RED_MAX_AREA);
+                            Dispatcher.Invoke(new Action<PolygonData, int, bool>(AddPolygonHole), System.Windows.Threading.DispatcherPriority.Render, holePolygonData, e.ID, area > FIELD_TRACK_HOLE_RED_MAX_AREA);
                         }
                     }
 
@@ -514,8 +511,7 @@ namespace FarmingGPS.Visualization
 
                 }
                 else
-                    Dispatcher.Invoke(new Action<PolygonUpdatedEventArgs>(AddCompletePolygon), System.Windows.Threading.DispatcherPriority.Normal, e);
-                
+                    Dispatcher.Invoke(new Action<PolygonUpdatedEventArgs>(AddCompletePolygon), System.Windows.Threading.DispatcherPriority.Render, e);
                 
             }
             catch (Exception exception)
@@ -613,28 +609,10 @@ namespace FarmingGPS.Visualization
             MeshVisual3D holeMesh = _trackMeshHoles[polygonId][holeIndex];
             _viewPort.Children.Remove(holeMesh);
         }
-
-        private void FieldTrackThread()
-        {
-            while (_trackUpdateQueue.Count > 0)
-            {
-
-                while (_trackUpdateQueue.Count > 1)
-                    _trackUpdateQueue.Dequeue();
-                
-                UpdateFieldtrack(_trackUpdateQueue.Dequeue());
-            }
-        }
-
+        
         private void fieldTracker_PolygonUpdated(object sender, PolygonUpdatedEventArgs e)
         {
-            _trackUpdateQueue.Enqueue(e);
-            if (!_fieldTrackThread.IsAlive)
-            {
-                _fieldTrackThread = new Thread(new ThreadStart(FieldTrackThread));
-                _fieldTrackThread.Start();
-            }
-                    
+            UpdateFieldtrack(e);                    
         }
 
         private void fieldTracker_PolygonDeleted(object sender, PolygonDeletedEventArgs e)
@@ -673,7 +651,7 @@ namespace FarmingGPS.Visualization
                 DrawOutline(e.Boundary);
             }
             else
-                Dispatcher.Invoke(new Action<object, FieldBoundaryUpdatedEventArgs>(FieldCreator_FieldBoundaryUpdated), System.Windows.Threading.DispatcherPriority.Normal, sender, e);
+                Dispatcher.BeginInvoke(new Action<object, FieldBoundaryUpdatedEventArgs>(FieldCreator_FieldBoundaryUpdated), System.Windows.Threading.DispatcherPriority.Render, sender, e);
         }
 
         private void FieldCreator_FieldCreated(object sender, FieldCreatedEventArgs e)

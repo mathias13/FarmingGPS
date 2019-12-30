@@ -28,7 +28,7 @@ namespace FarmingGPS.Usercontrols.Equipments
             if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
                 SetValue(ConnectedState, e);
             else
-                Dispatcher.BeginInvoke(new Action<object, bool>(Calibrator_IsConnectedChanged), DispatcherPriority.Render, sender, e);
+                Dispatcher.BeginInvoke(new Action<object, bool>(Calibrator_IsConnectedChanged), DispatcherPriority.Normal, sender, e);
         }
 
         private void Calibrator_ValuesUpdated(object sender, EventArgs e)

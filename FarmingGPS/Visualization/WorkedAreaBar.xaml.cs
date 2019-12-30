@@ -95,7 +95,7 @@ namespace FarmingGPS.Visualization
                 double width = (double)GetValue(WidthPercentage);
             }
             else
-                Dispatcher.BeginInvoke(new Action<Area>(SetWorkedArea), System.Windows.Threading.DispatcherPriority.Render, area);
+                Dispatcher.BeginInvoke(new Action<Area>(SetWorkedArea), System.Windows.Threading.DispatcherPriority.Normal, area);
         }
 
         public void SetField(IField field)
