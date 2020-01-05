@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using DotSpatial.Positioning;
 using DotSpatial.Topology;
 using GpsUtilities.Reciever;
@@ -13,6 +14,10 @@ namespace FarmingGPSLib.Vechile
 
         private Coordinate _startOfReverse = Coordinate.Empty;
 
+        private List<double> _headingChangeRate = new List<double>(3);
+
+        private double _turnRate = 0.0;
+
         private double _distanceCenterRearAxle = 0.0;
 
         private double _directionCenterRearAxle = 0.0;
@@ -21,26 +26,28 @@ namespace FarmingGPSLib.Vechile
 
         private Azimuth _prevHeading = Azimuth.Invalid;
 
+        private DateTime _prevTime  = DateTime.MinValue;
+
+        private int _usedModelPositions = 0;
+
+        private bool _firstUpdate = true;
+
         public Tractor() : base()
         {
-
         }
 
         public Tractor(Azimuth offsetDirection, Distance offsetDistance) : base(offsetDirection, offsetDistance)
         {
-            _distanceCenterRearAxle = offsetDistance.ToMeters().Value;
-            _directionCenterRearAxle = HelperClassAngles.GetCartesianAngle(offsetDirection).Radians;
-            Coordinate origin = new Coordinate(0.0, 0.0, 0, 0);
-            Coordinate centerRearAxle = HelperClassCoordinate.ComputePoint(origin, _directionCenterRearAxle, _distanceCenterRearAxle);
-            centerRearAxle.Z = 0.0;
-            _vechileModel = new VechileModel(2.2, 2.56);
-            _vectorCenterRearAxle = new Vector(origin, centerRearAxle);
+            CalculateVector();
         }
 
         public override Coordinate UpdatePosition(IReceiver receiver)
         {
-            if (_prevHeading.IsInvalid)
+            if (_firstUpdate)
+            {
                 _prevHeading = receiver.CurrentBearing;
+                _prevTime = DateTime.Now;
+            }
             Azimuth heading = receiver.CurrentBearing;
             Azimuth reverseHeading = _prevHeading.Mirror();
 
@@ -67,11 +74,79 @@ namespace FarmingGPSLib.Vechile
 
             if (_vechileModel != null)
             {
-                _position = position;
-                _direction = heading;
-                //_vechileModel.UpdateModel(receiver.CurrentCoordinate, receiver.CurrentSpeed.ToKilometersPerHour().Value, receiver.CurrentBearing);
-                //_position = _vechileModel.Position;
-                //_direction = _vechileModel.Direction;
+                if (_firstUpdate)
+                {
+                    _vechileModel.Init(position, heading);
+                    _position = position;
+                    _direction = heading;
+                }
+                else if (!IsReversing) // if going forward we check if the heading changes beyond the model, if so use positions from model for two iterations
+                {
+                    if (_usedModelPositions > 3)
+                    {
+                        _headingChangeRate.Clear();
+                        _vechileModel.Init(position, heading);
+                        _usedModelPositions = 0;
+                    }
+
+                    if (_usedModelPositions > 0)
+                    {
+                        _vechileModel.UpdateModel(receiver.CurrentSpeed.ToKilometersPerHour().Value, _turnRate);
+                        _position = _vechileModel.Position;
+                        _direction = _vechileModel.Direction;
+                        _usedModelPositions++;
+                    }
+                    else
+                    {
+                        _position = position;
+                        _direction = heading;
+                        TimeSpan deltaTime = DateTime.Now - _prevTime;
+                        double headingChange = heading.Subtract(_prevHeading).DecimalDegrees;
+                        if (headingChange > 180.0)
+                            headingChange -= 360.0;
+                        else if (headingChange < -180.0)
+                            headingChange += 360.0;
+
+                        headingChange /= deltaTime.TotalSeconds;
+                        _headingChangeRate.Insert(0, headingChange);
+                        if (_headingChangeRate.Count > 3)
+                            _headingChangeRate.RemoveAt(3);
+
+                        if (_headingChangeRate.Count > 2)
+                        {
+                            double _headingChangeRateAvg = 0.0;
+                            for (int i = 0; i < _headingChangeRate.Count; i++)
+                                _headingChangeRateAvg += _headingChangeRate[i];
+                            _headingChangeRateAvg /= _headingChangeRate.Count;
+                            _turnRate = _vechileModel.CalculateSteeringAngle(receiver.CurrentSpeed.ToKilometersPerHour().Value, _headingChangeRateAvg);
+                            _vechileModel.UpdateModel(receiver.CurrentSpeed.ToKilometersPerHour().Value, _turnRate);
+
+                            double headingDiff = _vechileModel.Direction.DecimalDegrees - receiver.CurrentBearing.DecimalDegrees;
+                            if (headingDiff > 180.0)
+                                headingDiff -= 360.0;
+                            else if(headingDiff < -180.0)
+                                headingDiff += 360.0;
+                            if (Math.Abs(headingDiff) > 10.0 && _turnRate < 10.0 && _turnRate > -10.0)
+                            {
+                                _usedModelPositions = 1;
+                                _position = _vechileModel.Position;
+                                _direction = _vechileModel.Direction;
+                            }
+                            else if (position.Distance(_vechileModel.Position) > 0.3)
+                            {
+                                _headingChangeRate.Clear();
+                                _vechileModel.Init(position, heading);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    _headingChangeRate.Clear();
+                    _vechileModel.Init(position, heading);
+                    _position = position;
+                    _direction = heading;
+                }
             }
             else
             {
@@ -80,12 +155,31 @@ namespace FarmingGPSLib.Vechile
             }
 
             _prevHeading = receiver.CurrentBearing;
+            _prevTime = DateTime.Now;
+            _firstUpdate = false;
             return _position;
         }
 
         public override bool IsReversing
         {
             get { return !_startOfReverse.IsEmpty(); }
+        }
+
+        private void CalculateVector()
+        {
+            _distanceCenterRearAxle = OffsetDistance.ToMeters().Value;
+            _directionCenterRearAxle = HelperClassAngles.GetCartesianAngle(OffsetDirection).Radians;
+            Coordinate origin = new Coordinate(0.0, 0.0, 0, 0);
+            Coordinate centerRearAxle = HelperClassCoordinate.ComputePoint(origin, _directionCenterRearAxle, _distanceCenterRearAxle);
+            centerRearAxle.Z = 0.0;
+            _vechileModel = new VechileModel(2.56);
+            _vectorCenterRearAxle = new Vector(origin, centerRearAxle);
+        }
+
+        public override void RestoreObject(object restoredState)
+        {
+            base.RestoreObject(restoredState);
+            CalculateVector();
         }
     }
 }
