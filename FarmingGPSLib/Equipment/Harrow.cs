@@ -6,6 +6,10 @@ namespace FarmingGPSLib.Equipment
 {
     public class Harrow : EquipmentBase
     {
+        public Harrow():base()
+        {
+        }
+
         public Harrow(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel)
             : base(width, distanceFromVechile, fromDirectionOfTravel)
         {

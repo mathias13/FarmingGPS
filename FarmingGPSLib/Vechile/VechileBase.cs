@@ -76,7 +76,7 @@ namespace FarmingGPSLib.Vechile
             get { return typeof(VechileState); }
         }
 
-        public void RestoreObject(object restoredState)
+        public virtual void RestoreObject(object restoredState)
         {
             VechileState vechileState = (VechileState)restoredState;
             OffsetDirection = new Azimuth(vechileState.OffsetDirection);
