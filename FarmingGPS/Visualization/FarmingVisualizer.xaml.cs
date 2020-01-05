@@ -122,9 +122,9 @@ namespace FarmingGPS.Visualization
         private ModelVisual3D _outlineModel = new ModelVisual3D();
 
         private MeshVisual3D _fieldMesh = null;
-
-        private Queue<PolygonUpdatedEventArgs> _trackUpdateQueue = new Queue<PolygonUpdatedEventArgs>();
         
+
+
         private bool _viewTopActive = false;
 
         private bool _viewTrackLine = false;

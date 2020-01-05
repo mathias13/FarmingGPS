@@ -81,7 +81,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
                     {
                         if (_events[i].ToBeTriggered)
                         {
-                            if (_events[i].LastDistance < distanceToLine && distanceToLine < 2.0)
+                            if (_events[i].LastDistance < distanceToLine && distanceToLine < 3.0)
                             {
                                 _events[i].ToBeTriggered = false;
                                 _message = _events[i].Message;
