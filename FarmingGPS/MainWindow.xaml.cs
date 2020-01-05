@@ -138,6 +138,12 @@ namespace FarmingGPS
 
         private bool _secondaryTasksThreadStop = false;
 
+        private System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+
+        private long _min = long.MaxValue;
+
+        private long _max = long.MinValue;
+
         private DispatcherTimer _dispatcherTimer;
         
         private Queue<LightBarUpdateStruct> _lightBarQueue = new Queue<LightBarUpdateStruct>();
@@ -282,7 +288,7 @@ namespace FarmingGPS
                         }
                         else if(recoveredObject.Key.IsSubclassOf(typeof(VechileBase)))
                         {
-                            _vechile = new Tractor();
+                            _vechile = Activator.CreateInstance(recoveredObject.Key) as IVechile;
                             _vechile.RestoreObject(recoveredObject.Value);
                         }
                         else if (recoveredObject.Key.IsSubclassOf(typeof(EquipmentBase)))
@@ -311,30 +317,6 @@ namespace FarmingGPS
                     }
                 }
             }
-
-#if DEBUG
-            //_receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.855149568), new Latitude(58.5125995962)), false);
-            //_receiver.BearingUpdate += _receiver_BearingUpdate;
-            //_receiver.PositionUpdate += _receiver_PositionUpdate;
-            //_receiver.CoordinateUpdate += _receiver_CoordinateUpdate;
-            //_receiver.SpeedUpdate += _receiver_SpeedUpdate;
-            //_receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
-
-            //if (_field == null)
-            //{
-            //    List<Position> positions = new List<Position>
-            //    {
-            //        new Position(new Latitude(58.512722), new Longitude(13.855032)),
-            //        new Position(new Latitude(58.513399), new Longitude(13.855150)),
-            //        new Position(new Latitude(58.513462), new Longitude(13.854345)),
-            //        new Position(new Latitude(58.512865), new Longitude(13.854194)),
-            //        new Position(new Latitude(58.512722), new Longitude(13.855032))
-            //    };
-            //    FieldChoosen(positions);
-            //}
-
-#endif
-
         }
                 
         private void _dispatcherTimer_Tick(object sender, EventArgs e)
@@ -360,13 +342,14 @@ namespace FarmingGPS
 
         private void SecondaryTasksThread()
         {
+            CoordinateUpdateStruct coordinate = new CoordinateUpdateStruct();
             while (!_secondaryTasksThreadStop)
             {
                 if (_coordinateUpdateStructQueueSecondaryTasks.Count > 0)
                 {
-                    CoordinateUpdateStruct coordinate;
                     lock (_syncObject)
-                        coordinate = _coordinateUpdateStructQueueSecondaryTasks.Dequeue();
+                        while (_coordinateUpdateStructQueueSecondaryTasks.Count > 0)
+                            coordinate = _coordinateUpdateStructQueueSecondaryTasks.Dequeue();
 
                     if (DateTime.Now > _trackingLineEvaluationTimeout)
                     {
@@ -642,11 +625,11 @@ namespace FarmingGPS
             }
             else
                 _sbpReceiverSender = new SBPReceiverSender(receiver.COMPort, (int)receiver.Baudrate, receiver.RtsCts);
-            
+
             _sbpReceiverSender.ReadExceptionEvent += _sbpReceiverSender_ReadExceptionEvent;
             if (_receiver != null)
                 _receiver.Dispose();
-            _receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(1000))
+            _receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(200), TimeSpan.FromMilliseconds(1000))
             {
                 MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0)
             };
@@ -670,12 +653,23 @@ namespace FarmingGPS
 
         private void _receiver_CoordinateUpdate(object sender, Coordinate actualPosition)
         {
+            if (stopwatch.IsRunning)
+            {
+                stopwatch.Stop();
+                _min = Math.Min(_min, stopwatch.ElapsedMilliseconds);
+                _max = Math.Max(_max, stopwatch.ElapsedMilliseconds);
+                stopwatch.Reset();
+                stopwatch.Start();
+            }
+            else
+                stopwatch.Start();
+            
             IReceiver receiver = sender as IReceiver;
             if (_field == null || _vechile == null)
                 return;
 
             _vechile.UpdatePosition(receiver);
-
+            
             Coordinate vechileCoordinate = _vechile.CenterRearAxle;
             Coordinate equipmentCoordinate = _vechile.CenterRearAxle;
             Coordinate leftTip = equipmentCoordinate;
@@ -688,7 +682,7 @@ namespace FarmingGPS
                 leftTip = _equipment.GetLeftTip(vechileCoordinate, actualHeading);
                 rightTip = _equipment.GetRightTip(vechileCoordinate, actualHeading);
             }
-            
+
             if (_farmingMode != null)
                 _farmingMode.UpdateEvents(equipmentCoordinate, actualHeading);
             
@@ -1029,7 +1023,7 @@ namespace FarmingGPS
 
             _vechile = new Tractor(new Azimuth(userControl.Vechile.ReceiverAngleFromCenter), Distance.FromMeters(userControl.Vechile.ReceiverDistFromCenter));
             
-#if DEBUG
+#if SIM
             if (_receiver != null)
                 _receiver.Dispose();
             _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.855149568), new Latitude(58.5125995962)), false, new Azimuth(userControl.Vechile.ReceiverAngleFromCenter), Distance.FromMeters(userControl.Vechile.ReceiverDistFromCenter));
