@@ -17,11 +17,7 @@ namespace FarmingGPSLib.Vechile
         private List<double> _headingChangeRate = new List<double>(3);
 
         private double _turnRate = 0.0;
-
-        private double _distanceCenterRearAxle = 0.0;
-
-        private double _directionCenterRearAxle = 0.0;
-
+        
         private Vector _vectorCenterRearAxle;
 
         private Azimuth _prevHeading = Azimuth.Invalid;
@@ -36,7 +32,7 @@ namespace FarmingGPSLib.Vechile
         {
         }
 
-        public Tractor(Azimuth offsetDirection, Distance offsetDistance) : base(offsetDirection, offsetDistance)
+        public Tractor(Azimuth offsetDirection, Distance offsetDistance, Distance wheelAxesDistance) : base(offsetDirection, offsetDistance, wheelAxesDistance)
         {
             CalculateVector();
         }
@@ -167,12 +163,12 @@ namespace FarmingGPSLib.Vechile
 
         private void CalculateVector()
         {
-            _distanceCenterRearAxle = OffsetDistance.ToMeters().Value;
-            _directionCenterRearAxle = HelperClassAngles.GetCartesianAngle(OffsetDirection).Radians;
+            double distanceCenterRearAxle = OffsetDistance.ToMeters().Value;
+            double directionCenterRearAxle = HelperClassAngles.GetCartesianAngle(OffsetDirection).Radians;
             Coordinate origin = new Coordinate(0.0, 0.0, 0, 0);
-            Coordinate centerRearAxle = HelperClassCoordinate.ComputePoint(origin, _directionCenterRearAxle, _distanceCenterRearAxle);
+            Coordinate centerRearAxle = HelperClassCoordinate.ComputePoint(origin, distanceCenterRearAxle, directionCenterRearAxle);
             centerRearAxle.Z = 0.0;
-            _vechileModel = new VechileModel(2.56);
+            _vechileModel = new VechileModel(WheelAxesDistance.ToMeters().Value);
             _vectorCenterRearAxle = new Vector(origin, centerRearAxle);
         }
 

@@ -57,6 +57,7 @@ namespace FarmingGPS.Usercontrols
             NumericEquipmentWorkWidth.Value = null;
             NumericVechileReceiverAngleToCenter.Value = null;
             NumericVechileReceiverDistToCenter.Value = null;
+            NumericVechileWheelAxesDist.Value = null;
         }
 
         #region Button Events
@@ -70,6 +71,7 @@ namespace FarmingGPS.Usercontrols
                 vechile.Model = TextBoxVechileModel.Text;
                 vechile.ReceiverAngleFromCenter = (float)NumericVechileReceiverAngleToCenter.Value.Value;
                 vechile.ReceiverDistFromCenter = (float)NumericVechileReceiverDistToCenter.Value.Value;
+                vechile.WheelAxesDist = (float)NumericVechileWheelAxesDist.Value.Value;
                 _database.SubmitToDatabase();
                 ReloadLists();
             }
@@ -77,13 +79,14 @@ namespace FarmingGPS.Usercontrols
 
         private void ButtonVechileAdd_Click(object sender, RoutedEventArgs e)
         {
-            if (!NumericVechileReceiverAngleToCenter.Value.HasValue && !NumericVechileReceiverDistToCenter.Value.HasValue)
+            if (!NumericVechileReceiverAngleToCenter.Value.HasValue && !NumericVechileReceiverDistToCenter.Value.HasValue && !NumericVechileWheelAxesDist.Value.HasValue)
                 return;
             Vechile vechile = new Vechile();
             vechile.Manufacturer = TextBoxVechileManufacturer.Text;
             vechile.Model = TextBoxVechileModel.Text;
             vechile.ReceiverAngleFromCenter = (float)NumericVechileReceiverAngleToCenter.Value.Value;
             vechile.ReceiverDistFromCenter = (float)NumericVechileReceiverDistToCenter.Value.Value;
+            vechile.WheelAxesDist = (float)NumericVechileWheelAxesDist.Value.Value;
             _database.AddVechile(vechile);
             _database.SubmitToDatabase();
             ReloadLists();
@@ -255,6 +258,7 @@ namespace FarmingGPS.Usercontrols
                 TextBoxVechileModel.Text = vechile.Model;
                 NumericVechileReceiverAngleToCenter.Value = vechile.ReceiverAngleFromCenter;
                 NumericVechileReceiverDistToCenter.Value = vechile.ReceiverDistFromCenter;
+                NumericVechileWheelAxesDist.Value = vechile.WheelAxesDist;
 
                 VechileAttach[] attachPoints = _database.GetAttachPoints(vechile.VechileId);
                 ListBoxAttach.Items.Clear();

@@ -75,6 +75,8 @@
                 <extended:DoubleUpDown Minimum="0" Maximum="360" AllowSpin="True" Increment="0.2" FormatString="0.0°" x:FieldModifier="private" x:Name="NumericVechileReceiverAngleToCenter" Style="{StaticResource DOUBLEUPDOWN}"/>
                 <TextBlock Style="{StaticResource SETTING_HEADER}">Mått antenn till centrum</TextBlock>
                 <extended:DoubleUpDown Minimum="0" Maximum="5" AllowSpin="True" Increment="0.01" FormatString="0.00m" x:FieldModifier="private" x:Name="NumericVechileReceiverDistToCenter" Style="{StaticResource DOUBLEUPDOWN}"/>
+                <TextBlock Style="{StaticResource SETTING_HEADER}">Mått bakaxel till framaxel</TextBlock>
+                <extended:DoubleUpDown Minimum="0" Maximum="5" AllowSpin="True" Increment="0.01" FormatString="0.00m" x:FieldModifier="private" x:Name="NumericVechileWheelAxesDist" Style="{StaticResource DOUBLEUPDOWN}"/>
             </StackPanel>
             <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="1" Margin="10,10,10,10">
                 <Border Style="{StaticResource SUBJECT_HEADER_BORDER}">

@@ -57,9 +57,6 @@ namespace FarmingGPS.Database
     partial void InsertReminder(Reminder instance);
     partial void UpdateReminder(Reminder instance);
     partial void DeleteReminder(Reminder instance);
-    partial void InsertVechile(Vechile instance);
-    partial void UpdateVechile(Vechile instance);
-    partial void DeleteVechile(Vechile instance);
     partial void InsertSeedType(SeedType instance);
     partial void UpdateSeedType(SeedType instance);
     partial void DeleteSeedType(SeedType instance);
@@ -105,6 +102,9 @@ namespace FarmingGPS.Database
     partial void InsertCropYearSelected(CropYearSelected instance);
     partial void UpdateCropYearSelected(CropYearSelected instance);
     partial void DeleteCropYearSelected(CropYearSelected instance);
+    partial void InsertVechile(Vechile instance);
+    partial void UpdateVechile(Vechile instance);
+    partial void DeleteVechile(Vechile instance);
     #endregion
 		
 		public FarmingGPSDataContext() : 
@@ -206,14 +206,6 @@ namespace FarmingGPS.Database
 			get
 			{
 				return this.GetTable<Reminder>();
-			}
-		}
-		
-		public System.Data.Linq.Table<Vechile> Vechiles
-		{
-			get
-			{
-				return this.GetTable<Vechile>();
 			}
 		}
 		
@@ -334,6 +326,14 @@ namespace FarmingGPS.Database
 			get
 			{
 				return this.GetTable<CropYearSelected>();
+			}
+		}
+		
+		public System.Data.Linq.Table<Vechile> Vechiles
+		{
+			get
+			{
+				return this.GetTable<Vechile>();
 			}
 		}
 		
@@ -2494,248 +2494,6 @@ namespace FarmingGPS.Database
 			{
 				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
-		}
-	}
-	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Vechile")]
-	public partial class Vechile : INotifyPropertyChanging, INotifyPropertyChanged
-	{
-		
-		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
-		
-		private int _VechileId;
-		
-		private string _Model;
-		
-		private string _Manufacturer;
-		
-		private float _ReceiverDistFromCenter;
-		
-		private float _ReceiverAngleFromCenter;
-		
-		private EntitySet<VechileAttach> _VechileAttaches;
-		
-		private EntitySet<Maintenance> _Maintenances;
-		
-		private EntitySet<Work> _Works;
-		
-    #region Extensibility Method Definitions
-    partial void OnLoaded();
-    partial void OnValidate(System.Data.Linq.ChangeAction action);
-    partial void OnCreated();
-    partial void OnVechileIdChanging(int value);
-    partial void OnVechileIdChanged();
-    partial void OnModelChanging(string value);
-    partial void OnModelChanged();
-    partial void OnManufacturerChanging(string value);
-    partial void OnManufacturerChanged();
-    partial void OnReceiverDistFromCenterChanging(float value);
-    partial void OnReceiverDistFromCenterChanged();
-    partial void OnReceiverAngleFromCenterChanging(float value);
-    partial void OnReceiverAngleFromCenterChanged();
-    #endregion
-		
-		public Vechile()
-		{
-			this._VechileAttaches = new EntitySet<VechileAttach>(new Action<VechileAttach>(this.attach_VechileAttaches), new Action<VechileAttach>(this.detach_VechileAttaches));
-			this._Maintenances = new EntitySet<Maintenance>(new Action<Maintenance>(this.attach_Maintenances), new Action<Maintenance>(this.detach_Maintenances));
-			this._Works = new EntitySet<Work>(new Action<Work>(this.attach_Works), new Action<Work>(this.detach_Works));
-			OnCreated();
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_VechileId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
-		public int VechileId
-		{
-			get
-			{
-				return this._VechileId;
-			}
-			set
-			{
-				if ((this._VechileId != value))
-				{
-					this.OnVechileIdChanging(value);
-					this.SendPropertyChanging();
-					this._VechileId = value;
-					this.SendPropertyChanged("VechileId");
-					this.OnVechileIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Model", DbType="VarChar(50) NOT NULL", CanBeNull=false)]
-		public string Model
-		{
-			get
-			{
-				return this._Model;
-			}
-			set
-			{
-				if ((this._Model != value))
-				{
-					this.OnModelChanging(value);
-					this.SendPropertyChanging();
-					this._Model = value;
-					this.SendPropertyChanged("Model");
-					this.OnModelChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Manufacturer", DbType="VarChar(50) NOT NULL", CanBeNull=false)]
-		public string Manufacturer
-		{
-			get
-			{
-				return this._Manufacturer;
-			}
-			set
-			{
-				if ((this._Manufacturer != value))
-				{
-					this.OnManufacturerChanging(value);
-					this.SendPropertyChanging();
-					this._Manufacturer = value;
-					this.SendPropertyChanged("Manufacturer");
-					this.OnManufacturerChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ReceiverDistFromCenter", DbType="Real NOT NULL")]
-		public float ReceiverDistFromCenter
-		{
-			get
-			{
-				return this._ReceiverDistFromCenter;
-			}
-			set
-			{
-				if ((this._ReceiverDistFromCenter != value))
-				{
-					this.OnReceiverDistFromCenterChanging(value);
-					this.SendPropertyChanging();
-					this._ReceiverDistFromCenter = value;
-					this.SendPropertyChanged("ReceiverDistFromCenter");
-					this.OnReceiverDistFromCenterChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ReceiverAngleFromCenter", DbType="Real NOT NULL")]
-		public float ReceiverAngleFromCenter
-		{
-			get
-			{
-				return this._ReceiverAngleFromCenter;
-			}
-			set
-			{
-				if ((this._ReceiverAngleFromCenter != value))
-				{
-					this.OnReceiverAngleFromCenterChanging(value);
-					this.SendPropertyChanging();
-					this._ReceiverAngleFromCenter = value;
-					this.SendPropertyChanged("ReceiverAngleFromCenter");
-					this.OnReceiverAngleFromCenterChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Vechile_VechileAttach", Storage="_VechileAttaches", ThisKey="VechileId", OtherKey="VechileId")]
-		public EntitySet<VechileAttach> VechileAttaches
-		{
-			get
-			{
-				return this._VechileAttaches;
-			}
-			set
-			{
-				this._VechileAttaches.Assign(value);
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Vechile_Maintenance", Storage="_Maintenances", ThisKey="VechileId", OtherKey="VechileId")]
-		public EntitySet<Maintenance> Maintenances
-		{
-			get
-			{
-				return this._Maintenances;
-			}
-			set
-			{
-				this._Maintenances.Assign(value);
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Vechile_Work", Storage="_Works", ThisKey="VechileId", OtherKey="VechileId")]
-		public EntitySet<Work> Works
-		{
-			get
-			{
-				return this._Works;
-			}
-			set
-			{
-				this._Works.Assign(value);
-			}
-		}
-		
-		public event PropertyChangingEventHandler PropertyChanging;
-		
-		public event PropertyChangedEventHandler PropertyChanged;
-		
-		protected virtual void SendPropertyChanging()
-		{
-			if ((this.PropertyChanging != null))
-			{
-				this.PropertyChanging(this, emptyChangingEventArgs);
-			}
-		}
-		
-		protected virtual void SendPropertyChanged(String propertyName)
-		{
-			if ((this.PropertyChanged != null))
-			{
-				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-		
-		private void attach_VechileAttaches(VechileAttach entity)
-		{
-			this.SendPropertyChanging();
-			entity.Vechile = this;
-		}
-		
-		private void detach_VechileAttaches(VechileAttach entity)
-		{
-			this.SendPropertyChanging();
-			entity.Vechile = null;
-		}
-		
-		private void attach_Maintenances(Maintenance entity)
-		{
-			this.SendPropertyChanging();
-			entity.Vechile = this;
-		}
-		
-		private void detach_Maintenances(Maintenance entity)
-		{
-			this.SendPropertyChanging();
-			entity.Vechile = null;
-		}
-		
-		private void attach_Works(Work entity)
-		{
-			this.SendPropertyChanging();
-			entity.Vechile = this;
-		}
-		
-		private void detach_Works(Work entity)
-		{
-			this.SendPropertyChanging();
-			entity.Vechile = null;
 		}
 	}
 	
@@ -5756,9 +5514,9 @@ namespace FarmingGPS.Database
 		
 		private EntityRef<SeedType> _SeedType;
 		
-		private EntityRef<Vechile> _Vechile;
-		
 		private EntityRef<CropProductionPlan> _CropProductionPlan;
+		
+		private EntityRef<Vechile> _Vechile;
 		
     #region Extensibility Method Definitions
     partial void OnLoaded();
@@ -5808,8 +5566,8 @@ namespace FarmingGPS.Database
 			this._FieldCut = default(EntityRef<FieldCut>);
 			this._FieldCut1 = default(EntityRef<FieldCut>);
 			this._SeedType = default(EntityRef<SeedType>);
-			this._Vechile = default(EntityRef<Vechile>);
 			this._CropProductionPlan = default(EntityRef<CropProductionPlan>);
+			this._Vechile = default(EntityRef<Vechile>);
 			OnCreated();
 		}
 		
@@ -6389,40 +6147,6 @@ namespace FarmingGPS.Database
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Vechile_Work", Storage="_Vechile", ThisKey="VechileId", OtherKey="VechileId", IsForeignKey=true)]
-		public Vechile Vechile
-		{
-			get
-			{
-				return this._Vechile.Entity;
-			}
-			set
-			{
-				Vechile previousValue = this._Vechile.Entity;
-				if (((previousValue != value) 
-							|| (this._Vechile.HasLoadedOrAssignedValue == false)))
-				{
-					this.SendPropertyChanging();
-					if ((previousValue != null))
-					{
-						this._Vechile.Entity = null;
-						previousValue.Works.Remove(this);
-					}
-					this._Vechile.Entity = value;
-					if ((value != null))
-					{
-						value.Works.Add(this);
-						this._VechileId = value.VechileId;
-					}
-					else
-					{
-						this._VechileId = default(int);
-					}
-					this.SendPropertyChanged("Vechile");
-				}
-			}
-		}
-		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="CropProductionPlan_Work", Storage="_CropProductionPlan", ThisKey="CropProductionPlanId", OtherKey="CropProductionPlanId", IsForeignKey=true)]
 		public CropProductionPlan CropProductionPlan
 		{
@@ -6453,6 +6177,40 @@ namespace FarmingGPS.Database
 						this._CropProductionPlanId = default(Nullable<int>);
 					}
 					this.SendPropertyChanged("CropProductionPlan");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Vechile_Work", Storage="_Vechile", ThisKey="VechileId", OtherKey="VechileId", IsForeignKey=true)]
+		public Vechile Vechile
+		{
+			get
+			{
+				return this._Vechile.Entity;
+			}
+			set
+			{
+				Vechile previousValue = this._Vechile.Entity;
+				if (((previousValue != value) 
+							|| (this._Vechile.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Vechile.Entity = null;
+						previousValue.Works.Remove(this);
+					}
+					this._Vechile.Entity = value;
+					if ((value != null))
+					{
+						value.Works.Add(this);
+						this._VechileId = value.VechileId;
+					}
+					else
+					{
+						this._VechileId = default(int);
+					}
+					this.SendPropertyChanged("Vechile");
 				}
 			}
 		}
@@ -8034,6 +7792,272 @@ namespace FarmingGPS.Database
 			{
 				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Vechile")]
+	public partial class Vechile : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _VechileId;
+		
+		private string _Model;
+		
+		private string _Manufacturer;
+		
+		private float _ReceiverDistFromCenter;
+		
+		private float _ReceiverAngleFromCenter;
+		
+		private float _WheelAxesDist;
+		
+		private EntitySet<VechileAttach> _VechileAttaches;
+		
+		private EntitySet<Maintenance> _Maintenances;
+		
+		private EntitySet<Work> _Works;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnVechileIdChanging(int value);
+    partial void OnVechileIdChanged();
+    partial void OnModelChanging(string value);
+    partial void OnModelChanged();
+    partial void OnManufacturerChanging(string value);
+    partial void OnManufacturerChanged();
+    partial void OnReceiverDistFromCenterChanging(float value);
+    partial void OnReceiverDistFromCenterChanged();
+    partial void OnReceiverAngleFromCenterChanging(float value);
+    partial void OnReceiverAngleFromCenterChanged();
+    partial void OnWheelAxesDistChanging(float value);
+    partial void OnWheelAxesDistChanged();
+    #endregion
+		
+		public Vechile()
+		{
+			this._VechileAttaches = new EntitySet<VechileAttach>(new Action<VechileAttach>(this.attach_VechileAttaches), new Action<VechileAttach>(this.detach_VechileAttaches));
+			this._Maintenances = new EntitySet<Maintenance>(new Action<Maintenance>(this.attach_Maintenances), new Action<Maintenance>(this.detach_Maintenances));
+			this._Works = new EntitySet<Work>(new Action<Work>(this.attach_Works), new Action<Work>(this.detach_Works));
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_VechileId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int VechileId
+		{
+			get
+			{
+				return this._VechileId;
+			}
+			set
+			{
+				if ((this._VechileId != value))
+				{
+					this.OnVechileIdChanging(value);
+					this.SendPropertyChanging();
+					this._VechileId = value;
+					this.SendPropertyChanged("VechileId");
+					this.OnVechileIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Model", DbType="VarChar(50) NOT NULL", CanBeNull=false)]
+		public string Model
+		{
+			get
+			{
+				return this._Model;
+			}
+			set
+			{
+				if ((this._Model != value))
+				{
+					this.OnModelChanging(value);
+					this.SendPropertyChanging();
+					this._Model = value;
+					this.SendPropertyChanged("Model");
+					this.OnModelChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Manufacturer", DbType="VarChar(50) NOT NULL", CanBeNull=false)]
+		public string Manufacturer
+		{
+			get
+			{
+				return this._Manufacturer;
+			}
+			set
+			{
+				if ((this._Manufacturer != value))
+				{
+					this.OnManufacturerChanging(value);
+					this.SendPropertyChanging();
+					this._Manufacturer = value;
+					this.SendPropertyChanged("Manufacturer");
+					this.OnManufacturerChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ReceiverDistFromCenter", DbType="Real NOT NULL")]
+		public float ReceiverDistFromCenter
+		{
+			get
+			{
+				return this._ReceiverDistFromCenter;
+			}
+			set
+			{
+				if ((this._ReceiverDistFromCenter != value))
+				{
+					this.OnReceiverDistFromCenterChanging(value);
+					this.SendPropertyChanging();
+					this._ReceiverDistFromCenter = value;
+					this.SendPropertyChanged("ReceiverDistFromCenter");
+					this.OnReceiverDistFromCenterChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ReceiverAngleFromCenter", DbType="Real NOT NULL")]
+		public float ReceiverAngleFromCenter
+		{
+			get
+			{
+				return this._ReceiverAngleFromCenter;
+			}
+			set
+			{
+				if ((this._ReceiverAngleFromCenter != value))
+				{
+					this.OnReceiverAngleFromCenterChanging(value);
+					this.SendPropertyChanging();
+					this._ReceiverAngleFromCenter = value;
+					this.SendPropertyChanged("ReceiverAngleFromCenter");
+					this.OnReceiverAngleFromCenterChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_WheelAxesDist", DbType="Real NOT NULL")]
+		public float WheelAxesDist
+		{
+			get
+			{
+				return this._WheelAxesDist;
+			}
+			set
+			{
+				if ((this._WheelAxesDist != value))
+				{
+					this.OnWheelAxesDistChanging(value);
+					this.SendPropertyChanging();
+					this._WheelAxesDist = value;
+					this.SendPropertyChanged("WheelAxesDist");
+					this.OnWheelAxesDistChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Vechile_VechileAttach", Storage="_VechileAttaches", ThisKey="VechileId", OtherKey="VechileId")]
+		public EntitySet<VechileAttach> VechileAttaches
+		{
+			get
+			{
+				return this._VechileAttaches;
+			}
+			set
+			{
+				this._VechileAttaches.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Vechile_Maintenance", Storage="_Maintenances", ThisKey="VechileId", OtherKey="VechileId")]
+		public EntitySet<Maintenance> Maintenances
+		{
+			get
+			{
+				return this._Maintenances;
+			}
+			set
+			{
+				this._Maintenances.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Vechile_Work", Storage="_Works", ThisKey="VechileId", OtherKey="VechileId")]
+		public EntitySet<Work> Works
+		{
+			get
+			{
+				return this._Works;
+			}
+			set
+			{
+				this._Works.Assign(value);
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+		
+		private void attach_VechileAttaches(VechileAttach entity)
+		{
+			this.SendPropertyChanging();
+			entity.Vechile = this;
+		}
+		
+		private void detach_VechileAttaches(VechileAttach entity)
+		{
+			this.SendPropertyChanging();
+			entity.Vechile = null;
+		}
+		
+		private void attach_Maintenances(Maintenance entity)
+		{
+			this.SendPropertyChanging();
+			entity.Vechile = this;
+		}
+		
+		private void detach_Maintenances(Maintenance entity)
+		{
+			this.SendPropertyChanging();
+			entity.Vechile = null;
+		}
+		
+		private void attach_Works(Work entity)
+		{
+			this.SendPropertyChanging();
+			entity.Vechile = this;
+		}
+		
+		private void detach_Works(Work entity)
+		{
+			this.SendPropertyChanging();
+			entity.Vechile = null;
 		}
 	}
 	

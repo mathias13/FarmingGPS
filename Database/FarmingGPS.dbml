@@ -101,18 +101,6 @@
       <Association Name="GpsCoordinate_Reminder" Member="GpsCoordinate" ThisKey="PosId" OtherKey="PosId" Type="GpsCoordinate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
-  <Table Name="dbo.Vechile" Member="Vechiles">
-    <Type Name="Vechile">
-      <Column Name="VechileId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="Model" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
-      <Column Name="Manufacturer" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
-      <Column Name="ReceiverDistFromCenter" Type="System.Single" DbType="Real NOT NULL" CanBeNull="false" />
-      <Column Name="ReceiverAngleFromCenter" Type="System.Single" DbType="Real NOT NULL" CanBeNull="false" />
-      <Association Name="Vechile_VechileAttach" Member="VechileAttaches" ThisKey="VechileId" OtherKey="VechileId" Type="VechileAttach" />
-      <Association Name="Vechile_Maintenance" Member="Maintenances" ThisKey="VechileId" OtherKey="VechileId" Type="Maintenance" />
-      <Association Name="Vechile_Work" Member="Works" ThisKey="VechileId" OtherKey="VechileId" Type="Work" />
-    </Type>
-  </Table>
   <Table Name="dbo.SeedType" Member="SeedTypes">
     <Type Name="SeedType">
       <Column Name="SeedId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
@@ -266,8 +254,8 @@
       <Association Name="FieldCut_Work" Member="FieldCut" ThisKey="FieldCutFirst" OtherKey="FieldCutId" Type="FieldCut" IsForeignKey="true" />
       <Association Name="FieldCut_Work1" Member="FieldCut1" ThisKey="FieldCutSecond" OtherKey="FieldCutId" Type="FieldCut" IsForeignKey="true" />
       <Association Name="SeedType_Work" Member="SeedType" ThisKey="SeedId" OtherKey="SeedId" Type="SeedType" IsForeignKey="true" />
-      <Association Name="Vechile_Work" Member="Vechile" ThisKey="VechileId" OtherKey="VechileId" Type="Vechile" IsForeignKey="true" />
       <Association Name="CropProductionPlan_Work" Member="CropProductionPlan" ThisKey="CropProductionPlanId" OtherKey="CropProductionPlanId" Type="CropProductionPlan" IsForeignKey="true" />
+      <Association Name="Vechile_Work" Member="Vechile" ThisKey="VechileId" OtherKey="VechileId" Type="Vechile" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.CropYear" Member="CropYears">
@@ -335,6 +323,19 @@
       <Column Name="Id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="SelectedYear" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Association Name="CropYear_CropYearSelected" Member="CropYear" ThisKey="SelectedYear" OtherKey="CropYearId" Type="CropYear" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Vechile" Member="Vechiles">
+    <Type Name="Vechile">
+      <Column Name="VechileId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Model" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="Manufacturer" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="ReceiverDistFromCenter" Type="System.Single" DbType="Real NOT NULL" CanBeNull="false" />
+      <Column Name="ReceiverAngleFromCenter" Type="System.Single" DbType="Real NOT NULL" CanBeNull="false" />
+      <Column Name="WheelAxesDist" Type="System.Single" DbType="Real NOT NULL" CanBeNull="false" />
+      <Association Name="Vechile_VechileAttach" Member="VechileAttaches" ThisKey="VechileId" OtherKey="VechileId" Type="VechileAttach" />
+      <Association Name="Vechile_Maintenance" Member="Maintenances" ThisKey="VechileId" OtherKey="VechileId" Type="Maintenance" />
+      <Association Name="Vechile_Work" Member="Works" ThisKey="VechileId" OtherKey="VechileId" Type="Work" />
     </Type>
   </Table>
   <Function Name="dbo.GetWorkFiltered" Method="GetWorkFiltered">

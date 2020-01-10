@@ -1021,12 +1021,19 @@ namespace FarmingGPS
         {
             _stateRecovery.RemoveStateObject(_equipment);
 
-            _vechile = new Tractor(new Azimuth(userControl.Vechile.ReceiverAngleFromCenter), Distance.FromMeters(userControl.Vechile.ReceiverDistFromCenter));
+            _vechile = new Tractor(new Azimuth(userControl.Vechile.ReceiverAngleFromCenter), 
+                Distance.FromMeters(userControl.Vechile.ReceiverDistFromCenter), 
+                Distance.FromMeters(userControl.Vechile.WheelAxesDist));
             
 #if SIM
             if (_receiver != null)
                 _receiver.Dispose();
-            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), new Longitude(13.855149568), new Latitude(58.5125995962)), false, new Azimuth(userControl.Vechile.ReceiverAngleFromCenter), Distance.FromMeters(userControl.Vechile.ReceiverDistFromCenter));
+            _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0), 
+                new Longitude(13.855149568), new Latitude(58.5125995962)), 
+                false, 
+                new Azimuth(userControl.Vechile.ReceiverAngleFromCenter), 
+                Distance.FromMeters(userControl.Vechile.ReceiverDistFromCenter), 
+                Distance.FromMeters(userControl.Vechile.WheelAxesDist));
             _receiver.BearingUpdate += _receiver_BearingUpdate;
             _receiver.PositionUpdate += _receiver_PositionUpdate;
             _receiver.CoordinateUpdate += _receiver_CoordinateUpdate;

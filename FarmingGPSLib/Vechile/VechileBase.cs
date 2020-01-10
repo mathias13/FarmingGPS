@@ -12,6 +12,8 @@ namespace FarmingGPSLib.Vechile
             public double OffsetDirection;
 
             public double OffsetDistance;
+
+            public double WheelAxesDistance;
         }
 
         protected DotSpatial.Topology.Coordinate _position;
@@ -21,16 +23,19 @@ namespace FarmingGPSLib.Vechile
         public VechileBase()
         { }
 
-        public VechileBase(Azimuth offsetDirection, Distance offsetDistance)
+        public VechileBase(Azimuth offsetDirection, Distance offsetDistance, Distance wheelAxesDistance)
         {
             OffsetDirection = offsetDirection;
             OffsetDistance = offsetDistance;
+            WheelAxesDistance = wheelAxesDistance;
             HasChanged = true;
         }
 
         public Azimuth OffsetDirection { get; private set; }
 
         public Distance OffsetDistance { get; private set; }
+
+        public Distance WheelAxesDistance { get; private set; }
 
         #region IVechile
 
@@ -65,7 +70,7 @@ namespace FarmingGPSLib.Vechile
             get
             {
                 HasChanged = false;
-                return new VechileState() { OffsetDirection = OffsetDirection.DecimalDegrees, OffsetDistance = OffsetDistance.ToMeters().Value };
+                return new VechileState() { OffsetDirection = OffsetDirection.DecimalDegrees, OffsetDistance = OffsetDistance.ToMeters().Value, WheelAxesDistance = WheelAxesDistance.ToMeters().Value };
             }
         }
 
@@ -81,6 +86,7 @@ namespace FarmingGPSLib.Vechile
             VechileState vechileState = (VechileState)restoredState;
             OffsetDirection = new Azimuth(vechileState.OffsetDirection);
             OffsetDistance = new Distance(vechileState.OffsetDistance, DistanceUnit.Meters);
+            WheelAxesDistance = new Distance(vechileState.WheelAxesDistance, DistanceUnit.Meters);
         }
 
         #endregion
