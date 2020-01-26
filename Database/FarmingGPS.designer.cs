@@ -105,6 +105,12 @@ namespace FarmingGPS.Database
     partial void InsertVechile(Vechile instance);
     partial void UpdateVechile(Vechile instance);
     partial void DeleteVechile(Vechile instance);
+    partial void InsertFieldMapping(FieldMapping instance);
+    partial void UpdateFieldMapping(FieldMapping instance);
+    partial void DeleteFieldMapping(FieldMapping instance);
+    partial void InsertFieldMappingData(FieldMappingData instance);
+    partial void UpdateFieldMappingData(FieldMappingData instance);
+    partial void DeleteFieldMappingData(FieldMappingData instance);
     #endregion
 		
 		public FarmingGPSDataContext() : 
@@ -334,6 +340,22 @@ namespace FarmingGPS.Database
 			get
 			{
 				return this.GetTable<Vechile>();
+			}
+		}
+		
+		public System.Data.Linq.Table<FieldMapping> FieldMappings
+		{
+			get
+			{
+				return this.GetTable<FieldMapping>();
+			}
+		}
+		
+		public System.Data.Linq.Table<FieldMappingData> FieldMappingDatas
+		{
+			get
+			{
+				return this.GetTable<FieldMappingData>();
 			}
 		}
 		
@@ -892,6 +914,8 @@ namespace FarmingGPS.Database
 		
 		private EntitySet<CropProductionPlan> _CropProductionPlans;
 		
+		private EntitySet<FieldMapping> _FieldMappings;
+		
 		private EntityRef<Field> _Field1;
 		
     #region Extensibility Method Definitions
@@ -915,6 +939,7 @@ namespace FarmingGPS.Database
 			this._FieldCuts = new EntitySet<FieldCut>(new Action<FieldCut>(this.attach_FieldCuts), new Action<FieldCut>(this.detach_FieldCuts));
 			this._Works = new EntitySet<Work>(new Action<Work>(this.attach_Works), new Action<Work>(this.detach_Works));
 			this._CropProductionPlans = new EntitySet<CropProductionPlan>(new Action<CropProductionPlan>(this.attach_CropProductionPlans), new Action<CropProductionPlan>(this.detach_CropProductionPlans));
+			this._FieldMappings = new EntitySet<FieldMapping>(new Action<FieldMapping>(this.attach_FieldMappings), new Action<FieldMapping>(this.detach_FieldMappings));
 			this._Field1 = default(EntityRef<Field>);
 			OnCreated();
 		}
@@ -1074,6 +1099,19 @@ namespace FarmingGPS.Database
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Field_FieldMapping", Storage="_FieldMappings", ThisKey="FieldId", OtherKey="FieldId")]
+		public EntitySet<FieldMapping> FieldMappings
+		{
+			get
+			{
+				return this._FieldMappings;
+			}
+			set
+			{
+				this._FieldMappings.Assign(value);
+			}
+		}
+		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Field_Field", Storage="_Field1", ThisKey="ParentField", OtherKey="FieldId", IsForeignKey=true)]
 		public Field FieldParent
 		{
@@ -1207,6 +1245,18 @@ namespace FarmingGPS.Database
 		}
 		
 		private void detach_CropProductionPlans(CropProductionPlan entity)
+		{
+			this.SendPropertyChanging();
+			entity.Field = null;
+		}
+		
+		private void attach_FieldMappings(FieldMapping entity)
+		{
+			this.SendPropertyChanging();
+			entity.Field = this;
+		}
+		
+		private void detach_FieldMappings(FieldMapping entity)
 		{
 			this.SendPropertyChanging();
 			entity.Field = null;
@@ -1701,6 +1751,8 @@ namespace FarmingGPS.Database
 		
 		private EntitySet<FieldCut> _FieldCuts1;
 		
+		private EntitySet<FieldMappingData> _FieldMappingDatas;
+		
     #region Extensibility Method Definitions
     partial void OnLoaded();
     partial void OnValidate(System.Data.Linq.ChangeAction action);
@@ -1724,6 +1776,7 @@ namespace FarmingGPS.Database
 			this._DrainageLines = new EntitySet<DrainageLine>(new Action<DrainageLine>(this.attach_DrainageLines), new Action<DrainageLine>(this.detach_DrainageLines));
 			this._FieldCuts = new EntitySet<FieldCut>(new Action<FieldCut>(this.attach_FieldCuts), new Action<FieldCut>(this.detach_FieldCuts));
 			this._FieldCuts1 = new EntitySet<FieldCut>(new Action<FieldCut>(this.attach_FieldCuts1), new Action<FieldCut>(this.detach_FieldCuts1));
+			this._FieldMappingDatas = new EntitySet<FieldMappingData>(new Action<FieldMappingData>(this.attach_FieldMappingDatas), new Action<FieldMappingData>(this.detach_FieldMappingDatas));
 			OnCreated();
 		}
 		
@@ -1898,6 +1951,19 @@ namespace FarmingGPS.Database
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="GpsCoordinate_FieldMappingData", Storage="_FieldMappingDatas", ThisKey="PosId", OtherKey="PosId")]
+		public EntitySet<FieldMappingData> FieldMappingDatas
+		{
+			get
+			{
+				return this._FieldMappingDatas;
+			}
+			set
+			{
+				this._FieldMappingDatas.Assign(value);
+			}
+		}
+		
 		public event PropertyChangingEventHandler PropertyChanging;
 		
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -2000,6 +2066,18 @@ namespace FarmingGPS.Database
 		{
 			this.SendPropertyChanging();
 			entity.GpsCoordinateSecond = null;
+		}
+		
+		private void attach_FieldMappingDatas(FieldMappingData entity)
+		{
+			this.SendPropertyChanging();
+			entity.GpsCoordinate = this;
+		}
+		
+		private void detach_FieldMappingDatas(FieldMappingData entity)
+		{
+			this.SendPropertyChanging();
+			entity.GpsCoordinate = null;
 		}
 	}
 	
@@ -8058,6 +8136,613 @@ namespace FarmingGPS.Database
 		{
 			this.SendPropertyChanging();
 			entity.Vechile = null;
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.FieldMapping")]
+	public partial class FieldMapping : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _FieldMappingId;
+		
+		private int _FieldId;
+		
+		private System.DateTime _Time;
+		
+		private EntitySet<FieldMappingData> _FieldMappingDatas;
+		
+		private EntityRef<Field> _Field;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnFieldMappingIdChanging(int value);
+    partial void OnFieldMappingIdChanged();
+    partial void OnFieldIdChanging(int value);
+    partial void OnFieldIdChanged();
+    partial void OnTimeChanging(System.DateTime value);
+    partial void OnTimeChanged();
+    #endregion
+		
+		public FieldMapping()
+		{
+			this._FieldMappingDatas = new EntitySet<FieldMappingData>(new Action<FieldMappingData>(this.attach_FieldMappingDatas), new Action<FieldMappingData>(this.detach_FieldMappingDatas));
+			this._Field = default(EntityRef<Field>);
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FieldMappingId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int FieldMappingId
+		{
+			get
+			{
+				return this._FieldMappingId;
+			}
+			set
+			{
+				if ((this._FieldMappingId != value))
+				{
+					this.OnFieldMappingIdChanging(value);
+					this.SendPropertyChanging();
+					this._FieldMappingId = value;
+					this.SendPropertyChanged("FieldMappingId");
+					this.OnFieldMappingIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FieldId", DbType="Int NOT NULL")]
+		public int FieldId
+		{
+			get
+			{
+				return this._FieldId;
+			}
+			set
+			{
+				if ((this._FieldId != value))
+				{
+					if (this._Field.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnFieldIdChanging(value);
+					this.SendPropertyChanging();
+					this._FieldId = value;
+					this.SendPropertyChanged("FieldId");
+					this.OnFieldIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Time", DbType="DateTime NOT NULL")]
+		public System.DateTime Time
+		{
+			get
+			{
+				return this._Time;
+			}
+			set
+			{
+				if ((this._Time != value))
+				{
+					this.OnTimeChanging(value);
+					this.SendPropertyChanging();
+					this._Time = value;
+					this.SendPropertyChanged("Time");
+					this.OnTimeChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FieldMapping_FieldMappingData", Storage="_FieldMappingDatas", ThisKey="FieldMappingId", OtherKey="PosId")]
+		public EntitySet<FieldMappingData> FieldMappingDatas
+		{
+			get
+			{
+				return this._FieldMappingDatas;
+			}
+			set
+			{
+				this._FieldMappingDatas.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Field_FieldMapping", Storage="_Field", ThisKey="FieldId", OtherKey="FieldId", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
+		public Field Field
+		{
+			get
+			{
+				return this._Field.Entity;
+			}
+			set
+			{
+				Field previousValue = this._Field.Entity;
+				if (((previousValue != value) 
+							|| (this._Field.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Field.Entity = null;
+						previousValue.FieldMappings.Remove(this);
+					}
+					this._Field.Entity = value;
+					if ((value != null))
+					{
+						value.FieldMappings.Add(this);
+						this._FieldId = value.FieldId;
+					}
+					else
+					{
+						this._FieldId = default(int);
+					}
+					this.SendPropertyChanged("Field");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+		
+		private void attach_FieldMappingDatas(FieldMappingData entity)
+		{
+			this.SendPropertyChanging();
+			entity.FieldMapping = this;
+		}
+		
+		private void detach_FieldMappingDatas(FieldMappingData entity)
+		{
+			this.SendPropertyChanging();
+			entity.FieldMapping = null;
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.FieldMappingData")]
+	public partial class FieldMappingData : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _FieldMappinDataId;
+		
+		private int _FieldMappingId;
+		
+		private int _PosId;
+		
+		private System.Nullable<double> _P_AL;
+		
+		private System.Nullable<double> _K_AL;
+		
+		private System.Nullable<double> _pH;
+		
+		private System.Nullable<double> _P_HCl;
+		
+		private System.Nullable<double> _K_HCl;
+		
+		private System.Nullable<double> _Mg_AL;
+		
+		private System.Nullable<double> _Cu_HCl;
+		
+		private System.Nullable<double> _Ca_AL;
+		
+		private System.Nullable<double> _Humus;
+		
+		private System.Nullable<double> _Clay;
+		
+		private EntityRef<FieldMapping> _FieldMapping;
+		
+		private EntityRef<GpsCoordinate> _GpsCoordinate;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnFieldMappinDataIdChanging(int value);
+    partial void OnFieldMappinDataIdChanged();
+    partial void OnFieldMappingIdChanging(int value);
+    partial void OnFieldMappingIdChanged();
+    partial void OnPosIdChanging(int value);
+    partial void OnPosIdChanged();
+    partial void OnP_ALChanging(System.Nullable<double> value);
+    partial void OnP_ALChanged();
+    partial void OnK_ALChanging(System.Nullable<double> value);
+    partial void OnK_ALChanged();
+    partial void OnpHChanging(System.Nullable<double> value);
+    partial void OnpHChanged();
+    partial void OnP_HClChanging(System.Nullable<double> value);
+    partial void OnP_HClChanged();
+    partial void OnK_HClChanging(System.Nullable<double> value);
+    partial void OnK_HClChanged();
+    partial void OnMg_ALChanging(System.Nullable<double> value);
+    partial void OnMg_ALChanged();
+    partial void OnCu_HClChanging(System.Nullable<double> value);
+    partial void OnCu_HClChanged();
+    partial void OnCa_ALChanging(System.Nullable<double> value);
+    partial void OnCa_ALChanged();
+    partial void OnHumusChanging(System.Nullable<double> value);
+    partial void OnHumusChanged();
+    partial void OnClayChanging(System.Nullable<double> value);
+    partial void OnClayChanged();
+    #endregion
+		
+		public FieldMappingData()
+		{
+			this._FieldMapping = default(EntityRef<FieldMapping>);
+			this._GpsCoordinate = default(EntityRef<GpsCoordinate>);
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FieldMappinDataId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int FieldMappinDataId
+		{
+			get
+			{
+				return this._FieldMappinDataId;
+			}
+			set
+			{
+				if ((this._FieldMappinDataId != value))
+				{
+					this.OnFieldMappinDataIdChanging(value);
+					this.SendPropertyChanging();
+					this._FieldMappinDataId = value;
+					this.SendPropertyChanged("FieldMappinDataId");
+					this.OnFieldMappinDataIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FieldMappingId", DbType="Int NOT NULL")]
+		public int FieldMappingId
+		{
+			get
+			{
+				return this._FieldMappingId;
+			}
+			set
+			{
+				if ((this._FieldMappingId != value))
+				{
+					this.OnFieldMappingIdChanging(value);
+					this.SendPropertyChanging();
+					this._FieldMappingId = value;
+					this.SendPropertyChanged("FieldMappingId");
+					this.OnFieldMappingIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PosId", DbType="Int NOT NULL")]
+		public int PosId
+		{
+			get
+			{
+				return this._PosId;
+			}
+			set
+			{
+				if ((this._PosId != value))
+				{
+					if ((this._FieldMapping.HasLoadedOrAssignedValue || this._GpsCoordinate.HasLoadedOrAssignedValue))
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnPosIdChanging(value);
+					this.SendPropertyChanging();
+					this._PosId = value;
+					this.SendPropertyChanged("PosId");
+					this.OnPosIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_P_AL", DbType="Float")]
+		public System.Nullable<double> P_AL
+		{
+			get
+			{
+				return this._P_AL;
+			}
+			set
+			{
+				if ((this._P_AL != value))
+				{
+					this.OnP_ALChanging(value);
+					this.SendPropertyChanging();
+					this._P_AL = value;
+					this.SendPropertyChanged("P_AL");
+					this.OnP_ALChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_K_AL", DbType="Float")]
+		public System.Nullable<double> K_AL
+		{
+			get
+			{
+				return this._K_AL;
+			}
+			set
+			{
+				if ((this._K_AL != value))
+				{
+					this.OnK_ALChanging(value);
+					this.SendPropertyChanging();
+					this._K_AL = value;
+					this.SendPropertyChanged("K_AL");
+					this.OnK_ALChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_pH", DbType="Float")]
+		public System.Nullable<double> pH
+		{
+			get
+			{
+				return this._pH;
+			}
+			set
+			{
+				if ((this._pH != value))
+				{
+					this.OnpHChanging(value);
+					this.SendPropertyChanging();
+					this._pH = value;
+					this.SendPropertyChanged("pH");
+					this.OnpHChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_P_HCl", DbType="Float")]
+		public System.Nullable<double> P_HCl
+		{
+			get
+			{
+				return this._P_HCl;
+			}
+			set
+			{
+				if ((this._P_HCl != value))
+				{
+					this.OnP_HClChanging(value);
+					this.SendPropertyChanging();
+					this._P_HCl = value;
+					this.SendPropertyChanged("P_HCl");
+					this.OnP_HClChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_K_HCl", DbType="Float")]
+		public System.Nullable<double> K_HCl
+		{
+			get
+			{
+				return this._K_HCl;
+			}
+			set
+			{
+				if ((this._K_HCl != value))
+				{
+					this.OnK_HClChanging(value);
+					this.SendPropertyChanging();
+					this._K_HCl = value;
+					this.SendPropertyChanged("K_HCl");
+					this.OnK_HClChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Mg_AL", DbType="Float")]
+		public System.Nullable<double> Mg_AL
+		{
+			get
+			{
+				return this._Mg_AL;
+			}
+			set
+			{
+				if ((this._Mg_AL != value))
+				{
+					this.OnMg_ALChanging(value);
+					this.SendPropertyChanging();
+					this._Mg_AL = value;
+					this.SendPropertyChanged("Mg_AL");
+					this.OnMg_ALChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Cu_HCl", DbType="Float")]
+		public System.Nullable<double> Cu_HCl
+		{
+			get
+			{
+				return this._Cu_HCl;
+			}
+			set
+			{
+				if ((this._Cu_HCl != value))
+				{
+					this.OnCu_HClChanging(value);
+					this.SendPropertyChanging();
+					this._Cu_HCl = value;
+					this.SendPropertyChanged("Cu_HCl");
+					this.OnCu_HClChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Ca_AL", DbType="Float")]
+		public System.Nullable<double> Ca_AL
+		{
+			get
+			{
+				return this._Ca_AL;
+			}
+			set
+			{
+				if ((this._Ca_AL != value))
+				{
+					this.OnCa_ALChanging(value);
+					this.SendPropertyChanging();
+					this._Ca_AL = value;
+					this.SendPropertyChanged("Ca_AL");
+					this.OnCa_ALChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Humus", DbType="Float")]
+		public System.Nullable<double> Humus
+		{
+			get
+			{
+				return this._Humus;
+			}
+			set
+			{
+				if ((this._Humus != value))
+				{
+					this.OnHumusChanging(value);
+					this.SendPropertyChanging();
+					this._Humus = value;
+					this.SendPropertyChanged("Humus");
+					this.OnHumusChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Clay", DbType="Float")]
+		public System.Nullable<double> Clay
+		{
+			get
+			{
+				return this._Clay;
+			}
+			set
+			{
+				if ((this._Clay != value))
+				{
+					this.OnClayChanging(value);
+					this.SendPropertyChanging();
+					this._Clay = value;
+					this.SendPropertyChanged("Clay");
+					this.OnClayChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="FieldMapping_FieldMappingData", Storage="_FieldMapping", ThisKey="PosId", OtherKey="FieldMappingId", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
+		public FieldMapping FieldMapping
+		{
+			get
+			{
+				return this._FieldMapping.Entity;
+			}
+			set
+			{
+				FieldMapping previousValue = this._FieldMapping.Entity;
+				if (((previousValue != value) 
+							|| (this._FieldMapping.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._FieldMapping.Entity = null;
+						previousValue.FieldMappingDatas.Remove(this);
+					}
+					this._FieldMapping.Entity = value;
+					if ((value != null))
+					{
+						value.FieldMappingDatas.Add(this);
+						this._PosId = value.FieldMappingId;
+					}
+					else
+					{
+						this._PosId = default(int);
+					}
+					this.SendPropertyChanged("FieldMapping");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="GpsCoordinate_FieldMappingData", Storage="_GpsCoordinate", ThisKey="PosId", OtherKey="PosId", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
+		public GpsCoordinate GpsCoordinate
+		{
+			get
+			{
+				return this._GpsCoordinate.Entity;
+			}
+			set
+			{
+				GpsCoordinate previousValue = this._GpsCoordinate.Entity;
+				if (((previousValue != value) 
+							|| (this._GpsCoordinate.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._GpsCoordinate.Entity = null;
+						previousValue.FieldMappingDatas.Remove(this);
+					}
+					this._GpsCoordinate.Entity = value;
+					if ((value != null))
+					{
+						value.FieldMappingDatas.Add(this);
+						this._PosId = value.PosId;
+					}
+					else
+					{
+						this._PosId = default(int);
+					}
+					this.SendPropertyChanged("GpsCoordinate");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
 		}
 	}
 	

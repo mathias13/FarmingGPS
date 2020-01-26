@@ -37,6 +37,7 @@
       <Association Name="Field_FieldCut" Member="FieldCuts" ThisKey="FieldId" OtherKey="FieldId" Type="FieldCut" />
       <Association Name="Field_Work" Member="Works" ThisKey="FieldId" OtherKey="FieldId" Type="Work" />
       <Association Name="Field_CropProductionPlan" Member="CropProductionPlans" ThisKey="FieldId" OtherKey="FieldId" Type="CropProductionPlan" />
+      <Association Name="Field_FieldMapping" Member="FieldMappings" ThisKey="FieldId" OtherKey="FieldId" Type="FieldMapping" />
       <Association Name="Field_Field" Member="FieldParent" Storage="_Field1" ThisKey="ParentField" OtherKey="FieldId" Type="Field" IsForeignKey="true" />
     </Type>
   </Table>
@@ -74,6 +75,7 @@
       <Association Name="GpsCoordinate_DrainageLine" Member="DrainageLines" ThisKey="PosId" OtherKey="PosId" Type="DrainageLine" />
       <Association Name="GpsCoordinate_FieldCut" Member="FieldCuts" ThisKey="PosId" OtherKey="FirstPosId" Type="FieldCut" />
       <Association Name="GpsCoordinate_FieldCut1" Member="FieldCuts1" ThisKey="PosId" OtherKey="SecondPosId" Type="FieldCut" />
+      <Association Name="GpsCoordinate_FieldMappingData" Member="FieldMappingDatas" ThisKey="PosId" OtherKey="PosId" Type="FieldMappingData" />
     </Type>
   </Table>
   <Table Name="dbo.Obstacle" Member="Obstacles">
@@ -336,6 +338,34 @@
       <Association Name="Vechile_VechileAttach" Member="VechileAttaches" ThisKey="VechileId" OtherKey="VechileId" Type="VechileAttach" />
       <Association Name="Vechile_Maintenance" Member="Maintenances" ThisKey="VechileId" OtherKey="VechileId" Type="Maintenance" />
       <Association Name="Vechile_Work" Member="Works" ThisKey="VechileId" OtherKey="VechileId" Type="Work" />
+    </Type>
+  </Table>
+  <Table Name="dbo.FieldMapping" Member="FieldMappings">
+    <Type Name="FieldMapping">
+      <Column Name="FieldMappingId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="FieldId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Time" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Association Name="FieldMapping_FieldMappingData" Member="FieldMappingDatas" ThisKey="FieldMappingId" OtherKey="PosId" Type="FieldMappingData" />
+      <Association Name="Field_FieldMapping" Member="Field" ThisKey="FieldId" OtherKey="FieldId" Type="Field" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.FieldMappingData" Member="FieldMappingDatas">
+    <Type Name="FieldMappingData">
+      <Column Name="FieldMappinDataId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="FieldMappingId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="PosId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="P_AL" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="K_AL" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="pH" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="P_HCl" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="K_HCl" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Mg_AL" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Cu_HCl" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Ca_AL" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Humus" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="Clay" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Association Name="FieldMapping_FieldMappingData" Member="FieldMapping" ThisKey="PosId" OtherKey="FieldMappingId" Type="FieldMapping" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+      <Association Name="GpsCoordinate_FieldMappingData" Member="GpsCoordinate" ThisKey="PosId" OtherKey="PosId" Type="GpsCoordinate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
   <Function Name="dbo.GetWorkFiltered" Method="GetWorkFiltered">
