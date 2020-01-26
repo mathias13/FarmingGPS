@@ -41,6 +41,8 @@ namespace FarmingGPSLib.FieldItems
 
         private ProjectionInfo _projectionInfo;
 
+        protected ProjectionInfo _projWGS84 = KnownCoordinateSystems.Geographic.World.WGS1984;
+
         private IEquipment _equipment;
 
         private List<Coordinate> _track = new List<Coordinate>();
@@ -126,7 +128,7 @@ namespace FarmingGPSLib.FieldItems
                         xyArray[0] = coord.X;
                         xyArray[1] = coord.Y;
                         zArray = new double[1] { Distance.EarthsAverageRadius.ToMeters().Value };
-                        Reproject.ReprojectPoints(xyArray, zArray, _projectionInfo, KnownCoordinateSystems.Geographic.World.WGS1984, 0, zArray.Length);
+                        Reproject.ReprojectPoints(xyArray, zArray, _projectionInfo, _projWGS84, 0, zArray.Length);
                         coordinates.Add(new Position(new Longitude(xyArray[0]), new Latitude(xyArray[1])));
                     }
 

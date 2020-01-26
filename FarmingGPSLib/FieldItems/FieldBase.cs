@@ -31,6 +31,8 @@ namespace FarmingGPSLib.FieldItems
 
         protected ProjectionInfo _proj;
 
+        protected ProjectionInfo _projWGS84 = KnownCoordinateSystems.Geographic.World.WGS1984;
+
         protected object _syncObject = new object();
 
         private bool _hasChanged = true;
@@ -98,9 +100,9 @@ namespace FarmingGPSLib.FieldItems
 
             xyArray = xy.ToArray();
             zArray = z.ToArray();
-            Reproject.ReprojectPoints(xyArray, zArray, KnownCoordinateSystems.Geographic.World.WGS1984, _proj, 0, zArray.Length);
+            Reproject.ReprojectPoints(xyArray, zArray, _projWGS84, _proj, 0, zArray.Length);
             for (int i = 0; i < zArray.Length; i++)
-                points.Add(new Coordinate(xyArray[i * 2] * _proj.Unit.Meters, xyArray[i * 2 + 1] * _proj.Unit.Meters));
+                points.Add(new Coordinate(xyArray[i * 2], xyArray[i * 2 + 1]));
             return points;
         }
 
@@ -127,7 +129,7 @@ namespace FarmingGPSLib.FieldItems
         {
             double[] xyArray = new double[2] { position.Longitude.DecimalDegrees, position.Latitude.DecimalDegrees };
             double[] zArray = new double[1] { Distance.EarthsAverageRadius.ToMeters().Value };
-            Reproject.ReprojectPoints(xyArray, zArray, KnownCoordinateSystems.Geographic.World.WGS1984, _proj, 0, zArray.Length);
+            Reproject.ReprojectPoints(xyArray, zArray, _projWGS84, _proj, 0, zArray.Length);
             return new Coordinate(xyArray[0], xyArray[1]);
         }
 
