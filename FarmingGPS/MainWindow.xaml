@@ -36,6 +36,7 @@
             </StackPanel>
             <Button x:Name="BTN_SETTINGS" Style="{StaticResource BUTTON_TOOLS}" Width="60" Height="60" Margin="10,10,10,10" HorizontalAlignment="Right" Click="BTN_SETTINGS_Click"/>
             <Button x:Name="BTN_START_FIELD" Style="{StaticResource BUTTON_CREATE_FIELD}" Width="60" Height="60" Margin="10,10,10,10" HorizontalAlignment="Right" Click="BTN_START_FIELD_Click"/>
+            <Button x:Name="BTN_MARKER" Style="{StaticResource BUTTON_MARKER}" Width="60" Height="60" Margin="10,10,10,10" HorizontalAlignment="Right" Click="BTN_MARKER_Click"/>
             <StackPanel Orientation="Horizontal" Visibility="Collapsed" x:FieldModifier="private" x:Name="_trackLineGrid" HorizontalAlignment="Right">
                 <Button x:Name="BTN_CONFIRM_TRACKLINE" Style="{StaticResource BUTTON_CHECK}" Width="60" Height="60" Visibility="Collapsed" Margin="10,10,10,10" Click="BTN_CONFIRM_TRACKLINE_Click"/>
                 <Button x:Name="BTN_CHOOSE_TRACKLINE" Style="{StaticResource BUTTON_CHOOSE_TRACKLINE}" Width="60" Height="60" Margin="10,10,10,10" Click="BTN_CHOOSE_TRACKLINE_Click"/>

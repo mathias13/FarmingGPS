@@ -2,6 +2,15 @@ using System;
 
 namespace FarmingGPS.Database
 {
+    partial class Obstacle
+    {
+        public enum ObstacleType
+        {
+            ROCK = 0,
+            WELL = 1
+        }
+    }
+
     partial class CropProductionPlan
     {
     }

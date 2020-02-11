@@ -180,8 +180,7 @@ namespace FarmingGPS.Database
         {
             _databaseContext.Vechiles.InsertOnSubmit(vechile);
         }
-
-
+        
         public void DeleteVechile(Vechile vechile)
         {
             _databaseContext.Vechiles.DeleteOnSubmit(vechile);
@@ -446,7 +445,20 @@ namespace FarmingGPS.Database
             _databaseContext.EquipmentRateFiles.DeleteOnSubmit(equipmentRate);
         }
 
+        public void AddRock(GpsCoordinate coordinate)
+        {
+            _databaseContext.GpsCoordinates.InsertOnSubmit(coordinate);
+            SubmitToDatabase();
+            _databaseContext.Obstacles.InsertOnSubmit(new Obstacle() { PosId = coordinate.PosId, Type = (int)Obstacle.ObstacleType.ROCK });
+            SubmitToDatabase();
+        }
+
         #endregion
+
+        public bool IsConnected
+        {
+            get { return _online; }
+        }
 
         private void Connection_StateChange(object sender, System.Data.StateChangeEventArgs e)
         {

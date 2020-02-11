@@ -152,6 +152,8 @@ namespace FarmingGPS
 
         private Queue<CoordinateUpdateStruct> _coordinateUpdateStructQueueVisual = new Queue<CoordinateUpdateStruct>();
 
+        private Queue<Database.Obstacle.ObstacleType> _obstacleQueue = new Queue<Database.Obstacle.ObstacleType>();
+
         private object _syncObject = new object();
 
         #endregion
@@ -350,7 +352,7 @@ namespace FarmingGPS
                     lock (_syncObject)
                         while (_coordinateUpdateStructQueueSecondaryTasks.Count > 0)
                             coordinate = _coordinateUpdateStructQueueSecondaryTasks.Dequeue();
-
+                    
                     if (DateTime.Now > _trackingLineEvaluationTimeout)
                     {
                         if (_farmingMode != null)
@@ -714,6 +716,15 @@ namespace FarmingGPS
 
         private void _receiver_PositionUpdate(object sender, Position actualPosition)
         {
+            if (_obstacleQueue.Count > 0)
+            {
+                Database.Obstacle.ObstacleType newObstacle = Database.Obstacle.ObstacleType.ROCK;
+                lock (_syncObject)
+                    newObstacle = _obstacleQueue.Dequeue();
+
+                if (_database.IsConnected)
+                    _database.AddRock(new Database.GpsCoordinate() { Latitude = actualPosition.Latitude.DecimalDegrees, Longitude = actualPosition.Longitude.DecimalDegrees });
+            }
         }
         
         private void _receiver_BearingUpdate(object sender, Azimuth actualBearing)
@@ -878,6 +889,12 @@ namespace FarmingGPS
         private void BTN_RATE_AUTO_Click(object sender, RoutedEventArgs e)
         {
             _fieldRateTracker.Auto = BTN_RATE_AUTO.IsChecked.Value;
+        }
+
+        private void BTN_MARKER_Click(object sender, RoutedEventArgs e)
+        {
+            lock (_syncObject)
+                _obstacleQueue.Enqueue(Database.Obstacle.ObstacleType.ROCK);
         }
 
         #endregion
