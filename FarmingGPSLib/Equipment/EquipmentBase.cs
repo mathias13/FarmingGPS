@@ -48,14 +48,7 @@ namespace FarmingGPSLib.Equipment
             _distanceFromVechile = distanceFromVechile;
             _fromDirectionOfTravel = fromDirectionOfTravel;
             _overlap = Distance.FromMeters(0);
-            Position attachedPoint = new Position(new Latitude(1.0), new Longitude(1.0));
-            Position centerOfEquipment = attachedPoint.TranslateTo(fromDirectionOfTravel, distanceFromVechile);
-            Position leftTip = centerOfEquipment.TranslateTo(Azimuth.West, CenterToTip);
-            Position rightTip = centerOfEquipment.TranslateTo(Azimuth.East, CenterToTip);
-            _bearingToLeftTip = attachedPoint.BearingTo(leftTip);
-            _bearingToRightTip = attachedPoint.BearingTo(rightTip);
-            _distanceToLeftTip = attachedPoint.DistanceTo(leftTip);
-            _distanceToRightTip = attachedPoint.DistanceTo(rightTip);
+            CalculateDistances();
             HasChanged = true;
         }
 
@@ -66,6 +59,18 @@ namespace FarmingGPSLib.Equipment
                 _overlap = width.Divide(2);
             else
                 _overlap = overlap;
+        }
+
+        private void CalculateDistances()
+        {
+            Position attachedPoint = new Position(new Latitude(1.0), new Longitude(1.0));
+            Position centerOfEquipment = attachedPoint.TranslateTo(_fromDirectionOfTravel, _distanceFromVechile);
+            Position leftTip = centerOfEquipment.TranslateTo(Azimuth.West, CenterToTip);
+            Position rightTip = centerOfEquipment.TranslateTo(Azimuth.East, CenterToTip);
+            _bearingToLeftTip = attachedPoint.BearingTo(leftTip);
+            _bearingToRightTip = attachedPoint.BearingTo(rightTip);
+            _distanceToLeftTip = attachedPoint.DistanceTo(leftTip);
+            _distanceToRightTip = attachedPoint.DistanceTo(rightTip);
         }
 
         #region IEquipment Implementation
@@ -159,6 +164,7 @@ namespace FarmingGPSLib.Equipment
             _distanceFromVechile = Distance.FromMeters(equipmentState.DistanceFromVechile);
             _fromDirectionOfTravel = new Azimuth(equipmentState.FromDirectionOfTravel);
             _overlap = Distance.FromMeters(equipmentState.Overlap);
+            CalculateDistances();
         }
 
         #endregion
