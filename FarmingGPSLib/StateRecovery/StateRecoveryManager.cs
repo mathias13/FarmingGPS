@@ -122,36 +122,8 @@ namespace FarmingGPSLib.StateRecovery
             {
                 if (nextPreserve < DateTime.Now)
                 {
-                    lock(_syncobject)
-                    {
-                        foreach (IStateObject stateObject in _objectsToPreserve)
-                        {
-                            if (!stateObject.HasChanged)
-                                continue;
-                            string objectName = stateObject.GetType().FullName;
-                            TextWriter writer = null;
-                            try
-                            {
-                                File.Delete(_folderPath + objectName + ".old");
-                                if (File.Exists(_folderPath + objectName + ".xml"))
-                                    File.Move(_folderPath + objectName + ".xml", _folderPath + objectName + ".old");
-
-                                XmlSerializer serializer = new XmlSerializer(stateObject.StateType);
-                                writer = new StreamWriter(_folderPath + objectName + ".xml", false);
-                                serializer.Serialize(writer, stateObject.StateObject);
-                                File.Delete(_folderPath + objectName + ".old");
-                            }
-                            catch (Exception e)
-                            {
-                                Log.Error("Failed to preserve object " + objectName, e);
-                            }
-                            finally
-                            {
-                                if (writer != null)
-                                    writer.Close();
-                            }
-                        }
-                    }
+                    lock (_syncobject)
+                        Preserve();
                     nextPreserve = DateTime.Now.Add(_preserveInterval);
                 }
                 else
@@ -159,10 +131,41 @@ namespace FarmingGPSLib.StateRecovery
             }
         }
 
+        private void Preserve()
+        {
+            foreach (IStateObject stateObject in _objectsToPreserve)
+            {
+                if (!stateObject.HasChanged)
+                    continue;
+                string objectName = stateObject.GetType().FullName;
+                TextWriter writer = null;
+                try
+                {
+                    File.Delete(_folderPath + objectName + ".old");
+                    if (File.Exists(_folderPath + objectName + ".xml"))
+                        File.Move(_folderPath + objectName + ".xml", _folderPath + objectName + ".old");
+
+                    XmlSerializer serializer = new XmlSerializer(stateObject.StateType);
+                    writer = new StreamWriter(_folderPath + objectName + ".xml", false);
+                    serializer.Serialize(writer, stateObject.StateObject);
+                    writer.Close();
+                    File.Delete(_folderPath + objectName + ".old");
+                }
+                catch (Exception e)
+                {
+                    Log.Error("Failed to preserve object " + objectName, e);
+                    if (writer != null)
+                        writer.Close();
+                    File.Delete(_folderPath + objectName + ".xml");
+                }
+            }
+        }
+
         public void Dispose()
         {
             _preserveThreadStopped = true;
             _preserveThread.Join();
+            Preserve();
         }
     }
 }
