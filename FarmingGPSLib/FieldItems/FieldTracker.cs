@@ -421,7 +421,7 @@ namespace FarmingGPSLib.FieldItems
                 lock (_syncObject)
                 {
                     foreach (KeyValuePair<int, Polygon> polygon in _polygons)
-                        simplifiedPolygons.Add(polygon.Key, DotSpatial.Topology.Simplify.TopologyPreservingSimplifier.Simplify(_polygons[_currentPolygonIndex], 0.04));
+                        simplifiedPolygons.Add(polygon.Key, DotSpatial.Topology.Simplify.TopologyPreservingSimplifier.Simplify(polygon.Value, 0.04));
                 }
 
                 foreach (KeyValuePair<int, IGeometry> simplifiedPolygon in simplifiedPolygons)

@@ -2,14 +2,29 @@
 using DotSpatial.Topology;
 using FarmingGPSLib.Equipment;
 using FarmingGPSLib.FieldItems;
+using FarmingGPSLib.StateRecovery;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace FarmingGPSLib.FieldItems
 {
-    public class FieldRateTracker
+    public class FieldRateTracker : IStateObject
     {
+        [Serializable]
+        public struct FieldRateTrackerState
+        {
+            public double DefaultRate;
+
+            public double MinimumChangeOfRate;
+
+            public string ShapeFile;
+
+            public int RateColumn;
+
+            public string FieldProjection;
+        }
+
         #region Private Variables
 
         private double _currentRate = Double.NaN;
@@ -39,6 +54,7 @@ namespace FarmingGPSLib.FieldItems
             _shapeFile = shapeFile;
             _rateColumn = rateColumn;
             _shapeFile.Reproject(field.Projection);
+            HasChanged = true;
         }
 
         #region Public Properties
@@ -100,5 +116,39 @@ namespace FarmingGPSLib.FieldItems
         }
 
         #endregion
+
+        #region IStateObject
+
+        public object StateObject
+        {
+            get
+            {
+                HasChanged = false;
+                return new FieldRateTrackerState() { DefaultRate = _defaultRate, MinimumChangeOfRate = _minimumChangeOfRate, RateColumn = _rateColumn, ShapeFile = _shapeFile.Filename, FieldProjection = _shapeFile.Projection.ToProj4String() };
+            }
+        }
+
+        public virtual bool HasChanged { get; private set; } = false;
+
+        public Type StateType
+        {
+            get { return typeof(FieldRateTrackerState); }
+        }
+
+
+        public void RestoreObject(object restoredState)
+        {
+            var fieldRateTrackerState = (FieldRateTrackerState)restoredState;
+            _defaultRate = fieldRateTrackerState.DefaultRate;
+            _currentRate = _defaultRate;
+            _minimumChangeOfRate = fieldRateTrackerState.MinimumChangeOfRate;
+            _rateColumn = fieldRateTrackerState.RateColumn;
+            _shapeFile = Shapefile.OpenFile(fieldRateTrackerState.ShapeFile);
+            _shapeFile.Projection = DotSpatial.Projections.KnownCoordinateSystems.Geographic.World.WGS1984;
+            _shapeFile.Reproject(DotSpatial.Projections.ProjectionInfo.FromProj4String(fieldRateTrackerState.FieldProjection));
+        }
+
+        #endregion
+
     }
 }

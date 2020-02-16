@@ -35,7 +35,7 @@ namespace FarmingGPSLib.FieldItems
 
         protected object _syncObject = new object();
 
-        private bool _hasChanged = true;
+        private bool _hasChanged = false;
 
         #endregion
 
@@ -50,6 +50,7 @@ namespace FarmingGPSLib.FieldItems
             _positions = positions;
             _proj = proj;
             ReloadPolygon();
+            _hasChanged = true;
         }
 
         #endregion

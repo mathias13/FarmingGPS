@@ -301,11 +301,18 @@ namespace FarmingGPS
                                 SetIEquipmentControl();
 
                             _visualization.SetEquipmentWidth(_equipment.Width);
+
                         }
                         else if (recoveredObject.Key.IsSubclassOf(typeof(FarmingGPSLib.FarmingModes.FarmingModeBase)))
                         {
                             _farmingMode = Activator.CreateInstance(recoveredObject.Key) as FarmingGPSLib.FarmingModes.IFarmingMode;
                             _farmingMode.RestoreObject(recoveredObject.Value);
+                        }
+                        else if(recoveredObject.Key == typeof(FieldRateTracker))
+                        {
+                            _fieldRateTracker = new FieldRateTracker();
+                            BTN_RATE_AUTO.Visibility = Visibility.Visible;
+                            _fieldRateTracker.RestoreObject(recoveredObject.Value);
                         }
                     }
                     if(_farmingMode != null)
@@ -317,6 +324,25 @@ namespace FarmingGPS
                             _visualization.AddLine(line);
                         CheckAllTrackingLines();
                     }
+                    if(_equipment != null && _fieldRateTracker != null)
+                        if (_equipment is IEquipmentControl)
+                            _fieldRateTracker.RegisterEquipmentControl(_equipment as IEquipmentControl);
+#if SIM
+                    if (_receiver != null)
+                        _receiver.Dispose();
+                    _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0),
+                        new Longitude(13.855149568), new Latitude(58.5125995962)),
+                        false,
+                        _vechile.OffsetDirection,
+                        _vechile.OffsetDistance,
+                        _vechile.WheelAxesDistance);
+                    _receiver.BearingUpdate += _receiver_BearingUpdate;
+                    _receiver.PositionUpdate += _receiver_PositionUpdate;
+                    _receiver.CoordinateUpdate += _receiver_CoordinateUpdate;
+                    _receiver.SpeedUpdate += _receiver_SpeedUpdate;
+                    _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
+                    _receiver.ProjectionInfo = _field.Projection;
+#endif
                 }
             }
         }
@@ -654,18 +680,7 @@ namespace FarmingGPS
         }
 
         private void _receiver_CoordinateUpdate(object sender, Coordinate actualPosition)
-        {
-            if (stopwatch.IsRunning)
-            {
-                stopwatch.Stop();
-                _min = Math.Min(_min, stopwatch.ElapsedMilliseconds);
-                _max = Math.Max(_max, stopwatch.ElapsedMilliseconds);
-                stopwatch.Reset();
-                stopwatch.Start();
-            }
-            else
-                stopwatch.Start();
-            
+        {            
             IReceiver receiver = sender as IReceiver;
             if (_field == null || _vechile == null)
                 return;
@@ -1028,8 +1043,12 @@ namespace FarmingGPS
 
         private void SetEquipmentRate(GetEquipmentRate usercontrol)
         {
+            if (_fieldRateTracker != null)
+                _stateRecovery.RemoveStateObject(_fieldRateTracker);
+
             BTN_RATE_AUTO.Visibility = Visibility.Visible;
             _fieldRateTracker = new FieldRateTracker(usercontrol.DefaultRate, 5.0, usercontrol.ShapeFile, 1, _field);
+            _stateRecovery.AddStateObject(_fieldRateTracker);
             if (_equipment is IEquipmentControl)
                 _fieldRateTracker.RegisterEquipmentControl(_equipment as IEquipmentControl);
         }
