@@ -137,13 +137,7 @@ namespace FarmingGPS
         private System.Threading.Thread _secondaryTasksThread;
 
         private bool _secondaryTasksThreadStop = false;
-
-        private System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-
-        private long _min = long.MaxValue;
-
-        private long _max = long.MinValue;
-
+               
         private DispatcherTimer _dispatcherTimer;
         
         private Queue<LightBarUpdateStruct> _lightBarQueue = new Queue<LightBarUpdateStruct>();
