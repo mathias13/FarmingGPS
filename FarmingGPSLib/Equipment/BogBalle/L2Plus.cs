@@ -139,7 +139,8 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         public void SetRate(double rate)
         {
-            _calibrator.ChangeSpreadingRate((int)rate);
+            if (_calibrator != null)
+                _calibrator.ChangeSpreadingRate((int)rate);
         }
 
         public void RelaySpeed(double speed)
@@ -166,15 +167,28 @@ namespace FarmingGPSLib.Equipment.BogBalle
         {
             get { return _calibrator.Tara - _startWeight; }
         }
+        public double StartWeight
+        {
+            get { return _startWeight; }
+            set { _startWeight = value; }
+        }
+        public double EndWeight
+        {
+            get { return _endWeight; }
+            set { _endWeight = value; }
+        }
 
         public void ResetTotal()
         {
             _startWeight = _calibrator.Tara;
+            _endWeight = _calibrator.Tara;
+            HasChanged = true;
         }
         
         public void AddedContent(double content)
         {
             _endWeight += content;
+            HasChanged = true;
         }
 
         #endregion

@@ -7,11 +7,11 @@ namespace FarmingGPSLib.Equipment.Vaderstad
 {
     public class DS400 : EquipmentBase, IEquipmentControl, IEquipmentStat, IDisposable
     {
-        private static double FULL_CONTENT = 700.0;
+        private static double FULL_CONTENT = 600.0;
 
         private readonly double _stopDistance = 0.2;
 
-        private readonly double _startDistance = -0.5;
+        private readonly double _startDistance = -1.0;
 
         private double _startWeight = double.MinValue;
 
@@ -19,6 +19,10 @@ namespace FarmingGPSLib.Equipment.Vaderstad
 
         private Controller _controller;
         
+        public DS400()
+        {
+        }
+
         public DS400(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel)
             : base(width, distanceFromVechile, fromDirectionOfTravel)
         {
@@ -115,12 +119,14 @@ namespace FarmingGPSLib.Equipment.Vaderstad
 
         public void SetRate(double rate)
         {
-            _controller.ChangeSeedingRate((int)rate);
+            if(_controller != null)
+                _controller.ChangeSeedingRate((int)rate);
         }
 
         public void RelaySpeed(double speed)
         {
-            _controller.SetSpeed((float)speed);
+            if (_controller != null)
+                _controller.SetSpeed((float)speed);
         }
 
         #endregion
@@ -144,14 +150,28 @@ namespace FarmingGPSLib.Equipment.Vaderstad
             get { return _controller.SeedUsed - _startWeight; }
         }
 
+        public double StartWeight
+        {
+            get { return _startWeight; }
+            set { _startWeight = value; }
+        }
+        public double EndWeight
+        {
+            get { return _endWeight; }
+            set { _endWeight = value; }
+        }
+
         public void ResetTotal()
         {
             _startWeight = _controller.SeedUsed;
+            _endWeight = _controller.SeedUsed;
+            HasChanged = true;
         }
         
         public void AddedContent(double content)
         {
             _endWeight += content;
+            HasChanged = true;
         }
 
         #endregion
