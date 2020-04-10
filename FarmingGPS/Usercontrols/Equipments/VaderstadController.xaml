@@ -38,6 +38,7 @@
                     <Border Background="WhiteSmoke" ClipToBounds="True" BorderBrush="Black" BorderThickness="2" CornerRadius="5" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5,13,5,13">
                         <Grid Width="30" Height="30">
                             <Rectangle Fill="Green" Visibility="{Binding Path=Started, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}, Converter={StaticResource BoolToVis}}"/>
+                            <Rectangle Fill="Yellow" Visibility="{Binding Path=Halted, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}, Converter={StaticResource BoolToVis}}"/>
                             <Viewbox Style="{StaticResource SYMBOL_VIEWBOX}">
                                 <Grid Width="24" Height="24">
                                     <Path Fill="Black" Data="{StaticResource SYMBOL_ROTATE}"/>
@@ -67,7 +68,7 @@
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Aktuell giva</TextBlock>
                     <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg/ha" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=ActualSpreadingRate, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}"/>
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Körd area</TextBlock>
-                    <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 ha" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=Area, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}"/>
+                    <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0.0 ha" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=Area, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}"/>
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Kal. vikt</TextBlock>
                     <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="5" AllowSpin="False" IsReadOnly="True" FormatString="0.00 kg" MouseLeftButtonUp="CalWeight_MouseUp" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=CalWeight, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:VaderstadController}}}"/>
                 </StackPanel>

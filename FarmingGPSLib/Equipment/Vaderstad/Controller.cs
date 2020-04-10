@@ -137,6 +137,8 @@ namespace FarmingGPSLib.Equipment.Vaderstad
 
         private bool _started = false;
 
+        private bool _halted = false;
+
         private bool _rateTestStarted = false;
 
         private bool _alarm = false;
@@ -278,6 +280,11 @@ namespace FarmingGPSLib.Equipment.Vaderstad
         public bool Started
         {
             get { return _started; }
+        }
+
+        public bool Halted
+        {
+            get { return _halted; }
         }
 
         public bool RateTestStarted
@@ -478,6 +485,7 @@ namespace FarmingGPSLib.Equipment.Vaderstad
                     _started = ((integerValue & 0x01) > 0);
                     _rateTestStarted = ((integerValue & 0x02) > 0);
                     _alarm = ((integerValue & 0x04) > 0);
+                    _halted = ((integerValue & 0x08) > 0);
                 }
 
                 if (isConnected)

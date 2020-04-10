@@ -36,6 +36,7 @@ namespace FarmingGPS.Usercontrols.Equipments
             if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
             {
                 SetValue(Started, _controller.Started);
+                SetValue(Halted, _controller.Halted);
                 SetValue(Alarm, _controller.Alarm);
                 SetValue(ActualSeedingRate, _controller.ActualSeedingRate);
                 SetValue(MaxRateOfTavel, _controller.MaxRateOfTravel);
@@ -58,6 +59,8 @@ namespace FarmingGPS.Usercontrols.Equipments
         protected static readonly DependencyProperty ConnectedState = DependencyProperty.Register("ConnectedState", typeof(bool), typeof(VaderstadController));
 
         protected static readonly DependencyProperty Started = DependencyProperty.Register("Started", typeof(bool), typeof(VaderstadController));
+
+        protected static readonly DependencyProperty Halted = DependencyProperty.Register("Halted", typeof(bool), typeof(VaderstadController));
 
         protected static readonly DependencyProperty Alarm = DependencyProperty.Register("Alarm", typeof(bool), typeof(VaderstadController));
 
