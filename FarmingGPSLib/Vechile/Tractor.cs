@@ -65,7 +65,7 @@ namespace FarmingGPSLib.Vechile
                     heading = heading.Mirror().Normalize();
             }
 
-            Vector rotatedVector = _vectorCenterRearAxle.RotateZ(heading.DecimalDegrees * -1);
+            Vector rotatedVector = _vectorCenterRearAxle.RotateZ(heading.DecimalDegrees);
             Coordinate position = receiver.CurrentCoordinate + rotatedVector;
 
             if (_vechileModel != null)
@@ -166,7 +166,7 @@ namespace FarmingGPSLib.Vechile
             double distanceCenterRearAxle = OffsetDistance.ToMeters().Value;
             double directionCenterRearAxle = HelperClassAngles.GetCartesianAngle(OffsetDirection).Radians;
             Coordinate origin = new Coordinate(0.0, 0.0, 0, 0);
-            Coordinate centerRearAxle = HelperClassCoordinate.ComputePoint(origin, distanceCenterRearAxle, directionCenterRearAxle);
+            Coordinate centerRearAxle = HelperClassCoordinate.ComputePoint(origin, directionCenterRearAxle, distanceCenterRearAxle);
             centerRearAxle.Z = 0.0;
             _vechileModel = new VechileModel(WheelAxesDistance.ToMeters().Value);
             _vectorCenterRearAxle = new Vector(origin, centerRearAxle);
