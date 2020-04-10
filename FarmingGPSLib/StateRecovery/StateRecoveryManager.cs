@@ -36,14 +36,31 @@ namespace FarmingGPSLib.StateRecovery
             TextReader reader = null;
             try
             {
+                var filesToUse = new List<string>();
                 List<string> files = new List<string>(Directory.GetFiles(_folderPath));
                 foreach (string file in files)
                 {
+                    if (filesToUse.Contains(file))
+                        continue;
                     FileInfo fileInfo = new FileInfo(file);
                     if (fileInfo.Name.Contains(".old"))
-                        if (files.Contains(file.Replace(".old", ".xml")))
-                            continue;
+                    {
+                        var xmlFile = file.Replace(".old", ".xml");
+                        if(File.Exists(xmlFile))
+                            File.Delete(xmlFile);
 
+                        File.Move(file, xmlFile);
+
+                        if (!files.Contains(xmlFile))
+                            files.Add(file);
+                    }
+                    else
+                        filesToUse.Add(file);
+                }
+
+                foreach(var fileToUse in filesToUse)
+                {
+                    FileInfo fileInfo = new FileInfo(fileToUse);
                     Type restoredType = Type.GetType(fileInfo.Name.Remove(fileInfo.Name.Length - 4, 4));
                     IStateObject stateObject = Activator.CreateInstance(restoredType) as IStateObject;
                     XmlSerializer serializer = new XmlSerializer(stateObject.StateType);
