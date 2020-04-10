@@ -40,7 +40,7 @@ namespace FarmingGPS.Visualization
                 SetValue(WidthPercentage, _backGround.ActualWidth * fillLevel);
             }
             else
-                Dispatcher.BeginInvoke(new Action<object, EventArgs>(EquipmentStat_StatUpdated), System.Windows.Threading.DispatcherPriority.Render, sender, e);
+                Dispatcher.BeginInvoke(new Action<object, EventArgs>(EquipmentStat_StatUpdated), System.Windows.Threading.DispatcherPriority.Normal, sender, e);
         }
 
         #endregion

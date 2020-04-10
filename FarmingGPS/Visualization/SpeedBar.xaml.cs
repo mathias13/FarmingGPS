@@ -73,7 +73,7 @@ namespace FarmingGPS.Visualization
                 }
             }
             else
-                Dispatcher.BeginInvoke(new Action<Speed>(SetSpeed), System.Windows.Threading.DispatcherPriority.Render, speed);
+                Dispatcher.BeginInvoke(new Action<Speed>(SetSpeed), System.Windows.Threading.DispatcherPriority.Normal, speed);
         }
         
         #endregion
