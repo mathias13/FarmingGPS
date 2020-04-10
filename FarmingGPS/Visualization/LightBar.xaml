@@ -18,7 +18,7 @@
                     Stroke="DarkBlue"
                     StrokeThickness="1">
                     <Polygon.Fill>
-                        <SolidColorBrush Color="Blue" Opacity="0.6"/>
+                        <SolidColorBrush Color="LightBlue" Opacity="0.8"/>
                     </Polygon.Fill>
                 </Polygon>
             </Grid>
