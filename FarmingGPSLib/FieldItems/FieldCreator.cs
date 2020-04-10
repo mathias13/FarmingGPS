@@ -43,7 +43,7 @@ namespace FarmingGPSLib.FieldItems
 
         protected ProjectionInfo _projWGS84 = KnownCoordinateSystems.Geographic.World.WGS1984;
 
-        private IEquipment _equipment;
+        //private IEquipment _equipment;
 
         private List<Coordinate> _track = new List<Coordinate>();
 
@@ -53,52 +53,26 @@ namespace FarmingGPSLib.FieldItems
 
         private bool _waitForFinish = false;
 
+        private bool _fieldFinished = false;
+
         #endregion
 
-        public FieldCreator(ProjectionInfo projectionInfo, Orientation orientation, IReceiver receiver, IEquipment equipment)
+        public FieldCreator(ProjectionInfo projectionInfo, Orientation orientation, Position currentPosition)
         {
             _orientation = orientation;
             _projectionInfo = projectionInfo;
-            _equipment = equipment;
             
             List<Position> fieldPoints = new List<Position>();
-            fieldPoints.Add(receiver.CurrentPosition.TranslateTo(Azimuth.Northwest, Distance.FromMeters(1.0)));
-            fieldPoints.Add(receiver.CurrentPosition.TranslateTo(Azimuth.Southwest, Distance.FromMeters(1.0)));
-            fieldPoints.Add(receiver.CurrentPosition.TranslateTo(Azimuth.Southeast, Distance.FromMeters(1.0)));
-            fieldPoints.Add(receiver.CurrentPosition.TranslateTo(Azimuth.Northeast, Distance.FromMeters(1.0)));
-            fieldPoints.Add(receiver.CurrentPosition.TranslateTo(Azimuth.Northwest, Distance.FromMeters(1.0)));
+            fieldPoints.Add(currentPosition.TranslateTo(Azimuth.Northwest, Distance.FromMeters(1.0)));
+            fieldPoints.Add(currentPosition.TranslateTo(Azimuth.Southwest, Distance.FromMeters(1.0)));
+            fieldPoints.Add(currentPosition.TranslateTo(Azimuth.Southeast, Distance.FromMeters(1.0)));
+            fieldPoints.Add(currentPosition.TranslateTo(Azimuth.Northeast, Distance.FromMeters(1.0)));
+            fieldPoints.Add(currentPosition.TranslateTo(Azimuth.Northwest, Distance.FromMeters(1.0)));
             _distanceTrigger = new DistanceTrigger(MINIMUM_DISTANCE_BETWEEN_POINTS, MAXIMUM_DISTANCE_BETWEEN_POINTS, MINIMUM_CHANGE_DIRECTION, MAXIMUM_CHANGE_DIRECTION);
             _field = new Field(fieldPoints, projectionInfo);
-            receiver.CoordinateUpdate += Receiver_CoordinateUpdate;
+            //receiver.CoordinateUpdate += Receiver_CoordinateUpdate;
         }
         
-        private void Receiver_CoordinateUpdate(object sender, Coordinate actualPosition)
-        {
-            IReceiver receiver = sender as IReceiver;
-            Coordinate correctPosition = _equipment.GetCenter(actualPosition, receiver.CurrentBearing);
-            if(_orientation == Orientation.Lefthand)
-                correctPosition = _equipment.GetRightTip(actualPosition, receiver.CurrentBearing);
-            else
-                correctPosition = _equipment.GetLeftTip(actualPosition, receiver.CurrentBearing);
-
-            if (_track.Count < 2)
-            {
-                AddPoint(correctPosition);
-                _distanceTrigger.Init(correctPosition, receiver.CurrentBearing);
-            }
-            else if (CheckFinishedField(correctPosition))
-                receiver.CoordinateUpdate -= Receiver_CoordinateUpdate;
-            else
-            {
-                if (_distanceTrigger.CheckDistance(correctPosition, receiver.CurrentBearing))
-                {
-                    AddPoint(correctPosition);
-                    if (_track.Count > 3)
-                        OnFieldBoundaryUpdated(_track);
-                }
-            }
-        }
-
         private void AddPoint(Coordinate actualPosition)
         {
             if (_track.Count > 0)
@@ -139,15 +113,47 @@ namespace FarmingGPSLib.FieldItems
             }
             return false;
         }
-        
 
         #region Public Methods
-        
+
+        public void UpdatePosition(Coordinate leftTip, Coordinate rightTip, Azimuth heading)
+        {
+            var correctPosition = leftTip;
+            if (_orientation == Orientation.Lefthand)
+                correctPosition = rightTip;
+
+            if (_track.Count < 2)
+            {
+                AddPoint(correctPosition);
+                _distanceTrigger.Init(correctPosition, heading);
+            }
+            else if (CheckFinishedField(correctPosition))
+                _fieldFinished = true;
+            else
+            {
+                if (_distanceTrigger.CheckDistance(correctPosition, heading))
+                {
+                    AddPoint(correctPosition);
+                    if (_track.Count > 3)
+                        OnFieldBoundaryUpdated(_track);
+                }
+            }
+        }
+
         public Field GetField()
         {
             return _field;
         }
-        
+
+        #endregion
+
+        #region Public Properties
+
+        public bool FieldFinished
+        {
+            get { return _fieldFinished; }
+        }
+
         #endregion
 
         #region Protected Methods
