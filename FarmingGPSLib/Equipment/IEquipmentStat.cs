@@ -13,6 +13,10 @@ namespace FarmingGPSLib.Equipment
         double ContentLeft { get; }      
 
         double TotalInput { get; }
+
+        double StartWeight { get; set; }
+
+        double EndWeight { get; set; }
         
         event EventHandler StatUpdated;
     }

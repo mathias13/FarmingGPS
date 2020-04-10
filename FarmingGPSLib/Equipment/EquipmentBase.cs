@@ -17,6 +17,10 @@ namespace FarmingGPSLib.Equipment
             public double FromDirectionOfTravel;
 
             public double Overlap;
+
+            public double StatStartWeight;
+
+            public double StatEndWeight;
         }
 
         #region Private Variables
@@ -146,11 +150,19 @@ namespace FarmingGPSLib.Equipment
             get
             {
                 HasChanged = false;
-                return new EquipmentState() { Width = Width.ToMeters().Value, DistanceFromVechile = DistanceFromVechileToCenter.ToMeters().Value, FromDirectionOfTravel = FromDirectionOfTravel.DecimalDegrees, Overlap = Overlap.ToMeters().Value };
+                double startWeight = 0.0;
+                double endWeight = 0.0;
+                if (this is IEquipmentStat)
+                {
+                    var stat = this as IEquipmentStat;
+                    startWeight = stat.StartWeight;
+                    endWeight = stat.EndWeight;
+                }
+                return new EquipmentState() { Width = Width.ToMeters().Value, DistanceFromVechile = DistanceFromVechileToCenter.ToMeters().Value, FromDirectionOfTravel = FromDirectionOfTravel.DecimalDegrees, Overlap = Overlap.ToMeters().Value, StatStartWeight = startWeight, StatEndWeight = endWeight };
             }
         }
 
-        public virtual bool HasChanged { get; private set; } = false;
+        public virtual bool HasChanged { get; protected set; } = false;
 
         public virtual Type StateType
         {
@@ -164,6 +176,13 @@ namespace FarmingGPSLib.Equipment
             _distanceFromVechile = Distance.FromMeters(equipmentState.DistanceFromVechile);
             _fromDirectionOfTravel = new Azimuth(equipmentState.FromDirectionOfTravel);
             _overlap = Distance.FromMeters(equipmentState.Overlap);
+
+            if (this is IEquipmentStat)
+            {
+                var stat = this as IEquipmentStat;
+                stat.StartWeight = equipmentState.StatStartWeight;
+                stat.EndWeight = equipmentState.StatEndWeight;
+            }
             CalculateDistances();
         }
 

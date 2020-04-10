@@ -33,7 +33,7 @@ namespace FarmingGPS.Usercontrols.Equipments
 
         private void EquipmentStat_StatUpdated(object sender, EventArgs e)
         {
-            Dispatcher.BeginInvoke(new Action(UpdateValues), DispatcherPriority.Render);
+            Dispatcher.BeginInvoke(new Action(UpdateValues), DispatcherPriority.Background);
         }
 
         private void UpdateValues()

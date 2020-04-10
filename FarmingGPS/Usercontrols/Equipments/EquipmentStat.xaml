@@ -40,8 +40,8 @@
                 <StackPanel Grid.Column="1">
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Kvar i redskap</TextBlock>
                     <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="200" AllowSpin="False" IsReadOnly="True" FormatString="0 \%" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=LeftInEquipmentPercent, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:EquipmentStat}}}"/>
-                    <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Fylld mängd</TextBlock>
-                    <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="2000" AllowSpin="True" IsReadOnly="False" Increment="50" FormatString="0 kg" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=AddedContent, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:EquipmentStat}}}"/>
+                    <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Påfylld mängd</TextBlock>
+                    <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="-2000" Maximum="2000" AllowSpin="True" IsReadOnly="False" Increment="50" FormatString="0 kg" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=AddedContent, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:EquipmentStat}}}"/>
                 </StackPanel>
             </Grid>
         </StackPanel>
