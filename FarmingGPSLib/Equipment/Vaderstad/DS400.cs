@@ -11,7 +11,7 @@ namespace FarmingGPSLib.Equipment.Vaderstad
 
         private readonly double _stopDistance = 0.2;
 
-        private readonly double _startDistance = -1.0;
+        private readonly double _startDistance = -1.3;
 
         private double _startWeight = double.MinValue;
 
@@ -180,7 +180,7 @@ namespace FarmingGPSLib.Equipment.Vaderstad
         {
             get
             {
-                return typeof(FertilizingMode);
+                return typeof(SeedingMode);
             }
         }
 
