@@ -192,7 +192,7 @@ namespace FarmingGPSLib.FarmingModes
                 if (trackingLine.Depleted)
                     continue;
 
-                double tempDistance = trackingLine.GetDistanceToLine(position, false);
+                double tempDistance = trackingLine.GetDistanceToLine(position);
                 if(tempDistance < distanceToLine)
                 {
                     distanceToLine = tempDistance;
@@ -205,7 +205,7 @@ namespace FarmingGPSLib.FarmingModes
                 if (trackingLine.Depleted)
                     continue;
 
-                double tempDistance = trackingLine.GetDistanceToLine(position, false);
+                double tempDistance = trackingLine.GetDistanceToLine(position);
                 if (tempDistance < distanceToLine)
                 {
                     distanceToLine = tempDistance;
@@ -237,6 +237,11 @@ namespace FarmingGPSLib.FarmingModes
         }
 
         public virtual void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void UpdateEvents(ILineString positionEquipment, DotSpatial.Positioning.Azimuth direction)
         {
             throw new NotImplementedException();
         }
@@ -275,9 +280,9 @@ namespace FarmingGPSLib.FarmingModes
         {
             FarmingModeState farmingModeState = (FarmingModeState)restoredState;
             foreach (SimpleLine line in farmingModeState.TrackingLines)
-                _trackingLines.Add(new TrackingLine(new LineString(line.Line)));
+                _trackingLines.Add(new TrackingLine(new LineString(line.Line), false));
             foreach (SimpleLine line in farmingModeState.TrackingLinesHeadLand)
-                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line)));
+                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line), true));
         }
 
         #endregion

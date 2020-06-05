@@ -20,7 +20,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>C:\Binaries\FarmingGPS\FarmingGPSLib\bin\Debug\</OutputPath>
-	<BaseIntermediateOutputPath>C:\Binaries\FarmingGPS\FarmingGPSLib\obj\Debug\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>C:\Binaries\FarmingGPS\FarmingGPSLib\obj\Debug\</BaseIntermediateOutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -29,7 +29,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>C:\Binaries\FarmingGPS\FarmingGPSLib\bin\Release\</OutputPath>
-	<BaseIntermediateOutputPath>C:\Binaries\FarmingGPS\FarmingGPSLib\obj\Release\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>C:\Binaries\FarmingGPS\FarmingGPSLib\obj\Release\</BaseIntermediateOutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -55,7 +55,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugSIM|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>C:\Binaries\FarmingGPS\FarmingGPSLib\bin\Debug\</OutputPath>
-	<BaseIntermediateOutputPath>C:\Binaries\FarmingGPS\FarmingGPSLib\obj\Debug\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>C:\Binaries\FarmingGPS\FarmingGPSLib\obj\Debug\</BaseIntermediateOutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -122,6 +122,7 @@
     <Compile Include="Equipment\Win32\DCB.cs" />
     <Compile Include="Equipment\Win32\OVERLAPPED.cs" />
     <Compile Include="Equipment\Win32\Win32Com.cs" />
+    <Compile Include="FarmingModes\SeedingMode.cs" />
     <Compile Include="FieldItems\FieldRateTracker.cs" />
     <Compile Include="Settings\BogBalle\Calibrator.cs" />
     <Compile Include="Equipment\BogBalle\L2Plus.cs" />

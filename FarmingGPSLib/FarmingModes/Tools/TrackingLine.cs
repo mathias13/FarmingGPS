@@ -27,33 +27,46 @@ namespace FarmingGPSLib.FarmingModes.Tools
 
         private bool _active;
 
+        private bool _headland;
+
+        private IGeometry _startPoint = null;
+
+        private IGeometry _endPoint = null;
+
         protected ILineString _line;
 
         protected ILineSegment _extendedLine = null;
 
         #endregion
 
-        public TrackingLine(ILineString line)
+        public TrackingLine(ILineString line, bool headland)
         {
             _depleted = false;
             _active = false;
             _line = line;
-            if (line.Coordinates.Count == 2)
+            _headland = headland;
+            if (!headland)
             {
                 _extendedLine = new LineSegment(line.Coordinates[0], line.Coordinates[1]);
-                Coordinate p0 = HelperClassCoordinate.ComputePoint(line.Coordinates[0], _extendedLine.Angle, -25.0);
-                Coordinate p1 = HelperClassCoordinate.ComputePoint(line.Coordinates[1], _extendedLine.Angle, 25.0);
+                Coordinate p0 = HelperClassCoordinate.ComputePoint(line.Coordinates[0], _extendedLine.Angle, -40.0);
+                Coordinate p1 = HelperClassCoordinate.ComputePoint(line.Coordinates[1], _extendedLine.Angle, 40.0);
                 _extendedLine = new LineSegment(p0, p1);
             }
         }
 
-        public OrientationToLine GetOrientationToLine(Coordinate point, DotSpatial.Positioning.Azimuth directionOfTravel, bool useExtendedLine)
+        public TrackingLine(ILineString line, IGeometry startPoint, IGeometry endPoint, bool headland) : this(line, headland)
+        {
+            _startPoint = startPoint;
+            _endPoint = endPoint;
+        }
+
+        public OrientationToLine GetOrientationToLine(Coordinate point, DotSpatial.Positioning.Azimuth directionOfTravel)
         {
             Coordinate p0 = Coordinate.Empty;
             Coordinate p1 = Coordinate.Empty;
             double tempDistance = 0.0;
             double distance = double.MaxValue;
-            if (_extendedLine != null && useExtendedLine)
+            if (_extendedLine != null  && !_headland)
             {
                 p0 = _extendedLine.P0;
                 p1 = _extendedLine.P1;
@@ -90,11 +103,11 @@ namespace FarmingGPSLib.FarmingModes.Tools
             return new OrientationToLine(side, distance);
         }
         
-        public double GetDistanceToLine(Coordinate point, bool useExtendedLine)
+        public double GetDistanceToLine(Coordinate point)
         {
             double tempDistance = 0.0;
             double distance = double.MaxValue;
-            if (_extendedLine != null && useExtendedLine)
+            if (_extendedLine != null && !_headland)
                 distance = CgAlgorithms.DistancePointLine(point, _extendedLine.P0, _extendedLine.P1);
             else
             {
@@ -179,6 +192,16 @@ namespace FarmingGPSLib.FarmingModes.Tools
         public ILineString Line
         {
             get { return _line; }
+        }
+
+        public IGeometry StartPoint
+        {
+            get { return _startPoint; }
+        }
+
+        public IGeometry EndPoint
+        {
+            get { return _endPoint; }
         }
 
         public override bool Equals(object obj)

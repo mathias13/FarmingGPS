@@ -13,7 +13,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
 
         #endregion
 
-        public TrackingLineWithEvent(ILineString line, string eventMessage, double distanceToEvent, ILineSegment end1, ILineSegment end2): base(line)
+        public TrackingLineWithEvent(ILineString line, string eventMessage, double distanceToEvent, ILineSegment end1, ILineSegment end2): base(line, false)
         {
             _eventMessage = eventMessage;
             _distanceToEvent = distanceToEvent;       
@@ -26,6 +26,11 @@ namespace FarmingGPSLib.FarmingModes.Tools
         }
 
         public bool EventFired(Azimuth directionOfTravel, Coordinate coord)
+        {
+            return false;
+        }
+
+        public bool EventFired(Azimuth directionOfTravel, ILineString equipmentCoords)
         {
             return false;
         }

@@ -13,5 +13,6 @@ namespace FarmingGPSLib.FarmingModes.Tools
 
         bool EventFired(Azimuth directionOfTravel, Coordinate coord);
 
+        bool EventFired(Azimuth directionOfTravel, ILineString equipmentCoords);
     }
 }

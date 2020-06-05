@@ -398,16 +398,22 @@ namespace FarmingGPS
                     {
                         if (_farmingMode != null)
                         {
-                            TrackingLine newTrackingLine = _farmingMode.GetClosestLine(coordinates[coordinates.Length - 1].Center);
-                            if (_activeTrackingLine == null)
-                                _activeTrackingLine = newTrackingLine;
-                            else if (!_activeTrackingLine.Equals(newTrackingLine))
+                            double distanceToTrackingLine = double.MaxValue;
+                            if (_activeTrackingLine != null)
+                                distanceToTrackingLine = _activeTrackingLine.GetDistanceToLine(coordinates[coordinates.Length - 1].Center);
+                            if (distanceToTrackingLine > 1.0)
                             {
-                                if (_fieldTracker.GetTrackingLineCoverage(_activeTrackingLine) > 0.97)
-                                    _activeTrackingLine.Depleted = true;
+                                TrackingLine newTrackingLine = _farmingMode.GetClosestLine(coordinates[coordinates.Length - 1].Center);
+                                if (_activeTrackingLine == null)
+                                    _activeTrackingLine = newTrackingLine;
+                                else if (!_activeTrackingLine.Equals(newTrackingLine))
+                                {
+                                    if (_fieldTracker.GetTrackingLineCoverage(_activeTrackingLine) > 0.97)
+                                        _activeTrackingLine.Depleted = true;
 
-                                _activeTrackingLine.Active = false;
-                                _activeTrackingLine = newTrackingLine;
+                                    _activeTrackingLine.Active = false;
+                                    _activeTrackingLine = newTrackingLine;
+                                }
                             }
                         }
 
@@ -748,23 +754,18 @@ namespace FarmingGPS
                 rightTip = _equipment.GetRightTip(vechileCoordinate, actualHeading);
             }
 
-            if (_farmingMode != null)
+            if (_farmingMode != null && !_vechile.IsReversing)
+            {
                 _farmingMode.UpdateEvents(equipmentCoordinate, actualHeading);
+                _farmingMode.UpdateEvents(new LineString(new Coordinate[2] { leftTip, rightTip }), actualHeading);
+            }
             
             if (_fieldRateTracker != null)
                 _fieldRateTracker.UpdatePosition(leftTip, rightTip);
-
-            _coordinateUpdateStructQueueSecondaryTasks.Enqueue(new CoordinateUpdateStruct() { LeftTip = leftTip, RightTip = rightTip, Center = vechileCoordinate, Heading = actualHeading, Reversing = _vechile.IsReversing });
-            _coordinateUpdateStructQueueVisual.Enqueue(new CoordinateUpdateStruct() { LeftTip = leftTip, RightTip = rightTip, Center = vechileCoordinate, Heading = actualHeading, Reversing = _vechile.IsReversing });
             
-
             if (_activeTrackingLine != null)
             {
-                OrientationToLine orientationToLine;
-                if (_farmingMode.TrackingLinesHeadland.Contains(_activeTrackingLine))
-                    orientationToLine = _activeTrackingLine.GetOrientationToLine(vechileCoordinate, actualHeading, false);
-                else
-                    orientationToLine = _activeTrackingLine.GetOrientationToLine(vechileCoordinate, actualHeading, true);
+                OrientationToLine orientationToLine = _activeTrackingLine.GetOrientationToLine(vechileCoordinate, actualHeading);
                 _activeTrackingLine.Active = true;
                 LightBar.Direction direction = LightBar.Direction.Left;
                 if (orientationToLine.SideOfLine == OrientationToLine.Side.Left)
@@ -772,6 +773,9 @@ namespace FarmingGPS
 
                 _lightBarQueue.Enqueue(new LightBarUpdateStruct() { Direction = direction, Distance = Distance.FromMeters(orientationToLine.DistanceTo) });
             }
+
+            _coordinateUpdateStructQueueSecondaryTasks.Enqueue(new CoordinateUpdateStruct() { LeftTip = leftTip, RightTip = rightTip, Center = vechileCoordinate, Heading = actualHeading, Reversing = _vechile.IsReversing });
+            _coordinateUpdateStructQueueVisual.Enqueue(new CoordinateUpdateStruct() { LeftTip = leftTip, RightTip = rightTip, Center = vechileCoordinate, Heading = actualHeading, Reversing = _vechile.IsReversing });
         }
 
         private void _receiver_PositionUpdate(object sender, Position actualPosition)
