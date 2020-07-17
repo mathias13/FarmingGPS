@@ -788,8 +788,8 @@
         </ColorKeyFrameCollection>
     </ColorAnimationUsingKeyFrames>
 
-    <Color x:Key="FIELD_OUTLINE">#FFFF0000</Color>
+    <SolidColorBrush x:Key="FIELD_OUTLINE">#FFFF0000</SolidColorBrush>
     <SolidColorBrush x:Key="FIELD_FILL">#FF008000</SolidColorBrush>
     <SolidColorBrush x:Key="TRACK_FILL">#FF32CD32</SolidColorBrush>
-    <SolidColorBrush x:Key="TRACK_HOLE">#FFFF0000</SolidColorBrush>
+    <SolidColorBrush x:Key="TRACK_HOLE">#FF008000</SolidColorBrush>
 </ResourceDictionary>

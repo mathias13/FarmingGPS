@@ -1,10 +1,13 @@
 ﻿using DotSpatial.Positioning;
+using DotSpatial.Topology;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
 using HelixToolkit.Wpf;
 using log4net;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -24,9 +27,15 @@ namespace FarmingGPS.Visualization
         struct PolygonData
         {
             public ulong PolygonSum { get; set; }
-            public IList<Point3D> Polygon { get; set; }
-            public IList<Point> Polygon2D { get; set; }
-            public IList<Vector3D> Vectors { get; set; }
+
+            public Coordinate[] Coordinates { get; set; }
+        }
+
+        struct MeshData
+        {
+            public IList<Point3D> Points { get; set; }
+
+            public Int32Collection Indices { get; set; }
         }
 
         #region Consts
@@ -81,48 +90,24 @@ namespace FarmingGPS.Visualization
 
         #region Private Variables
         
-        private Point _lastPoint = new Point(0.0, 0.0);
+        private System.Windows.Point _lastPoint = new System.Windows.Point(0.0, 0.0);
 
         private double _lastAngle = 0.0;
 
         private DotSpatial.Topology.Coordinate _minPoint;
 
-        private IDictionary<TrackingLine, ModelVisual3D> _trackingLines = new Dictionary<TrackingLine, ModelVisual3D>();
+        private IDictionary<TrackingLine, MeshData> _trackingLines = new Dictionary<TrackingLine, MeshData>();
 
         private object _syncObject = new object();
 
-        private DiffuseMaterial _lineNormalMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.Blue));
-
-        private DiffuseMaterial _lineDepletedMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.White));
-
-        private DiffuseMaterial _lineActiveMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.Red));
-
-        private DiffuseMaterial _lineFocusMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.Red));
-
-        private SolidColorBrush _lineActiveColor = new SolidColorBrush(Colors.Red);
-
-        private SolidColorBrush _lineFocusColor = new SolidColorBrush(Colors.Red);
-
-        private Color _fieldOutlineColor = Colors.Black;
-
-        private DiffuseMaterial _fieldFillMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.LightBlue));
-
-        private DiffuseMaterial _fieldTrackMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.LightBlue));
-
-        private DiffuseMaterial _fieldTrackHoleMaterial = new DiffuseMaterial(new SolidColorBrush(Colors.LightBlue));
-        
-        private IDictionary<int, MeshVisual3D> _trackMesh = new Dictionary<int, MeshVisual3D>();
+        private IDictionary<int, MeshData> _trackMesh = new Dictionary<int, MeshData>();
 
         private IDictionary<int, ulong> _trackSums = new Dictionary<int, ulong>();
 
-        private IDictionary<int, IList<MeshVisual3D>> _trackMeshHoles = new Dictionary<int, IList<MeshVisual3D>>();
+        private IDictionary<int, IList<MeshData>> _trackMeshHoles = new Dictionary<int, IList<MeshData>>();
 
         private IDictionary<int, IList<ulong>> _trackSumsHoles = new Dictionary<int, IList<ulong>>();
 
-        private ModelVisual3D _outlineModel = new ModelVisual3D();
-
-        private MeshVisual3D _fieldMesh = null;
-        
         private bool _viewTopActive = false;
 
         private bool _viewTrackLine = false;
@@ -138,15 +123,12 @@ namespace FarmingGPS.Visualization
         public FarmingVisualizer()
         {
             InitializeComponent();
-            _fieldFillMaterial.Freeze();
-            _fieldTrackMaterial.Freeze();
-            _fieldTrackHoleMaterial.Freeze();
             this.Loaded += FarmingVisualizer_Loaded;
         }
 
         #region Public Methods
         
-        public void UpdatePosition(Point position, double angle)
+        public void UpdatePosition(System.Windows.Point position, double angle)
         {
             if(Dispatcher.Thread.Equals(Thread.CurrentThread))
             {
@@ -160,7 +142,7 @@ namespace FarmingGPS.Visualization
                 _lastAngle = angle;
             }
             else
-                Dispatcher.BeginInvoke(new Action<Point,double>(UpdatePosition), System.Windows.Threading.DispatcherPriority.Render, position, angle);
+                Dispatcher.BeginInvoke(new Action<System.Windows.Point,double>(UpdatePosition), System.Windows.Threading.DispatcherPriority.Render, position, angle);
         }
 
         public void UpdatePosition(DotSpatial.Topology.Coordinate coord, Azimuth bearing)
@@ -180,7 +162,7 @@ namespace FarmingGPS.Visualization
                 SetValue(ShiftYProperty, y);
                 bearing = bearing.Subtract(90).Normalize();
                 SetValue(ShiftHeadingProperty, bearing.DecimalDegrees);
-                _lastPoint = new Point((double)GetValue(ShiftXProperty), (double)GetValue(ShiftYProperty));
+                _lastPoint = new System.Windows.Point((double)GetValue(ShiftXProperty), (double)GetValue(ShiftYProperty));
                 _lastAngle = (double)GetValue(ShiftHeadingProperty);
             }
             else
@@ -192,22 +174,14 @@ namespace FarmingGPS.Visualization
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
             {
                 _viewTrackLine = true;
-                if (_focusedTrackline != null)
-                {
-                    if (_focusedTrackline.Depleted)
-                        DepletedTrackingLine(_trackingLines[_focusedTrackline]);
-                    else
-                        NormalTrackingLine(_trackingLines[_focusedTrackline]);
-                }
                 SetValue(ShiftXProperty, trackingLine.MainLine.P0.X - _minPoint.X);
                 SetValue(ShiftYProperty, trackingLine.MainLine.P0.Y - _minPoint.Y);
                 double angle = 360 - trackingLine.Angle;
                 SetValue(ShiftHeadingProperty, angle);
                 if (!_trackingLines.ContainsKey(trackingLine))
                     return;
-                ModelVisual3D visualLine = _trackingLines[trackingLine];
-                FocusTrackingLine(visualLine);
                 _focusedTrackline = trackingLine;
+                RedrawLines();
                 SetValue(CameraPositionProperty, VIEW_TRACKLINE_POSITION);
                 SetValue(CameraLookDirectionProperty, VIEW_TRACKLINE_LOOK_DIRECTION);
                 SetValue(CameraNearPlaneDistanceProperty, VIEW_TRACKLINE_NEAR_PLANE);
@@ -224,11 +198,8 @@ namespace FarmingGPS.Visualization
                 _viewTrackLine = false;
                 if (_focusedTrackline == null)
                     return;
-                if (_focusedTrackline.Depleted)
-                    DepletedTrackingLine(_trackingLines[_focusedTrackline]);
-                else
-                    NormalTrackingLine(_trackingLines[_focusedTrackline]);
                 _focusedTrackline = null;
+                RedrawLines();
                 UpdatePosition(_lastPoint, _lastAngle);
                 UpdateZoomLevel();
             }
@@ -279,41 +250,25 @@ namespace FarmingGPS.Visualization
                 return;
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
             {
-                LineGeometryBuilder builder = new LineGeometryBuilder(_viewPort.Children[0]);
-                List<Point3D> linePoints = new List<Point3D>();
-                for (int i = 0; i < trackingLine.Points.Count - 1; i++)
-                {
-                    double x1 = trackingLine.Points[i].X;
-                    double y1 = trackingLine.Points[i].Y;
-                    double x2 = trackingLine.Points[i + 1].X;
-                    double y2 = trackingLine.Points[i + 1].Y;
-                    if (_minPoint != null)
-                    {
-                        x1 -= _minPoint.X;
-                        y1 -= _minPoint.Y;
-                        x2 -= _minPoint.X;
-                        y2 -= _minPoint.Y;
-                    }
-                    linePoints.Add(new Point3D(x1, y1, LINE_Z_INDEX));
-                    linePoints.Add(new Point3D(x2, y2, LINE_Z_INDEX));
-                }
-
-                Point3DCollection points = builder.CreatePositions(linePoints, LINE_THICKNESS, 0.0, null);
-                Int32Collection indices = builder.CreateIndices(linePoints.Count);
-
-                Mesh3D mesh3D = new Mesh3D(points, indices);
-                GeometryModel3D model3D = new GeometryModel3D(mesh3D.ToMeshGeometry3D(), _lineActiveMaterial);
-                model3D.BackMaterial = _lineNormalMaterial;
-                ModelVisual3D modelVisual = new ModelVisual3D();
-                modelVisual.Content = model3D;
-
-                trackingLine.ActiveChanged += trackingLine_ActiveChanged;
-                trackingLine.DepletedChanged += trackingLine_DepletedChanged;
-                _trackingLines.Add(trackingLine, modelVisual);
-                _viewPort.Children.Add(modelVisual);
+                DoAddLine(trackingLine);
+                RedrawLines();
             }
             else
                 Dispatcher.Invoke(new Action<TrackingLine>(AddLine), System.Windows.Threading.DispatcherPriority.Normal, trackingLine);
+        }
+
+        public void AddLines(TrackingLine[] trackingLines)
+        {
+            if (Dispatcher.Thread.Equals(Thread.CurrentThread))
+            {
+                foreach(var trackingLine in trackingLines)
+                    if(!_trackingLines.ContainsKey(trackingLine))
+                        DoAddLine(trackingLine);
+                RedrawLines();
+            }
+            else
+                Dispatcher.Invoke(new Action<TrackingLine[]>(AddLines), System.Windows.Threading.DispatcherPriority.Normal, trackingLines);
+
         }
 
         public void DeleteLine(TrackingLine trackingLine)
@@ -322,17 +277,26 @@ namespace FarmingGPS.Visualization
             {
                 if (_trackingLines.ContainsKey(trackingLine))
                 {
-                    ModelVisual3D lineVisual = _trackingLines[trackingLine];
-                    _viewPort.Children.Remove(lineVisual);
-                    _trackingLines.Remove(trackingLine);
-                    trackingLine.ActiveChanged -= trackingLine_ActiveChanged;
-                    trackingLine.DepletedChanged -= trackingLine_DepletedChanged;
+                    DoDeleteLine(trackingLine);
+                    RedrawLines();
                 }
             }
             else
                 Dispatcher.Invoke(new Action<TrackingLine>(DeleteLine), System.Windows.Threading.DispatcherPriority.Normal, trackingLine);
         }
-        
+        public void DeleteLines(TrackingLine[] trackingLines)
+        {
+            if (Dispatcher.Thread.Equals(Thread.CurrentThread))
+            {
+                foreach (var trackingLine in trackingLines)
+                    if (_trackingLines.ContainsKey(trackingLine))
+                        DoDeleteLine(trackingLine);
+                RedrawLines();
+            }
+            else
+                Dispatcher.Invoke(new Action<TrackingLine[]>(DeleteLines), System.Windows.Threading.DispatcherPriority.Normal, trackingLines);
+        }
+
         public void SetField(IField field)
         {
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
@@ -417,18 +381,9 @@ namespace FarmingGPS.Visualization
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
             {
                 TrackingLine trackingLine = (TrackingLine)sender;
-                if (!_trackingLines.ContainsKey(trackingLine))
+                if (!_trackingLines.ContainsKey(trackingLine) || !active)
                     return;
-                ModelVisual3D visualLine = _trackingLines[trackingLine];
-                if (active)
-                    ActivateTrackingLine(visualLine);
-                else
-                {
-                    if (trackingLine.Depleted)
-                        DepletedTrackingLine(visualLine);
-                    else
-                        NormalTrackingLine(visualLine);
-                }
+                RedrawLines();
             }
             else
                 Dispatcher.Invoke(new Action<object, bool>(trackingLine_ActiveChanged), System.Windows.Threading.DispatcherPriority.Normal, sender, active);
@@ -441,36 +396,12 @@ namespace FarmingGPS.Visualization
                 TrackingLine trackingLine = (TrackingLine)sender;
                 if (!_trackingLines.ContainsKey(trackingLine))
                     return;
-                ModelVisual3D visualLine = _trackingLines[trackingLine];
-                if (depleted)
-                    DepletedTrackingLine(visualLine);
-                else
-                    NormalTrackingLine(visualLine);
+                RedrawLines();
             }
             else
                 Dispatcher.Invoke(new Action<object, bool>(trackingLine_DepletedChanged), System.Windows.Threading.DispatcherPriority.Normal, sender, depleted);
         }
   
-        private void ActivateTrackingLine(ModelVisual3D visualLine)
-        {
-            ((GeometryModel3D)visualLine.Content).BackMaterial = _lineActiveMaterial;
-        }
-
-        private void DepletedTrackingLine(ModelVisual3D visualLine)
-        {
-            ((GeometryModel3D)visualLine.Content).BackMaterial = _lineDepletedMaterial;
-        }
-
-        private void NormalTrackingLine(ModelVisual3D visualLine)
-        {
-            ((GeometryModel3D)visualLine.Content).BackMaterial = _lineNormalMaterial;
-        }
-
-        private void FocusTrackingLine(ModelVisual3D visualLine)
-        {
-            ((GeometryModel3D)visualLine.Content).BackMaterial = _lineFocusMaterial;
-        }
-
         #endregion
 
         #region FieldTrackerEvents
@@ -483,9 +414,13 @@ namespace FarmingGPS.Visualization
                 {
                     PolygonData polygonData = GetPolygonData(e.Polygon.Shell.Coordinates, FIELD_TRACK_Z_INDEX);
                     if (polygonData.PolygonSum != _trackSums[e.ID])
+                    {
                         Dispatcher.Invoke(new Action<PolygonData, int>(UpdatePolygon), System.Windows.Threading.DispatcherPriority.Render, polygonData, e.ID);
+                        _trackSums[e.ID] = polygonData.PolygonSum;
+                    }
 
                     IList<ulong> holePolygonSums = new List<ulong>(_trackSumsHoles[e.ID]);
+                    bool redrawHoles = false;
                     for (int i = 0; i < e.Polygon.Holes.Length; i++)
                     {
                         PolygonData holePolygonData = GetPolygonData(e.Polygon.Holes[i].Coordinates, FIELD_TRACK_HOLES_Z_INDEX);
@@ -494,8 +429,9 @@ namespace FarmingGPS.Visualization
                             holePolygonSums.Remove(holePolygonData.PolygonSum);
                         else
                         {
-                            double area = Math.Abs(DotSpatial.Topology.Algorithm.CgAlgorithms.SignedArea(e.Polygon.Holes[i].Coordinates));
-                            Dispatcher.Invoke(new Action<PolygonData, int, bool>(AddPolygonHole), System.Windows.Threading.DispatcherPriority.Render, holePolygonData, e.ID, area > FIELD_TRACK_HOLE_RED_MAX_AREA);
+                            _trackSumsHoles[e.ID].Add(holePolygonData.PolygonSum);
+                            Dispatcher.Invoke(new Action<PolygonData, int>(AddPolygonHole), System.Windows.Threading.DispatcherPriority.Render, holePolygonData, e.ID);
+                            redrawHoles = true;
                         }
                     }
 
@@ -503,10 +439,12 @@ namespace FarmingGPS.Visualization
                     {
                         int holeIndex = _trackSumsHoles[e.ID].IndexOf(holePolygonSum);
                         Dispatcher.Invoke(new Action<int, int>(RemovePolygonHole), System.Windows.Threading.DispatcherPriority.Render, e.ID, holeIndex);
-                        _trackMeshHoles[e.ID].RemoveAt(holeIndex);
                         _trackSumsHoles[e.ID].RemoveAt(holeIndex);
+                        redrawHoles = true;
                     }
 
+                    if (redrawHoles)
+                        Dispatcher.Invoke(new Action(RedrawHoles), System.Windows.Threading.DispatcherPriority.Render);
                 }
                 else
                     AddCompletePolygon(e);
@@ -522,18 +460,17 @@ namespace FarmingGPS.Visualization
         private PolygonData GetPolygonData(IList<DotSpatial.Topology.Coordinate> coordinates, double zIndex)
         {
             PolygonData data = new PolygonData();
-            data.Polygon = new List<Point3D>();
-            data.Polygon2D = new List<Point>();
-            data.Vectors = new List<Vector3D>();
+            List<Coordinate> newCoordinates = new List<Coordinate>();
+
             for(int i = 0; i < coordinates.Count - 1; i++)
             {
                 double x = coordinates[i].X - _minPoint.X;
                 double y = coordinates[i].Y - _minPoint.Y;
-                data.Polygon.Add(new Point3D(x, y, zIndex));
-                data.Polygon2D.Add(new Point(x, y));
+                newCoordinates.Add(new Coordinate(x, y, zIndex));
                 data.PolygonSum += (ulong)(x * 10) + (ulong)(y * 10);
-                data.Vectors.Add(new Vector3D(0.0, 0.0, 1.0));
             }
+
+            data.Coordinates = newCoordinates.ToArray();
             return data;
         }
 
@@ -543,15 +480,20 @@ namespace FarmingGPS.Visualization
             {
                 PolygonData polygonData = GetPolygonData(e.Polygon.Shell.Coordinates, FIELD_TRACK_Z_INDEX);
                 Dispatcher.Invoke(new Action<PolygonData, int>(AddPolygon), System.Windows.Threading.DispatcherPriority.Render, polygonData, e.ID);
-
-                _trackMeshHoles.Add(e.ID, new List<MeshVisual3D>());
+                _trackSums.Add(e.ID, polygonData.PolygonSum);
                 _trackSumsHoles.Add(e.ID, new List<ulong>());
+
+                bool redrawHoles = false;
                 foreach (DotSpatial.Topology.ILinearRing hole in e.Polygon.Holes)
                 {
-                    double area = Math.Abs(DotSpatial.Topology.Algorithm.CgAlgorithms.SignedArea(hole.Coordinates));
                     PolygonData holePolygonData = GetPolygonData(hole.Coordinates, FIELD_TRACK_HOLES_Z_INDEX);
-                    Dispatcher.Invoke(new Action<PolygonData, int, bool>(AddPolygonHole), System.Windows.Threading.DispatcherPriority.Render, holePolygonData, e.ID, area > FIELD_TRACK_HOLE_RED_MAX_AREA);
+                    Dispatcher.Invoke(new Action<PolygonData, int>(AddPolygonHole), System.Windows.Threading.DispatcherPriority.Render, holePolygonData);
+                    _trackSumsHoles[e.ID].Add(holePolygonData.PolygonSum);
+                    redrawHoles = true;
                 }
+
+                if (redrawHoles)
+                    Dispatcher.Invoke(new Action(RedrawHoles), System.Windows.Threading.DispatcherPriority.Render);
 
             }
             catch(Exception e1)
@@ -562,51 +504,135 @@ namespace FarmingGPS.Visualization
 
         private void UpdatePolygon(PolygonData polygonData, int polygonId)
         {
-            MeshVisual3D mesh = _trackMesh[polygonId];
-            _viewPort.Children.Remove(mesh);
-            Mesh3D mesh3D = new Mesh3D(polygonData.Polygon, CuttingEarsTriangulator.Triangulate(polygonData.Polygon2D));
-            mesh.Mesh = mesh3D;
-            _viewPort.Children.Add(mesh);
-            _trackSums[polygonId] = polygonData.PolygonSum;
+            _fieldTrack.Positions = null;
+            _fieldTrack.TriangleIndices = null;
+
+            var polygonPositions = new Point3DCollection();
+            var polygonPoints = new List<System.Windows.Point>();
+            foreach (var coord in polygonData.Coordinates)
+            {
+                polygonPositions.Add(new Point3D(coord.X, coord.Y, coord.Z));
+                polygonPoints.Add(new System.Windows.Point(coord.X, coord.Y));
+            }
+
+            var meshData = new MeshData() { Points = polygonPositions, Indices = CuttingEarsTriangulator.Triangulate(polygonPoints) };
+            _trackMesh[polygonId] = meshData;
+
+            var offset = 0;
+            var newPositions = new Point3DCollection();
+            var newIndices = new Int32Collection();
+            foreach (var mesh in _trackMesh.Values)
+            {
+                foreach (var point in mesh.Points)
+                    newPositions.Add(point);
+                foreach (var indice in mesh.Indices)
+                    newIndices.Add(indice + offset);
+                offset += mesh.Points.Count;
+            }
+
+            _fieldTrack.Positions = newPositions;
+            _fieldTrack.TriangleIndices = newIndices;
         }
         
         private void AddPolygon(PolygonData polygonData, int polygonId)
         {
-            Mesh3D mesh3D = new Mesh3D(polygonData.Polygon, CuttingEarsTriangulator.Triangulate(polygonData.Polygon2D));
-            MeshVisual3D mesh = new MeshVisual3D();
-            mesh.FaceMaterial = _fieldTrackMaterial;
-            mesh.EdgeDiameter = 0;
-            mesh.VertexRadius = 0;
-            mesh.Mesh = mesh3D;
+            _fieldTrack.Positions = null;
+            _fieldTrack.TriangleIndices = null;
+            var polygonPositions = new Point3DCollection();
+            var polygonPoints = new List<System.Windows.Point>();
+            foreach (var coord in polygonData.Coordinates)
+            {
+                polygonPositions.Add(new Point3D(coord.X, coord.Y, coord.Z));
+                polygonPoints.Add(new System.Windows.Point(coord.X, coord.Y));
+            }
 
-            _trackMesh.Add(polygonId, mesh);
-            _trackSums.Add(polygonId, polygonData.PolygonSum);
-            _viewPort.Children.Add(mesh);
+            var meshData = new MeshData() { Points = polygonPositions, Indices = CuttingEarsTriangulator.Triangulate(polygonPoints) };
+            _trackMesh.Add(polygonId, meshData);
+            _trackMeshHoles.Add(polygonId, new List<MeshData>());
+
+            var offset = 0;
+            var newPositions = new Point3DCollection();
+            var newIndices = new Int32Collection();
+            foreach (var mesh in _trackMesh.Values)
+            {
+                foreach (var point in mesh.Points)
+                    newPositions.Add(point);
+                foreach (var indice in mesh.Indices)
+                    newIndices.Add(indice + offset);
+                offset += mesh.Points.Count;
+            }
+
+            _fieldTrack.Positions = newPositions;
+            _fieldTrack.TriangleIndices = newIndices;
+
         }
 
-        private void AddPolygonHole(PolygonData polygonData, int polygonId, bool redArea)
+        private void AddPolygonHole(PolygonData polygonData, int polygonId)
         {
-            Mesh3D holeMesh3D = new Mesh3D(polygonData.Polygon, CuttingEarsTriangulator.Triangulate(polygonData.Polygon2D));
-            MeshVisual3D holeMesh = new MeshVisual3D();
-            holeMesh.FaceMaterial = redArea ? _fieldFillMaterial : _fieldTrackHoleMaterial;
-            holeMesh.EdgeDiameter = 0;
-            holeMesh.VertexRadius = 0;
-            holeMesh.Mesh = holeMesh3D;
-            _trackMeshHoles[polygonId].Add(holeMesh);
-            _trackSumsHoles[polygonId].Add(polygonData.PolygonSum);
-            _viewPort.Children.Add(holeMesh);
+            var polygonPositions = new Point3DCollection();
+            var polygonPoints = new List<System.Windows.Point>();
+            foreach (var coord in polygonData.Coordinates)
+            {
+                polygonPositions.Add(new Point3D(coord.X, coord.Y, coord.Z));
+                polygonPoints.Add(new System.Windows.Point(coord.X, coord.Y));
+            }
+
+            var meshData = new MeshData() { Points = polygonPositions, Indices = CuttingEarsTriangulator.Triangulate(polygonPoints) };
+            _trackMeshHoles[polygonId].Add(meshData);
+        }
+
+        private void RedrawHoles()
+        {
+            _fieldTrackHoles.Positions = null;
+            _fieldTrackHoles.TriangleIndices = null;
+
+            var offset = 0;
+            var newPositions = new Point3DCollection();
+            var newIndices = new Int32Collection();
+            foreach (var polygonHoles in _trackMeshHoles.Values)
+            {
+                foreach (var mesh in polygonHoles)
+                {
+                    foreach (var point in mesh.Points)
+                        newPositions.Add(point);
+                    foreach (var indice in mesh.Indices)
+                        newIndices.Add(indice + offset);
+                    offset += mesh.Points.Count;
+                }
+            }
+
+            _fieldTrackHoles.Positions = newPositions;
+            _fieldTrackHoles.TriangleIndices = newIndices;
         }
 
         private void RemovePolygon(int polygonId)
         {
-            _viewPort.Children.Remove(_trackMesh[polygonId]);
+            _fieldTrack.Positions = null;
+            _fieldTrack.TriangleIndices = null;
+
+            _trackMesh.Remove(polygonId);
+
+            var offset = 0;
+            var positions = new Point3DCollection();
+            var indices = new Int32Collection();
+            foreach (var mesh in _trackMesh.Values)
+            {
+                foreach (var point in mesh.Points)
+                    positions.Add(point);
+                foreach (var indice in mesh.Indices)
+                    indices.Add(indice + offset);
+                offset += mesh.Points.Count;
+            }
+
+            _fieldTrack.Positions = positions;
+            _fieldTrack.TriangleIndices = indices;
         }
 
         private void RemovePolygonHole(int polygonId, int holeIndex)
-        {
-            _viewPort.Children.Remove(_trackMeshHoles[polygonId][holeIndex]);
+        {            
+            _trackMeshHoles[polygonId].RemoveAt(holeIndex);
         }
-        
+
         private void fieldTracker_PolygonUpdated(object sender, PolygonUpdatedEventArgs e)
         {
             UpdateFieldtrack(e);                    
@@ -616,20 +642,23 @@ namespace FarmingGPS.Visualization
         {
             if (_trackMesh.ContainsKey(e.ID))
             {
-                Dispatcher.Invoke(new Action<int>(RemovePolygon), System.Windows.Threading.DispatcherPriority.Render, e.ID);
-                _trackMesh.Remove(e.ID);
                 _trackSums.Remove(e.ID);
+                Dispatcher.Invoke(new Action<int>(RemovePolygon), System.Windows.Threading.DispatcherPriority.Render, e.ID);
             }
 
             if (_trackMeshHoles.ContainsKey(e.ID))
             {
+                bool redrawHoles = false;
                 for (int i = 0; i < _trackSumsHoles[e.ID].Count; i++)
                 {
                     Dispatcher.Invoke(new Action<int,int>(RemovePolygonHole), System.Windows.Threading.DispatcherPriority.Render, e.ID, i);
                     Thread.Yield();
+                    redrawHoles = true;
                 }
-                _trackMeshHoles.Remove(e.ID);
                 _trackSumsHoles.Remove(e.ID);
+
+                if (redrawHoles)
+                    Dispatcher.Invoke(new Action(RedrawHoles), System.Windows.Threading.DispatcherPriority.Render);
             }
             
         }
@@ -662,61 +691,44 @@ namespace FarmingGPS.Visualization
 
         #region Private Methods
 
+        private void DoAddLine(TrackingLine trackingLine)
+        {
+            LineGeometryBuilder builder = new LineGeometryBuilder(_viewPort.Children[0]);
+            List<Point3D> linePoints = new List<Point3D>();
+            for (int i = 0; i < trackingLine.Points.Count - 1; i++)
+            {
+                double x1 = trackingLine.Points[i].X;
+                double y1 = trackingLine.Points[i].Y;
+                double x2 = trackingLine.Points[i + 1].X;
+                double y2 = trackingLine.Points[i + 1].Y;
+                if (_minPoint != null)
+                {
+                    x1 -= _minPoint.X;
+                    y1 -= _minPoint.Y;
+                    x2 -= _minPoint.X;
+                    y2 -= _minPoint.Y;
+                }
+                linePoints.Add(new Point3D(x1, y1, LINE_Z_INDEX));
+                linePoints.Add(new Point3D(x2, y2, LINE_Z_INDEX));
+            }
+
+            Point3DCollection points = builder.CreatePositions(linePoints, LINE_THICKNESS, 0.0, null);
+            Int32Collection indices = builder.CreateIndices(linePoints.Count);
+
+            trackingLine.ActiveChanged += trackingLine_ActiveChanged;
+            //trackingLine.DepletedChanged += trackingLine_DepletedChanged;
+            _trackingLines.Add(trackingLine, new MeshData() { Points = points, Indices = indices });
+        }
+
+        private void DoDeleteLine(TrackingLine trackingLine)
+        {
+            _trackingLines.Remove(trackingLine);
+            trackingLine.ActiveChanged -= trackingLine_ActiveChanged;
+            trackingLine.DepletedChanged -= trackingLine_DepletedChanged;
+        }
+
         private void FarmingVisualizer_Loaded(object sender, RoutedEventArgs e)
         {
-            object resource = TryFindResource("TRACK_LINE_ANIMATION");
-            if (resource != null && resource is ColorAnimationUsingKeyFrames)
-            {
-                this.RegisterName("LineActiveColor", _lineActiveColor);
-                ColorAnimationUsingKeyFrames animation = (ColorAnimationUsingKeyFrames)resource;
-                Storyboard.SetTargetName(animation, "LineActiveColor");
-                Storyboard.SetTargetProperty(animation, new PropertyPath(SolidColorBrush.ColorProperty));
-                _lineActiveMaterial = new DiffuseMaterial(_lineActiveColor);
-                Storyboard storyboard = new Storyboard();
-                storyboard.Children.Add(animation);
-                storyboard.Begin(this);
-            }
-
-            resource = TryFindResource("TRACK_LINE_FOCUS_ANIMATION");
-            if (resource != null && resource is ColorAnimationUsingKeyFrames)
-            {
-                this.RegisterName("LineFocusColor", _lineFocusColor);
-                ColorAnimationUsingKeyFrames animation = (ColorAnimationUsingKeyFrames)resource;
-                Storyboard.SetTargetName(animation, "LineFocusColor");
-                Storyboard.SetTargetProperty(animation, new PropertyPath(SolidColorBrush.ColorProperty));
-                _lineFocusMaterial = new DiffuseMaterial(_lineFocusColor);
-                Storyboard storyboard = new Storyboard();
-                storyboard.Children.Add(animation);
-                storyboard.Begin(this);
-            }
-
-            resource = TryFindResource("TRACK_LINE_INACTIVE");
-            if (resource != null && resource is SolidColorBrush)
-                _lineNormalMaterial = new DiffuseMaterial((SolidColorBrush)resource);
-
-            resource = TryFindResource("TRACK_LINE_DEPLETED");
-            if (resource != null && resource is SolidColorBrush)
-                _lineDepletedMaterial = new DiffuseMaterial((SolidColorBrush)resource);
-
-            resource = TryFindResource("FIELD_OUTLINE");
-            if (resource != null && resource is Color)
-                _fieldOutlineColor = (Color)resource;
-
-            resource = TryFindResource("FIELD_FILL");
-            if (resource != null && resource is SolidColorBrush)
-                _fieldFillMaterial = new DiffuseMaterial((SolidColorBrush)resource);
-
-            resource = TryFindResource("TRACK_FILL");
-            if (resource != null && resource is SolidColorBrush)
-                _fieldTrackMaterial = new DiffuseMaterial((SolidColorBrush)resource);
-
-            resource = TryFindResource("TRACK_HOLE");
-            if (resource != null && resource is SolidColorBrush)
-                _fieldTrackHoleMaterial = new DiffuseMaterial((SolidColorBrush)resource);
-
-            _fieldTrackMaterial.Freeze();
-            _fieldTrackHoleMaterial.Freeze();
-
             UpdateZoomLevel();
         }
 
@@ -744,11 +756,9 @@ namespace FarmingGPS.Visualization
 
         private void DrawOutline(IList<DotSpatial.Topology.Coordinate> coordinates)
         {
-            _viewPort.Children.Remove(_outlineModel);
-            LineGeometryBuilder builder = new LineGeometryBuilder(_viewPort.Children[0]);
+            LineGeometryBuilder builder = new LineGeometryBuilder(_fieldVisual);
             List<Point3D> outlinePoints = new List<Point3D>();
 
-            Point3DCollection polygonPoints = new Point3DCollection();
             for (int i = 0; i < coordinates.Count - 1; i++)
             {
                 outlinePoints.Add(new Point3D(coordinates[i].X - _minPoint.X, coordinates[i].Y - _minPoint.Y, LINE_Z_INDEX));
@@ -757,45 +767,102 @@ namespace FarmingGPS.Visualization
             outlinePoints.Add(outlinePoints[outlinePoints.Count - 1]);
             outlinePoints.Add(outlinePoints[0]);
 
-            Point3DCollection points = builder.CreatePositions(outlinePoints, LINE_THICKNESS, 0.0, null);
-            Int32Collection indices = builder.CreateIndices(outlinePoints.Count);
-
-            Mesh3D outlienMesh3D = new Mesh3D(points, indices);
-            DiffuseMaterial outlineMaterial = new DiffuseMaterial(new SolidColorBrush(_fieldOutlineColor));
-            outlineMaterial.Freeze();
-            GeometryModel3D outlineModel3D = new GeometryModel3D(outlienMesh3D.ToMeshGeometry3D(), outlineMaterial);
-            outlineModel3D.BackMaterial = outlineMaterial;
-            outlineModel3D.Freeze();
-            _outlineModel = new ModelVisual3D();
-            _outlineModel.Content = outlineModel3D;
-            
-            _viewPort.Children.Add(_outlineModel);
+            _fieldOutline.Positions = builder.CreatePositions(outlinePoints, LINE_THICKNESS, 0.0, null);
+            _fieldOutline.TriangleIndices = builder.CreateIndices(outlinePoints.Count);
         }
 
         private void DrawFieldMesh(IList<DotSpatial.Topology.Coordinate> coordinates)
         {
-            if(_fieldMesh != null)
-                _viewPort.Children.Remove(_fieldMesh);
-
-            Polygon3D polygon = new Polygon3D();
-            Polygon polygon2D = new Polygon();
+            Point3DCollection points3D = new Point3DCollection(coordinates.Count - 1);
+            PointCollection points2D = new PointCollection(coordinates.Count - 1);
             
             for (int i = 0; i < coordinates.Count - 1; i++)
             {
-                polygon.Points.Add(new Point3D(coordinates[i].X - _minPoint.X, coordinates[i].Y - _minPoint.Y, FIELD_Z_INDEX));
-                polygon2D.Points.Add(new Point(coordinates[i].X - _minPoint.X, coordinates[i].Y - _minPoint.Y));
+                points3D.Add(new Point3D(coordinates[i].X - _minPoint.X, coordinates[i].Y - _minPoint.Y, FIELD_Z_INDEX));
+                points2D.Add(new System.Windows.Point(coordinates[i].X - _minPoint.X, coordinates[i].Y - _minPoint.Y));
             }
-            Mesh3D mesh3D = new Mesh3D(polygon.Points, polygon2D.Triangulate());
-            _fieldMesh = new MeshVisual3D();
-            DiffuseMaterial material = _fieldFillMaterial;
-            material.Freeze();
-            _fieldMesh.FaceMaterial = material;
-            _fieldMesh.EdgeDiameter = 0;
-            _fieldMesh.VertexRadius = 0;
-            _fieldMesh.Mesh = mesh3D;
-            _fieldMesh.Content.Freeze();
 
-            _viewPort.Children.Add(_fieldMesh);
+            _fieldMesh.Positions = points3D;
+            _fieldMesh.TriangleIndices = CuttingEarsTriangulator.Triangulate(points2D);
+        }
+
+        private void AddLine(List<Point3D> positions)
+        {
+
+        }
+
+        private void RedrawLines()
+        {
+            _trackLineFocus.Positions = null;
+            _trackLineFocus.TriangleIndices = null;
+
+            _trackLineDepleted.Positions = null;
+            _trackLineDepleted.TriangleIndices = null;
+
+            _trackLineActive.Positions = null;
+            _trackLineActive.TriangleIndices = null;
+
+            _trackLineInactive.Positions = null;
+            _trackLineInactive.TriangleIndices = null;
+
+            var activePositions = new Point3DCollection();
+            var activeIndices = new Int32Collection();
+            var activeOffset = 0;
+            var inactivePositions = new Point3DCollection();
+            var inactiveIndices = new Int32Collection();
+            var inactiveOffset = 0;
+            var depletedPositions = new Point3DCollection();
+            var depletedIndices = new Int32Collection();
+            var depletedOffset = 0;
+
+            foreach (var trackingLine in _trackingLines)
+            {
+                if (trackingLine.Key == _focusedTrackline)
+                {
+                    var focusPositions = new Point3DCollection();
+                    var focusIndices = new Int32Collection();
+                    foreach (var point in trackingLine.Value.Points)
+                        focusPositions.Add(point);
+                    foreach (var indice in trackingLine.Value.Indices)
+                        focusIndices.Add(indice);
+
+                    _trackLineFocus.Positions = focusPositions;
+                    _trackLineFocus.TriangleIndices = focusIndices;
+                }
+                else if (trackingLine.Key.Depleted)
+                {
+                    foreach (var point in trackingLine.Value.Points)
+                        depletedPositions.Add(point);
+                    foreach (var indice in trackingLine.Value.Indices)
+                        depletedIndices.Add(indice + depletedOffset);
+                    depletedOffset += trackingLine.Value.Points.Count;
+                }
+                else if (trackingLine.Key.Active)
+                {
+                    foreach (var point in trackingLine.Value.Points)
+                        activePositions.Add(point);
+                    foreach (var indice in trackingLine.Value.Indices)
+                        activeIndices.Add(indice + activeOffset);
+                    activeOffset += trackingLine.Value.Points.Count;
+                }
+                else
+                {
+                    foreach (var point in trackingLine.Value.Points)
+                        inactivePositions.Add(point);
+                    foreach (var indice in trackingLine.Value.Indices)
+                        inactiveIndices.Add(indice + inactiveOffset);
+                    inactiveOffset += trackingLine.Value.Points.Count;
+                }
+            }
+
+            _trackLineDepleted.Positions = depletedPositions;
+            _trackLineDepleted.TriangleIndices = depletedIndices;
+
+            _trackLineActive.Positions = activePositions;
+            _trackLineActive.TriangleIndices = activeIndices;
+
+            _trackLineInactive.Positions = inactivePositions;
+            _trackLineInactive.TriangleIndices = inactiveIndices;
         }
 
         #endregion
