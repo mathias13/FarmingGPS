@@ -111,17 +111,23 @@ namespace FarmingGPSLib.FarmingModes.Tools
         public bool Depleted
         {
             get { return _depleted; }
-            set 
-            { 
-                if(_depleted != value)
+            set
+            {
+                bool changed = false;
+                if (_depleted != value)
                 {
                     if (value && Active)
                         Active = false;
+                    changed = true;
+                }
+                _depleted = value;
+
+                if (changed)
+                {
                     DepletedChangedEventHandler handler = DepletedChanged;
                     if (handler != null)
                         handler.Invoke(this, value);
                 }
-                _depleted = value;
             }
         }
 
@@ -130,16 +136,21 @@ namespace FarmingGPSLib.FarmingModes.Tools
             get { return _active; }
             set
             {
+                bool changed = false;
                 if(_active != value)
                 {
                     if (value && Depleted)
                         Depleted = false;
+                    changed = true;
+                }
+                _active = value;
 
+                if (changed)
+                {
                     ActiveChangedEventHandler handler = ActiveChanged;
                     if (handler != null)
                         handler.Invoke(this, value);
                 }
-                _active = value;
             }
         }
 
