@@ -328,11 +328,9 @@ namespace FarmingGPS
                     }
                     if(_farmingMode != null)
                     {
-                        foreach (TrackingLine line in _farmingMode.TrackingLinesHeadland)
-                            _visualization.AddLine(line);
+                        _visualization.AddLines(_farmingMode.TrackingLinesHeadland.ToArray());
+                        _visualization.AddLines(_farmingMode.TrackingLines.ToArray());
 
-                        foreach (TrackingLine line in _farmingMode.TrackingLines)
-                            _visualization.AddLine(line);
                         CheckAllTrackingLines();
                     }
                     if(_equipment != null && _fieldRateTracker != null)
@@ -410,8 +408,10 @@ namespace FarmingGPS
                                 {
                                     if (_fieldTracker.GetTrackingLineCoverage(_activeTrackingLine) > 0.97)
                                         _activeTrackingLine.Depleted = true;
+                                    else
+                                        _activeTrackingLine.Active = false;
 
-                                    _activeTrackingLine.Active = false;
+                                    newTrackingLine.Active = true;
                                     _activeTrackingLine = newTrackingLine;
                                 }
                             }
@@ -838,10 +838,8 @@ namespace FarmingGPS
                 _fieldTracker.ClearTrack();
                 if (_farmingMode != null)
                 {
-                    foreach (TrackingLine trackingLine in _farmingMode.TrackingLines)
-                        _visualization.DeleteLine(trackingLine);
-                    foreach (TrackingLine trackingLine in _farmingMode.TrackingLinesHeadland)
-                        _visualization.DeleteLine(trackingLine);
+                    _visualization.DeleteLines(_farmingMode.TrackingLines.ToArray());
+                    _visualization.DeleteLines(_farmingMode.TrackingLinesHeadland.ToArray());
                 }
 
                 DotSpatial.Projections.ProjectionInfo projection = HelperClass.GetUtmProjectionZone(_receiver.CurrentPosition);
@@ -898,8 +896,8 @@ namespace FarmingGPS
             BTN_CONFIRM_TRACKLINE.Visibility = Visibility.Collapsed;
             _trackLineGrid.Visibility = Visibility.Collapsed;
             _farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadland[_selectedTrackingLine], headingFromLine);
-            foreach (TrackingLine trackingLine in _farmingMode.TrackingLines)
-                _visualization.AddLine(trackingLine);
+
+            _visualization.AddLines(_farmingMode.TrackingLines.ToArray());
             _visualization.CancelFocus();
             _selectedTrackingLine = -1;
         }
@@ -932,8 +930,7 @@ namespace FarmingGPS
                 {
                     var trackLineB = _vechile.CenterRearAxle;
                     _farmingMode.CreateTrackingLines(_trackLinePointA, trackLineB);
-                    foreach (TrackingLine trackingLine in _farmingMode.TrackingLines)
-                        _visualization.AddLine(trackingLine);
+                    _visualization.AddLines(_farmingMode.TrackingLines.ToArray());
                     _trackLinePointA = null;
                     _setTrackLineAB = false;
                     BTN_SET_TRACKINGLINE_AB.Style = (Style)this.FindResource("BUTTON_TRACKLINE_AB");
@@ -1258,10 +1255,8 @@ namespace FarmingGPS
 
             if (_farmingMode != null)
             {
-                foreach (TrackingLine trackingLine in _farmingMode.TrackingLines)
-                    _visualization.DeleteLine(trackingLine);
-                foreach (TrackingLine trackingLine in _farmingMode.TrackingLinesHeadland)
-                    _visualization.DeleteLine(trackingLine);
+                _visualization.DeleteLines(_farmingMode.TrackingLines.ToArray());
+                _visualization.DeleteLines(_farmingMode.TrackingLinesHeadland.ToArray());
             }
             
             _equipment.Overlap = Distance.FromMeters(userControl.Overlap);
@@ -1279,12 +1274,9 @@ namespace FarmingGPS
                     return;
                 }
             }
-                        
-            foreach (TrackingLine line in _farmingMode.TrackingLinesHeadland)
-                _visualization.AddLine(line);
 
-            foreach(TrackingLine line in _farmingMode.TrackingLines)
-                _visualization.AddLine(line);
+            _visualization.AddLines(_farmingMode.TrackingLinesHeadland.ToArray());
+            _visualization.AddLines(_farmingMode.TrackingLines.ToArray());
 
             YesNoDialog dialogFieldTracker = new YesNoDialog("Vill du radera körd area?");
             if (dialogFieldTracker.ShowDialog().Value)
