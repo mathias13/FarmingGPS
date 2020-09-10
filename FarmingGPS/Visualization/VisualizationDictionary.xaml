@@ -629,6 +629,103 @@
         </Setter>
     </Style>
 
+    <Style x:Key="NumericUpDownReadOnly" TargetType="prim:InputBase">
+        <Setter Property="BorderBrush" Value="Black"/>
+        <Setter Property="Background" Value="MintCream"/>
+        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="TextAlignment" Value="Right" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Control">
+                    <Grid>
+                        <Popup x:Name="Popup" Placement="Right" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                            <Grid x:Name="DropDown" SnapsToDevicePixels="True" MinWidth="50" MinHeight="80" Height="{Binding ActualHeight, ElementName=PART_TextBox}">
+                            </Grid>
+                        </Popup>
+                        <local:WatermarkTextBox x:Name="PART_TextBox"
+                                                BorderThickness="0"
+                                                Background="Transparent"
+                                                ContextMenu="{TemplateBinding ContextMenu}"
+                                                FontFamily="{TemplateBinding FontFamily}" 
+                                                FontSize="{TemplateBinding FontSize}" 
+                                                FontStretch="{TemplateBinding FontStretch}"
+                                                FontStyle="{TemplateBinding FontStyle}" 
+                                                FontWeight="{TemplateBinding FontWeight}" 
+                                                Foreground="{TemplateBinding Foreground}" 
+                                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                IsUndoEnabled="{Binding IsUndoEnabled, RelativeSource={RelativeSource TemplatedParent}}"
+                                                IsTabStop="{TemplateBinding IsTabStop}"
+                                                MinWidth="20"
+                                                AcceptsReturn="False"
+                                                Padding="{TemplateBinding Padding}"
+                                                AutoSelectBehavior="{Binding AutoSelectBehavior, RelativeSource={RelativeSource TemplatedParent}}"
+                                                AutoMoveFocus="{Binding AutoMoveFocus, RelativeSource={RelativeSource TemplatedParent}}"
+                                                TextAlignment="{Binding TextAlignment, RelativeSource={RelativeSource TemplatedParent}}"
+                                                TextWrapping="NoWrap" 
+                                                TabIndex="{TemplateBinding TabIndex}"
+                                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                Watermark="{Binding Watermark, RelativeSource={RelativeSource TemplatedParent}}"
+                                                WatermarkTemplate="{Binding WatermarkTemplate, RelativeSource={RelativeSource TemplatedParent}}">
+                            <local:WatermarkTextBox.Template>
+                                <ControlTemplate TargetType="local:WatermarkTextBox">
+                                    <Grid>
+                                        <Rectangle Fill="MintCream" RadiusX="5" RadiusY="5"/>
+                                        <Border BorderBrush="DarkGray" BorderThickness="2,2,0,0" CornerRadius="5"/>
+                                        <Border BorderBrush="LightGray" BorderThickness="0,0,2,2" CornerRadius="5"/>
+                                        <ScrollViewer x:Name="PART_ContentHost" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" Margin="5"/>
+                                        <Border x:Name="MouseOverVisual" Opacity="0" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="LightCoral" CornerRadius="1" />
+                                        <Border x:Name="FocusVisual" Opacity="0" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="LightBlue" CornerRadius="1" />
+                                    </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="MouseOverVisual" Property="Opacity" Value="1" />
+                                        </Trigger>
+                                        <Trigger Property="IsFocused" Value="True">
+                                            <Setter TargetName="FocusVisual" Property="Opacity" Value="1" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </local:WatermarkTextBox.Template>
+
+                        </local:WatermarkTextBox>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsReadOnly, RelativeSource={RelativeSource Self}}"
+                                   Value="False" />
+                                <Condition Binding="{Binding AllowTextInput, RelativeSource={RelativeSource Self}}"
+                                   Value="False" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="IsReadOnly"
+                             Value="True"
+                             TargetName="PART_TextBox" />
+                        </MultiDataTrigger>
+                        <DataTrigger Binding="{Binding IsReadOnly, RelativeSource={RelativeSource Self}}"
+                               Value="True">
+                            <Setter Property="IsReadOnly"
+                             Value="True"
+                             TargetName="PART_TextBox" />
+                        </DataTrigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                        </Trigger>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="PART_TextBox" Property="FocusManager.FocusedElement" Value="{Binding ElementName=PART_TextBox}" />
+                        </Trigger>
+                        <Trigger SourceName="PART_TextBox" Property="IsFocused" Value="true">
+                            <Setter TargetName="Popup" Property="IsOpen" Value="true"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="DOUBLEUPDOWN" TargetType="local:DoubleUpDown" BasedOn="{StaticResource NumericUpDown}">
         <Setter Property="FormatString" Value="0.0"/>
         <Setter Property="Increment" Value="0.1"/>
@@ -647,7 +744,25 @@
         <Setter Property="HorizontalContentAlignment" Value="Right"/>
     </Style>
 
+    <Style x:Key="SINGLEUPDOWN_READONLY" TargetType="local:SingleUpDown" BasedOn="{StaticResource NumericUpDownReadOnly}">
+        <Setter Property="FormatString" Value="0.0"/>
+        <Setter Property="Increment" Value="0.1"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Width" Value="Auto"/>
+        <Setter Property="MinWidth" Value="80"/>
+        <Setter Property="HorizontalContentAlignment" Value="Right"/>
+    </Style>
+
     <Style x:Key="INTEGERUPDOWN" TargetType="local:IntegerUpDown" BasedOn="{StaticResource NumericUpDown}">
+        <Setter Property="FormatString" Value="0"/>
+        <Setter Property="Increment" Value="1"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Width" Value="Auto"/>
+        <Setter Property="MinWidth" Value="80"/>
+        <Setter Property="HorizontalContentAlignment" Value="Right"/>
+    </Style>
+
+    <Style x:Key="INTEGERUPDOWN_READONLY" TargetType="local:IntegerUpDown" BasedOn="{StaticResource NumericUpDownReadOnly}">
         <Setter Property="FormatString" Value="0"/>
         <Setter Property="Increment" Value="1"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
