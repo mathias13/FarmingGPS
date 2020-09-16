@@ -893,10 +893,14 @@ namespace FarmingGPS
             BTN_CHOOSE_TRACKLINE.Style = (Style)this.FindResource("BUTTON_CHOOSE_TRACKLINE");
             BTN_CONFIRM_TRACKLINE.Visibility = Visibility.Collapsed;
             _trackLineGrid.Visibility = Visibility.Collapsed;
+            _visualization.CancelFocus();
+            foreach (var trackingLine in _farmingMode.TrackingLinesHeadland)
+                _visualization.DeleteLine(trackingLine);
             _farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadland[_selectedTrackingLine], headingFromLine);
+            foreach (TrackingLine trackingLine in _farmingMode.TrackingLinesHeadland)
+                _visualization.AddLine(trackingLine);
             foreach (TrackingLine trackingLine in _farmingMode.TrackingLines)
                 _visualization.AddLine(trackingLine);
-            _visualization.CancelFocus();
             _selectedTrackingLine = -1;
         }
 

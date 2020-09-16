@@ -1,9 +1,11 @@
 ﻿using DotSpatial.Topology;
+using DotSpatial.Positioning;
 using DotSpatial.Topology.Algorithm;
 using DotSpatial.Topology.GeometriesGraph;
 using DotSpatial.Topology.Operation.Buffer;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
+using FarmingGPSLib.Equipment;
 using GpsUtilities.HelperClasses;
 using System;
 using System.Collections;
@@ -55,6 +57,10 @@ namespace FarmingGPSLib.FarmingModes
 
         protected IList<TrackingLine> _trackingLines = new List<TrackingLine>();
 
+        protected IEquipment _equipment;
+
+        protected int _headlandTurns;
+
         private bool _hasChanged = true;
 
         #endregion
@@ -68,7 +74,36 @@ namespace FarmingGPSLib.FarmingModes
             _fieldPolygon = field.Polygon;
         }
 
+        public FarmingModeBase(IField field, IEquipment equipment, int headLandTurns) : this(field)
+        {
+            _equipment = equipment;
+            _headlandTurns = headLandTurns;
+            CalculateHeadLand();
+        }
+        public FarmingModeBase(IField field, IEquipment equipment, Distance headlandDistance) : this(field)
+        {
+            double distance = headlandDistance.ToMeters().Value;
+            double equipmentWidth = equipment.WidthExclOverlap.ToMeters().Value;
+            int headLandTurns = 0;
+            while ((headLandTurns * equipmentWidth) < distance)
+                headLandTurns++;
+
+            _equipment = equipment;
+            _headlandTurns = headLandTurns;
+            CalculateHeadLand();
+        }
+
         #region private Methods
+
+        protected virtual void CalculateHeadLand()
+        {
+        }
+        protected virtual void AddTrackingLines(IList<LineString> trackingLines)
+        {
+            _trackingLines.Clear();
+            foreach (LineString line in trackingLines)
+                _trackingLines.Add(new TrackingLine(line));
+        }
 
         protected IList<ILineString> GetHeadLandCoordinates(double distance)
         {
@@ -79,6 +114,25 @@ namespace FarmingGPSLib.FarmingModes
             return rings;
         }
         
+        protected IList<ILineString> GetHeadLandCoordinates(double distance, DotSpatial.Topology.Angle[] angleConstraintsLeft, DotSpatial.Topology.Angle[] angleConstraintRight)
+        {
+            var newLines = new List<ILineString>();
+            var lines = HelperClassLines.CreateLines(_fieldPolygon.Shell.Coordinates);
+            foreach (var line in lines)
+            {
+                for(int i = 0; i < angleConstraintsLeft.Length; i++)
+                {
+                    if (HelperClassAngles.AngleBetween(new DotSpatial.Topology.Angle(line.Angle), angleConstraintsLeft[i], angleConstraintRight[i]))
+                    {
+                        var newLine = HelperClassLines.ComputeOffsetSegment(line, PositionType.Left, distance);
+                        newLines.Add(new LineString(new Coordinate[] { newLine.P0, newLine.P1 }));
+                        break;
+                    }
+                }
+            }
+            return newLines;
+        }
+
         protected IList<LineString> GetHeadlandLines(double distance)
         {
             IList<ILineString> newRing = GetHeadLandCoordinates(distance);
@@ -107,6 +161,33 @@ namespace FarmingGPSLib.FarmingModes
             return lines;
         }
 
+        protected IList<LineString> GetHeadlandLines(double distance, DotSpatial.Topology.Angle[] angleConstraintsLeft, DotSpatial.Topology.Angle[] angleConstraintRight)
+        {
+            IList<ILineString> newRing = GetHeadLandCoordinates(distance, angleConstraintsLeft, angleConstraintRight);
+            List<LineString> lines = new List<LineString>();
+
+            foreach (ILineString ring in newRing)
+            {
+                IList<LineSegment> lineSegments = HelperClassLines.CreateLines(ring.Coordinates);
+                IList<Coordinate> coordinates = new List<Coordinate>();
+                foreach (LineSegment segment in lineSegments)
+                {
+                    coordinates.Add(segment.P0);
+                    if (segment.Length < 10.0)
+                        continue;
+                    coordinates.Add(segment.P1);
+                    lines.Add(new LineString(coordinates.CloneList()));
+                    coordinates.Clear();
+                }
+                if (coordinates.Count > 0)
+                {
+                    coordinates.Add(lineSegments[lineSegments.Count - 1].P1);
+                    lines.Add(new LineString(coordinates.CloneList()));
+                }
+            }
+
+            return lines;
+        }
         protected IList<Coordinate> GetHeadlandAroundPoints(double distance)
         {
             OffsetCurveBuilder curveBuilder = new OffsetCurveBuilder(new PrecisionModel(PrecisionModelType.Floating));
@@ -216,7 +297,7 @@ namespace FarmingGPSLib.FarmingModes
             return closestLine;
         }
 
-        public virtual void CreateTrackingLines(Coordinate aCoord, Angle direction)
+        public virtual void CreateTrackingLines(Coordinate aCoord, DotSpatial.Topology.Angle direction)
         {
             _hasChanged = true;
         }
@@ -231,7 +312,7 @@ namespace FarmingGPSLib.FarmingModes
             _hasChanged = true;
         }
 
-        public virtual void CreateTrackingLines(TrackingLine trackingLine, Angle directionFromLine)
+        public virtual void CreateTrackingLines(TrackingLine trackingLine, DotSpatial.Topology.Angle directionFromLine)
         {
             _hasChanged = true;
         }

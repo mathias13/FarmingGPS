@@ -12,10 +12,6 @@ namespace FarmingGPSLib.FarmingModes
 {
     public class GeneralHarrowingMode : FarmingModeBase
     {
-        protected IEquipment _equipment;
-
-        protected int _headlandTurns;
-
         public GeneralHarrowingMode() : base()
         { }
 
@@ -28,14 +24,16 @@ namespace FarmingGPSLib.FarmingModes
         }
 
         public GeneralHarrowingMode(IField field, IEquipment equipment, int headLandTurns)
-            : base(field)
+            : base(field, equipment, headLandTurns)
         {
-            _equipment = equipment;
-            _headlandTurns = headLandTurns;
-            CalculateHeadLand();
         }
 
-        protected void CalculateHeadLand()
+        public GeneralHarrowingMode(IField field, IEquipment equipment, Distance headlandDistance)
+            : base(field, equipment, headlandDistance)
+        {
+        }
+
+        protected override void CalculateHeadLand()
         {
             double distanceFromShell = _equipment.CenterToTip.ToMeters().Value;
             List<LineString> trackingLines = new List<LineString>();
@@ -180,11 +178,5 @@ namespace FarmingGPSLib.FarmingModes
             AddTrackingLines(trackingLines);
         }
     
-        protected virtual void AddTrackingLines(IList<LineString> trackingLines)
-        {
-            _trackingLines.Clear();
-            foreach (LineString line in trackingLines)
-                _trackingLines.Add(new TrackingLine(line));
-        }
     }
 }
