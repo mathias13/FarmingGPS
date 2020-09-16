@@ -487,7 +487,7 @@ namespace FarmingGPS.Visualization
                 foreach (DotSpatial.Topology.ILinearRing hole in e.Polygon.Holes)
                 {
                     PolygonData holePolygonData = GetPolygonData(hole.Coordinates, FIELD_TRACK_HOLES_Z_INDEX);
-                    Dispatcher.Invoke(new Action<PolygonData, int>(AddPolygonHole), System.Windows.Threading.DispatcherPriority.Render, holePolygonData);
+                    Dispatcher.Invoke(new Action<PolygonData, int>(AddPolygonHole), System.Windows.Threading.DispatcherPriority.Render, holePolygonData, e.ID);
                     _trackSumsHoles[e.ID].Add(holePolygonData.PolygonSum);
                     redrawHoles = true;
                 }
