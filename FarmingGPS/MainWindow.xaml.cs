@@ -237,6 +237,7 @@ namespace FarmingGPS
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            _fieldTracker.StopTrack();
             _dispatcherTimer.Stop();
             _secondaryTasksThreadStop = true;
            _secondaryTasksThread.Join();
