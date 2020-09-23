@@ -312,7 +312,6 @@ namespace FarmingGPS
                                 SetIEquipmentControl();
 
                             _visualization.SetEquipmentWidth(_equipment.Width);
-
                         }
                         else if (recoveredObject.Key.IsSubclassOf(typeof(FarmingGPSLib.FarmingModes.FarmingModeBase)))
                         {
@@ -327,6 +326,7 @@ namespace FarmingGPS
                             _fieldRateTracker.RestoreObject(recoveredObject.Value);
                         }
                     }
+
                     if(_farmingMode != null)
                     {
                         _visualization.AddLines(_farmingMode.TrackingLinesHeadland.ToArray());
@@ -354,6 +354,8 @@ namespace FarmingGPS
                     _receiver.ProjectionInfo = _field.Projection;
 #endif
                 }
+                else
+                    _stateRecovery.Clear();
             }
         }
                 
@@ -429,15 +431,15 @@ namespace FarmingGPS
                         {
                             FieldTracker.TrackPoint[] trackPoints = new FieldTracker.TrackPoint[coordinates.Length - 1];
                             for (int i = 0; i < trackPoints.Length; i++)
-                                trackPoints[i] = new FieldTracker.TrackPoint() { LeftPoint = coordinates[i].LeftTip, RightPoint = coordinates[i].RightTip };
+                                trackPoints[i] = new FieldTracker.TrackPoint(coordinates[i].LeftTip, coordinates[i].RightTip);
                             _fieldTracker.AddTrackPoints(trackPoints);
                         }
-                        _fieldTracker.StopTrack(new FieldTracker.TrackPoint() { LeftPoint = coordinates[coordinates.Length - 1].LeftTip, RightPoint = coordinates[coordinates.Length - 1].RightTip });
+                        _fieldTracker.StopTrack(new FieldTracker.TrackPoint(coordinates[coordinates.Length - 1].LeftTip, coordinates[coordinates.Length - 1].RightTip));
                     }
                     else if (_fieldTrackerActive && !_fieldTracker.IsTracking && !coordinates[coordinates.Length - 1].Reversing)
                     {
                         _distanceTriggerFieldTracker.Init(coordinates[coordinates.Length - 1].Center, coordinates[coordinates.Length - 1].Heading);
-                        _fieldTracker.InitTrack(new FieldTracker.TrackPoint() { LeftPoint = coordinates[coordinates.Length - 1].LeftTip, RightPoint = coordinates[coordinates.Length - 1].RightTip });
+                        _fieldTracker.InitTrack(new FieldTracker.TrackPoint(coordinates[coordinates.Length - 1].LeftTip, coordinates[coordinates.Length - 1].RightTip ));
                     }
                     else if (_fieldTrackerActive && !coordinates[coordinates.Length - 1].Reversing)
                     {
@@ -445,7 +447,7 @@ namespace FarmingGPS
                         foreach (var coordinate in coordinates)
                         {
                             if (_distanceTriggerFieldTracker.CheckDistance(coordinate.Center, coordinate.Heading))
-                                trackPoints.Add(new FieldTracker.TrackPoint() { LeftPoint = coordinate.LeftTip, RightPoint = coordinate.RightTip });
+                                trackPoints.Add(new FieldTracker.TrackPoint(coordinate.LeftTip, coordinate.RightTip ));
                         }
                         _fieldTracker.AddTrackPoints(trackPoints.ToArray());
                     }
@@ -797,8 +799,17 @@ namespace FarmingGPS
             _speedBar.SetSpeed(actualSpeed);
 
             if (_equipment != null)
+            {
                 if (_equipment is IEquipmentControl)
-                    ((IEquipmentControl)_equipment).RelaySpeed(_receiver.RawSpeed.ToKilometersPerHour().Value);
+                {
+                    double speed = _receiver.RawSpeed.ToKilometersPerHour().Value;
+                    if (_vechile != null)
+                        if (_vechile.IsReversing)
+                            speed = 0.0;
+
+                    ((IEquipmentControl)_equipment).RelaySpeed(speed);
+                }
+            }
         }
 
         private void _sbpReceiverSender_ReadExceptionEvent(object sender, SBPReadExceptionEventArgs e)
