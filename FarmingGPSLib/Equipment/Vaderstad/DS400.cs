@@ -7,7 +7,7 @@ namespace FarmingGPSLib.Equipment.Vaderstad
 {
     public class DS400 : EquipmentBase, IEquipmentControl, IEquipmentStat, IDisposable
     {
-        private static double FULL_CONTENT = 600.0;
+        private static double FULL_CONTENT = 700.0;
 
         private readonly double _stopDistance = 0.2;
 
