@@ -5,9 +5,10 @@ using FarmingGPSLib.Equipment;
 using FarmingGPSLib.FarmingModes.Tools;
 using DotSpatial.Positioning;
 using DotSpatial.Topology;
+using DotSpatial.Topology.Algorithm;
 using DotSpatial.Topology.GeometriesGraph;
 using GpsUtilities.HelperClasses;
-
+using DotSpatial.Topology.Utilities;
 
 namespace FarmingGPSLib.FarmingModes
 {
@@ -68,7 +69,6 @@ namespace FarmingGPSLib.FarmingModes
         {
             _trackingLinesHeadland.Clear();
 
-
             double left90 = HelperClassAngles.NormalizeRadian(baseLine.Angle + HelperClassAngles.DEGREE_90_RAD);
             double right90 = HelperClassAngles.NormalizeRadian(baseLine.Angle - HelperClassAngles.DEGREE_90_RAD);
             var leftConstraints = new DotSpatial.Topology.Angle[]
@@ -91,113 +91,115 @@ namespace FarmingGPSLib.FarmingModes
 
             foreach (LineString line in headlandTrackingLines)
                 _trackingLinesHeadland.Add(new TrackingLine(line));
-            //double distanceFromShell = _equipment.CenterToTip.ToMeters().Value;
-            //for (int i = 1; i < _headlandTurns; i++)
-            //{
-            //    IList<ILineString> headLandCoordinates = GetHeadLandCoordinates(distanceFromShell + 0.02);
-            //    List<LineSegment> headLandLines = new List<LineSegment>();
-            //    foreach (ILineString headLand in headLandCoordinates)
-            //        if (HelperClassAngles.AngleBetween(new DotSpatial.Topology.Angle(headLand.Angle), angles[0], angles[1]) || HelperClassAngles.AngleBetween(new DotSpatial.Topology.Angle(headLand.Angle), angles[2], angles[3]))
-            //            _trackingLinesHeadland.Add(new TrackingLine(headLand));
-            //    distanceFromShell += _equipment.WidthExclOverlap.ToMeters().Value;
-            //}
-            //distanceFromShell += _equipment.CenterToTip.ToMeters().Value;
-            ////IList<ILineString> headLandCoordinates = GetHeadLandCoordinates(distanceFromShell + 0.02); //add 2cm to make sure we dont get trackingline over headline
-            ////List<LineSegment> headLandLines = new List<LineSegment>();
-            ////foreach (ILineString headLand in headLandCoordinates)
-            ////    headLandLines.AddRange(HelperClassLines.CreateLines(headLand.Coordinates));
 
-            //List<Polygon> headLandToCheck = new List<Polygon>();
-            //IList<ILineString> headLands = GetHeadLandCoordinates(distanceFromShell);
-            //foreach (ILineString headLand in headLands)
-            //    headLandToCheck.Add(new Polygon(headLand.Coordinates));
+            IList<ILineString> headLandCoordinates = new List<ILineString>();
+            List <Polygon> headLandToCheck = new List<Polygon>();
+            IList<ILineString> headLands = GetHeadLandCoordinates(distanceFromShell, leftConstraints, rightConstraints);
+            foreach (ILineString headLand in headLands)
+            {
+                headLandToCheck.Add(new Polygon(headLand.Coordinates));
+                foreach(var ring in GetHeadLandCoordinates(0.02, headLand.Coordinates))//add 2cm to make sure we dont get trackingline over headline
+                    headLandCoordinates.Add(ring);
+            }
 
-            //IEnvelope fieldEnvelope = _fieldPolygon.Envelope;
-            ////Get longest projection to make sure we cover the whole field
-            //ILineSegment baseLineExtended1 = new LineSegment(baseLine.Project(fieldEnvelope.TopLeft()), baseLine.Project(fieldEnvelope.BottomRight()));
-            //ILineSegment baseLineExtended2 = new LineSegment(baseLine.Project(fieldEnvelope.BottomLeft()), baseLine.Project(fieldEnvelope.TopRight()));
+            List<LineSegment> headLandLines = new List<LineSegment>();
+            foreach (ILineString headLand in headLandCoordinates)
+                headLandLines.AddRange(HelperClassLines.CreateLines(headLand.Coordinates));
 
-            //ILineSegment baseLineExtended = baseLineExtended1.Length > baseLineExtended2.Length ? baseLineExtended1 : baseLineExtended2;
+            IEnvelope fieldEnvelope = _fieldPolygon.Envelope;
+            //Get longest projection to make sure we cover the whole field
+            ILineSegment baseLineExtended1 = new LineSegment(baseLine.Project(fieldEnvelope.TopLeft()), baseLine.Project(fieldEnvelope.BottomRight()));
+            ILineSegment baseLineExtended2 = new LineSegment(baseLine.Project(fieldEnvelope.BottomLeft()), baseLine.Project(fieldEnvelope.TopRight()));
 
-            //List<ILineSegment> linesExtended = new List<ILineSegment>();
-            //linesExtended.Add(baseLineExtended);
-            //ILineSegment extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.WidthExclOverlap.ToMeters().Value);
-            //int lineIteriator = 2;
-            //while (fieldEnvelope.Intersects(extendedLine))
-            //{
-            //    linesExtended.Add(extendedLine);
-            //    extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.WidthExclOverlap.ToMeters().Value * lineIteriator);
-            //    lineIteriator++;
-            //}
+            ILineSegment baseLineExtended = baseLineExtended1.Length > baseLineExtended2.Length ? baseLineExtended1 : baseLineExtended2;
 
-            //extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.WidthExclOverlap.ToMeters().Value);
-            //lineIteriator = 2;
-            //while (fieldEnvelope.Intersects(extendedLine))
-            //{
-            //    linesExtended.Add(extendedLine);
-            //    extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.WidthExclOverlap.ToMeters().Value * lineIteriator);
-            //    lineIteriator++;
-            //}
+            List<ILineSegment> linesExtended = new List<ILineSegment>();
+            linesExtended.Add(baseLineExtended);
+            ILineSegment extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.WidthExclOverlap.ToMeters().Value);
+            int lineIteriator = 2;
+            while (fieldEnvelope.Intersects(extendedLine))
+            {
+                linesExtended.Add(extendedLine);
+                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.WidthExclOverlap.ToMeters().Value * lineIteriator);
+                lineIteriator++;
+            }
 
-            //List<LineString> trackingLines = new List<LineString>();
-            //List<Coordinate> lineCoordinates = new List<Coordinate>();
-            //for (int i = 0; i < linesExtended.Count; i++)
-            //{
-            //    foreach (LineSegment line in headLandLines)
-            //    {
-            //        Coordinate intersection = line.Intersection(linesExtended[i]);
-            //        if (intersection != null)
-            //            lineCoordinates.Add(intersection);
-            //    }
+            extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.WidthExclOverlap.ToMeters().Value);
+            lineIteriator = 2;
+            while (fieldEnvelope.Intersects(extendedLine))
+            {
+                linesExtended.Add(extendedLine);
+                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.WidthExclOverlap.ToMeters().Value * lineIteriator);
+                lineIteriator++;
+            }
 
-            //    for (int j = 0; j < lineCoordinates.Count; j++)
-            //    {
-            //        bool remove = true;
-            //        foreach (Polygon polygonToCheck in headLandToCheck)
-            //            if (CgAlgorithms.IsPointInRing(lineCoordinates[j], polygonToCheck.Coordinates))
-            //                remove = false;
-            //        if (remove)
-            //        {
-            //            lineCoordinates.RemoveAt(j);
-            //            j--;
-            //        }
-            //    }
+            List<LineString> trackingLines = new List<LineString>();
+            List<Coordinate> lineCoordinates = new List<Coordinate>();
+            for (int i = 0; i < linesExtended.Count; i++)
+            {
+                foreach (LineSegment line in headLandLines)
+                {
+                    Coordinate intersection = line.Intersection(linesExtended[i]);
+                    if (intersection != null)
+                        lineCoordinates.Add(intersection);
+                }
 
-            //    if (lineCoordinates.Count == 2)
-            //        trackingLines.Add(new LineString(new List<Coordinate>() { lineCoordinates[0], lineCoordinates[1] }));
-            //    else
-            //    {
-            //        int j = 1;
-            //        while (lineCoordinates.Count > 1)
-            //        {
-            //            if (j >= lineCoordinates.Count)
-            //            {
-            //                j = 1;
-            //                lineCoordinates.RemoveAt(0);
-            //                continue;
-            //            }
+                for (int j = 0; j < lineCoordinates.Count; j++)
+                {
+                    bool remove = true;
+                    foreach (Polygon polygonToCheck in headLandToCheck)
+                        if (CgAlgorithms.IsPointInRing(lineCoordinates[j], polygonToCheck.Coordinates))
+                            remove = false;
+                    if (remove)
+                    {
+                        lineCoordinates.RemoveAt(j);
+                        j--;
+                    }
+                }
 
-            //            LineString lineToCheck = new LineString(new Coordinate[] { lineCoordinates[0], lineCoordinates[j] });
-            //            foreach (Polygon polygonToCheck in headLandToCheck)
-            //            {
-            //                if (polygonToCheck.Contains(lineToCheck))
-            //                {
-            //                    trackingLines.Add(new LineString(new List<Coordinate>() { lineCoordinates[0], lineCoordinates[j] }));
-            //                    lineCoordinates.RemoveAt(j);
-            //                    lineCoordinates.RemoveAt(0);
-            //                    j = 1;
-            //                }
-            //                else
-            //                    j++;
-            //            }
+                if (lineCoordinates.Count == 2)
+                    trackingLines.Add(new LineString(new List<Coordinate>() { lineCoordinates[0], lineCoordinates[1] }));
+                else
+                {
+                    int j = 1;
+                    while (lineCoordinates.Count > 1)
+                    {
+                        if (j >= lineCoordinates.Count)
+                        {
+                            j = 1;
+                            lineCoordinates.RemoveAt(0);
+                            continue;
+                        }
 
-            //        }
-            //    }
+                        LineString lineToCheck = new LineString(new Coordinate[] { lineCoordinates[0], lineCoordinates[j] });
+                        foreach (Polygon polygonToCheck in headLandToCheck)
+                        {
+                            if (polygonToCheck.Contains(lineToCheck))
+                            {
+                                trackingLines.Add(new LineString(new List<Coordinate>() { lineCoordinates[0], lineCoordinates[j] }));
+                                lineCoordinates.RemoveAt(j);
+                                lineCoordinates.RemoveAt(0);
+                                j = 1;
+                            }
+                            else
+                                j++;
+                        }
 
-            //    lineCoordinates.Clear();
-            //}
+                    }
+                }
 
-            //AddTrackingLines(trackingLines);
+                lineCoordinates.Clear();
+            }
+
+            AddTrackingLines(trackingLines);
+        }
+
+        protected override void AddTrackingLines(IList<LineString> trackingLines)
+        {
+            _trackingLines.Clear();
+                foreach (LineString line in trackingLines)
+                    _trackingLines.Add(new TrackingLineStartStopEvent(line, 0.0, 0.0));
+
         }
     }
 }
