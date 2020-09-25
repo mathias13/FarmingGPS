@@ -36,7 +36,8 @@ using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
-
+using FarmingGPS.Usercontrols.Events;
+using System.Threading;
 
 namespace FarmingGPS
 {
@@ -506,7 +507,20 @@ namespace FarmingGPS
                     else if (e.Contains("STOP"))
                         equipmentControl.Stop();
                 }
+                else
+                {
+                    if (e.Contains("START"))
+                        _messageGrid.Children.Add(new EventMessage("Starta"));
+                    else if (e.Contains("STOP"))
+                        _messageGrid.Children.Add(new EventMessage("Stoppa"));
+                    var timer = new Timer(new TimerCallback(MessageTimeout), null, 0, 4000);
+                }
             }
+        }
+
+        private void MessageTimeout(object state)
+        {
+            _messageGrid.Children.Clear();
         }
         
         private void CheckAllTrackingLines()

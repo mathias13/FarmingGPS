@@ -25,6 +25,8 @@
             <ContentControl Template="{DynamicResource LightbarBorder}"/>
             <visualization:LightBar Grid.Row="0" x:FieldModifier="private" x:Name="_lightBar"/>
         </Grid>
+        <Grid Grid.Row="1" Visibility="Hidden" VerticalAlignment="Top" Margin="40,0,0,0" HorizontalAlignment="Left" x:Name="_messageGrid" x:FieldModifier="private">
+        </Grid>
         <visualization:FarmingVisualizer Grid.Row="1" x:FieldModifier="private" x:Name="_visualization"/>
         <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Right">
             <StackPanel Orientation="Horizontal" x:FieldModifier="private" x:Name="PANEL_START_STOP_AUTO" Visibility="Collapsed" HorizontalAlignment="Right">
