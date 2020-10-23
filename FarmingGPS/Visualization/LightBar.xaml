@@ -15,10 +15,10 @@
             <Grid HorizontalAlignment="Center" Margin="0,10,0,5">
                 <Polygon
                     Points="20,20 40,0 0,0 20,20"
-                    Stroke="DarkBlue"
+                    Stroke="LightBlue"
                     StrokeThickness="1">
                     <Polygon.Fill>
-                        <SolidColorBrush Color="LightBlue" Opacity="0.8"/>
+                        <SolidColorBrush Color="DarkBlue" Opacity="0.8"/>
                     </Polygon.Fill>
                 </Polygon>
             </Grid>
