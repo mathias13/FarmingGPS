@@ -28,7 +28,7 @@ namespace FarmingGPSLib.FarmingModes
             get;
         }
 
-        TrackingLine GetClosestLine(Coordinate position);
+        TrackingLine GetClosestLine(Coordinate position, DotSpatial.Positioning.Azimuth direction);
 
         event EventHandler<string> FarmingEvent;
     }

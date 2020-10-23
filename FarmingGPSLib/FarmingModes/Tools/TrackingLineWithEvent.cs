@@ -13,7 +13,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
 
         #endregion
 
-        public TrackingLineWithEvent(ILineString line, string eventMessage, double distanceToEvent, ILineSegment end1, ILineSegment end2): base(line)
+        public TrackingLineWithEvent(ILineString line, string eventMessage, double distanceToEvent, ILineSegment end1, ILineSegment end2): base(line, true)
         {
             _eventMessage = eventMessage;
             _distanceToEvent = distanceToEvent;       

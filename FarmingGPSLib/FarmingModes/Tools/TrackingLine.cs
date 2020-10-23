@@ -33,12 +33,12 @@ namespace FarmingGPSLib.FarmingModes.Tools
 
         #endregion
 
-        public TrackingLine(ILineString line)
+        public TrackingLine(ILineString line, bool extendedLine)
         {
             _depleted = false;
             _active = false;
             _line = line;
-            if (line.Coordinates.Count == 2)
+            if (extendedLine)
             {
                 _extendedLine = new LineSegment(line.Coordinates[0], line.Coordinates[1]);
                 Coordinate p0 = HelperClassCoordinate.ComputePoint(line.Coordinates[0], _extendedLine.Angle, -25.0);
@@ -47,13 +47,13 @@ namespace FarmingGPSLib.FarmingModes.Tools
             }
         }
 
-        public OrientationToLine GetOrientationToLine(Coordinate point, DotSpatial.Positioning.Azimuth directionOfTravel, bool useExtendedLine)
+        public OrientationToLine GetOrientationToLine(Coordinate point, DotSpatial.Positioning.Azimuth directionOfTravel)
         {
             Coordinate p0 = Coordinate.Empty;
             Coordinate p1 = Coordinate.Empty;
             double tempDistance = 0.0;
             double distance = double.MaxValue;
-            if (_extendedLine != null && useExtendedLine)
+            if (_extendedLine != null)
             {
                 p0 = _extendedLine.P0;
                 p1 = _extendedLine.P1;
@@ -90,11 +90,11 @@ namespace FarmingGPSLib.FarmingModes.Tools
             return new OrientationToLine(side, distance);
         }
         
-        public double GetDistanceToLine(Coordinate point, bool useExtendedLine)
+        public double GetDistanceToLine(Coordinate point)
         {
             double tempDistance = 0.0;
             double distance = double.MaxValue;
-            if (_extendedLine != null && useExtendedLine)
+            if (_extendedLine != null)
                 distance = CgAlgorithms.DistancePointLine(point, _extendedLine.P0, _extendedLine.P1);
             else
             {

@@ -25,7 +25,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
 
         private EventEvaluation[] _events = new EventEvaluation[4];
 
-        public TrackingLineStartStopEvent(ILineString line, double startEventDistance, double stopEventDistance) : base(line)
+        public TrackingLineStartStopEvent(ILineString line, double startEventDistance, double stopEventDistance) : base(line, true)
         {
             Angle angleLeft = new Angle(MainLine.Angle + (Math.PI / 2.0));
             Angle angleRight = new Angle(MainLine.Angle - (Math.PI / 2.0));

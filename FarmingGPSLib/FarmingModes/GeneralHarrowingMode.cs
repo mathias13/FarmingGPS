@@ -43,7 +43,7 @@ namespace FarmingGPSLib.FarmingModes
                 distanceFromShell += _equipment.WidthExclOverlap.ToMeters().Value;
             }
             foreach (LineString line in trackingLines)
-                _trackingLinesHeadland.Add(new TrackingLine(line));
+                _trackingLinesHeadland.Add(new TrackingLine(line, false));
         }
 
         public override void CreateTrackingLines(Coordinate aCoord, DotSpatial.Topology.Angle direction)

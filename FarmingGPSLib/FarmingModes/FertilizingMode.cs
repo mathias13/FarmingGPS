@@ -68,7 +68,7 @@ namespace FarmingGPSLib.FarmingModes
             _trackingLines.Clear();
             if(_startDistance == double.MinValue || _stopDistance == double.MinValue)
                 foreach (LineString line in trackingLines)
-                    _trackingLines.Add(new TrackingLine(line));
+                    _trackingLines.Add(new TrackingLine(line, true));
             else
                 foreach (LineString line in trackingLines)
                     _trackingLines.Add(new TrackingLineStartStopEvent(line, _startDistance, _stopDistance));
@@ -106,7 +106,7 @@ namespace FarmingGPSLib.FarmingModes
                 trackingLines.Add(new LineString(line.Line));
             AddTrackingLines(trackingLines);
             foreach (SimpleLine line in fertilizingModeState.TrackingLinesHeadLand)
-                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line)));
+                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line), false));
         }
 
         #endregion

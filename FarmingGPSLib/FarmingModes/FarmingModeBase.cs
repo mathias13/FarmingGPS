@@ -98,11 +98,12 @@ namespace FarmingGPSLib.FarmingModes
         protected virtual void CalculateHeadLand()
         {
         }
+
         protected virtual void AddTrackingLines(IList<LineString> trackingLines)
         {
             _trackingLines.Clear();
             foreach (LineString line in trackingLines)
-                _trackingLines.Add(new TrackingLine(line));
+                _trackingLines.Add(new TrackingLine(line, true));
         }
 
         protected IList<ILineString> GetHeadLandCoordinates(double distance, IList<Coordinate> ring)
@@ -298,7 +299,7 @@ namespace FarmingGPSLib.FarmingModes
             get { return _trackingLines; }
         }
 
-        public TrackingLine GetClosestLine(Coordinate position)
+        public virtual TrackingLine GetClosestLine(Coordinate position, Azimuth direction)
         {
             double distanceToLine = double.MaxValue;
             TrackingLine closestLine = null;
@@ -307,7 +308,7 @@ namespace FarmingGPSLib.FarmingModes
                 if (trackingLine.Depleted)
                     continue;
 
-                double tempDistance = trackingLine.GetDistanceToLine(position, false);
+                double tempDistance = trackingLine.GetDistanceToLine(position);
                 if(tempDistance < distanceToLine)
                 {
                     distanceToLine = tempDistance;
@@ -320,7 +321,7 @@ namespace FarmingGPSLib.FarmingModes
                 if (trackingLine.Depleted)
                     continue;
 
-                double tempDistance = trackingLine.GetDistanceToLine(position, false);
+                double tempDistance = trackingLine.GetDistanceToLine(position);
                 if (tempDistance < distanceToLine)
                 {
                     distanceToLine = tempDistance;
@@ -390,9 +391,9 @@ namespace FarmingGPSLib.FarmingModes
         {
             FarmingModeState farmingModeState = (FarmingModeState)restoredState;
             foreach (SimpleLine line in farmingModeState.TrackingLines)
-                _trackingLines.Add(new TrackingLine(new LineString(line.Line)));
+                _trackingLines.Add(new TrackingLine(new LineString(line.Line), true));
             foreach (SimpleLine line in farmingModeState.TrackingLinesHeadLand)
-                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line)));
+                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line), false));
         }
 
         #endregion

@@ -15,6 +15,24 @@ namespace FarmingGPSLib.FarmingModes
     public class PlowingMode : FarmingModeBase
     {
 
+        [Serializable]
+        public struct PlowingModeState
+        {
+            public List<SimpleLine> TrackingLines;
+
+            public List<SimpleLine> TrackingLinesHeadLand;
+
+            public PlowingModeState(List<SimpleLine> trackingLines, List<SimpleLine> trackingLinesHeadLand)
+            {
+                TrackingLines = trackingLines;
+                TrackingLinesHeadLand = trackingLinesHeadLand;
+            }
+        }
+
+        public PlowingMode() : base()
+        {
+        }
+
         public PlowingMode(IField field)
             : base(field)
         {
@@ -28,7 +46,46 @@ namespace FarmingGPSLib.FarmingModes
         public PlowingMode(IField field, IEquipment equipment, Distance headlandDistance)
             : base(field, equipment, headlandDistance)
         {
+        }
 
+        public override TrackingLine GetClosestLine(Coordinate position, Azimuth direction)
+        {
+            var directionForward = new DotSpatial.Topology.Angle((Azimuth.Maximum - direction.Subtract(90.0).DecimalDegrees).ToRadians().Value);
+            double distanceToLine = double.MaxValue;
+            bool inDirection = false;
+            TrackingLine closestLine = null;
+            foreach (TrackingLine trackingLine in _trackingLines)
+            {
+                if (trackingLine.Depleted)
+                    continue;
+
+                double tempDistance = trackingLine.GetDistanceToLine(position);
+                if (tempDistance < distanceToLine)
+                {
+                    inDirection = HelperClassAngles.AngleBetween(directionForward, new DotSpatial.Topology.Angle(trackingLine.MainLine.Angle + HelperClassAngles.DEGREE_30_RAD), new DotSpatial.Topology.Angle(trackingLine.MainLine.Angle - HelperClassAngles.DEGREE_30_RAD)) ||
+                        HelperClassAngles.AngleBetween(directionForward, new DotSpatial.Topology.Angle(trackingLine.MainLine.Angle + HelperClassAngles.DEGREE_180_RAD + HelperClassAngles.DEGREE_30_RAD), new DotSpatial.Topology.Angle(trackingLine.MainLine.Angle + HelperClassAngles.DEGREE_180_RAD - HelperClassAngles.DEGREE_30_RAD));
+                    distanceToLine = tempDistance;
+                    closestLine = trackingLine;
+                }
+            }
+
+            if (!(inDirection && distanceToLine < 1.5))
+            {
+                foreach (TrackingLine trackingLine in _trackingLinesHeadland)
+                {
+                    if (trackingLine.Depleted)
+                        continue;
+
+                    double tempDistance = trackingLine.GetDistanceToLine(position);
+                    if (tempDistance < distanceToLine)
+                    {
+                        distanceToLine = tempDistance;
+                        closestLine = trackingLine;
+                    }
+                }
+            }
+
+            return closestLine;
         }
 
         protected override void CalculateHeadLand()
@@ -38,8 +95,9 @@ namespace FarmingGPSLib.FarmingModes
             trackingLines.AddRange(GetHeadlandLines(0.0));
 
             foreach (LineString line in trackingLines)
-                _trackingLinesHeadland.Add(new TrackingLine(line));
+                _trackingLinesHeadland.Add(new TrackingLine(line, false));
         }
+
         public override void CreateTrackingLines(Coordinate aCoord, DotSpatial.Topology.Angle direction)
         {
             base.CreateTrackingLines(aCoord, direction);
@@ -63,6 +121,11 @@ namespace FarmingGPSLib.FarmingModes
 
         public override void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction)
         {
+            foreach (TrackingLine trackingLine in _trackingLines)
+                if (trackingLine is TrackingLineStartStopEvent)
+                    if (trackingLine.Active)
+                        if ((trackingLine as TrackingLineStartStopEvent).EventFired(direction, position))
+                            OnFarmingEvent((trackingLine as TrackingLineStartStopEvent).Message);
         }
 
         protected void FillFieldWithTrackingLines(ILineSegment baseLine)
@@ -90,7 +153,7 @@ namespace FarmingGPSLib.FarmingModes
             }
 
             foreach (LineString line in headlandTrackingLines)
-                _trackingLinesHeadland.Add(new TrackingLine(line));
+                _trackingLinesHeadland.Add(new TrackingLine(line, false));
 
             IList<ILineString> headLandCoordinates = new List<ILineString>();
             List <Polygon> headLandToCheck = new List<Polygon>();
@@ -184,13 +247,10 @@ namespace FarmingGPSLib.FarmingModes
                             else
                                 j++;
                         }
-
                     }
                 }
-
                 lineCoordinates.Clear();
             }
-
             AddTrackingLines(trackingLines);
         }
 
@@ -199,7 +259,41 @@ namespace FarmingGPSLib.FarmingModes
             _trackingLines.Clear();
                 foreach (LineString line in trackingLines)
                     _trackingLines.Add(new TrackingLineStartStopEvent(line, 0.0, 0.0));
-
         }
+
+
+        #region IStateObjectImplementation
+
+        public override object StateObject
+        {
+            get
+            {
+                List<SimpleLine> trackingLines = new List<SimpleLine>();
+                foreach (TrackingLine trackingLine in _trackingLines)
+                    trackingLines.Add(new SimpleLine(new List<Coordinate>(trackingLine.Line.Coordinates)));
+                List<SimpleLine> trackingLinesHeadland = new List<SimpleLine>();
+                foreach (TrackingLine trackingLineHeadland in _trackingLinesHeadland)
+                    trackingLinesHeadland.Add(new SimpleLine(new List<Coordinate>(trackingLineHeadland.Line.Coordinates)));
+                return new PlowingModeState(trackingLines, trackingLinesHeadland);
+            }
+        }
+
+        public override Type StateType
+        {
+            get { return typeof(PlowingModeState); }
+        }
+
+        public override void RestoreObject(object restoredState)
+        {
+            PlowingModeState plowingModeState = (PlowingModeState)restoredState;
+            List<LineString> trackingLines = new List<LineString>();
+            foreach (SimpleLine line in plowingModeState.TrackingLines)
+                trackingLines.Add(new LineString(line.Line));
+            AddTrackingLines(trackingLines);
+            foreach (SimpleLine line in plowingModeState.TrackingLinesHeadLand)
+                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line), false));
+        }
+
+        #endregion
     }
 }
