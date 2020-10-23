@@ -24,5 +24,10 @@ namespace FarmingGPSLib.Equipment
         {
             get { return typeof(PlowingMode); }
         }
+
+        public override bool SideDependent
+        {
+            get { return true; }
+        }
     }
 }

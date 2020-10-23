@@ -21,6 +21,8 @@ namespace FarmingGPSLib.Equipment
             public double StatStartWeight;
 
             public double StatEndWeight;
+
+            public bool SideDependent;
         }
 
         #region Private Variables
@@ -30,6 +32,8 @@ namespace FarmingGPSLib.Equipment
         protected Distance _distanceFromVechile;
 
         protected Distance _overlap;
+
+        protected bool _sideDependent = false;
 
         protected Azimuth _fromDirectionOfTravel;
 
@@ -126,6 +130,11 @@ namespace FarmingGPSLib.Equipment
             get { return null; }
         }
 
+        public virtual bool SideDependent
+        {
+            get { return _sideDependent; }
+        }
+
         public DotSpatial.Topology.Coordinate GetLeftTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel)
         {
             return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_bearingToLeftTip)).Radians, _distanceToLeftTip.ToMeters().Value);
@@ -158,7 +167,7 @@ namespace FarmingGPSLib.Equipment
                     startWeight = stat.StartWeight;
                     endWeight = stat.EndWeight;
                 }
-                return new EquipmentState() { Width = Width.ToMeters().Value, DistanceFromVechile = DistanceFromVechileToCenter.ToMeters().Value, FromDirectionOfTravel = FromDirectionOfTravel.DecimalDegrees, Overlap = Overlap.ToMeters().Value, StatStartWeight = startWeight, StatEndWeight = endWeight };
+                return new EquipmentState() { Width = Width.ToMeters().Value, DistanceFromVechile = DistanceFromVechileToCenter.ToMeters().Value, FromDirectionOfTravel = FromDirectionOfTravel.DecimalDegrees, Overlap = Overlap.ToMeters().Value, StatStartWeight = startWeight, StatEndWeight = endWeight, SideDependent = _sideDependent };
             }
         }
 
@@ -176,6 +185,7 @@ namespace FarmingGPSLib.Equipment
             _distanceFromVechile = Distance.FromMeters(equipmentState.DistanceFromVechile);
             _fromDirectionOfTravel = new Azimuth(equipmentState.FromDirectionOfTravel);
             _overlap = Distance.FromMeters(equipmentState.Overlap);
+            _sideDependent = equipmentState.SideDependent;
 
             if (this is IEquipmentStat)
             {
