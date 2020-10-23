@@ -1,4 +1,5 @@
-﻿using FarmingGPSLib.Settings;
+﻿using DotSpatial.Positioning;
+using FarmingGPSLib.Settings;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -30,13 +31,16 @@ namespace FarmingGPS.Usercontrols
             get { return NumericHeadland.Value.Value; }
         }
 
-        #endregion
+        public bool HeadLandWidthUsed
+        {
+            get { return HeadLandType.SelectedIndex == 1; }
+        }
 
-        #region DependencyProperties
+        public Distance HeadLandWidth
+        {
+            get { return Distance.FromMeters(NumericHeadlandWidth.Value.Value); }
+        }
 
-        protected static readonly DependencyProperty EquipmentOverlap = DependencyProperty.Register("EquipmentOverlap", typeof(double), typeof(FarmingMode));
-
-        protected static readonly DependencyProperty EquipmentWidth = DependencyProperty.Register("EquipmentWidth", typeof(double), typeof(FarmingMode));
         #endregion
 
         private void ButtonChoose_Click(object sender, RoutedEventArgs e)
@@ -48,6 +52,22 @@ namespace FarmingGPS.Usercontrols
         public void RegisterSettingEvent(ISettingsChanged settings)
         {
             throw new NotImplementedException();
+        }
+
+        private void HeadLandType_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (HeadLandType.SelectedIndex == 0)
+            {
+                NumericHeadlandGrid.Visibility = Visibility.Visible;
+                NumericHeadlandWidthGrid.Visibility = Visibility.Collapsed;
+            }
+            else if (HeadLandType.SelectedIndex == 1)
+            {
+                NumericHeadlandGrid.Visibility = Visibility.Collapsed;
+                NumericHeadlandWidthGrid.Visibility = Visibility.Visible;
+            }
+
+
         }
     }
 }

@@ -23,14 +23,7 @@ namespace FarmingGPS.Usercontrols.Events
         public EventMessage(string message)
         {
             InitializeComponent();
-            SetValue(Message, message);
+            messageText.Text = message;
         }
-
-        #region Dependency Properties
-
-        protected static readonly DependencyProperty Message = DependencyProperty.Register("Message", typeof(string), typeof(EventMessage));
-
-        #endregion
-
     }
 }

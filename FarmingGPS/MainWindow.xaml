@@ -25,8 +25,6 @@
             <ContentControl Template="{DynamicResource LightbarBorder}"/>
             <visualization:LightBar Grid.Row="0" x:FieldModifier="private" x:Name="_lightBar"/>
         </Grid>
-        <Grid Grid.Row="1" Visibility="Hidden" VerticalAlignment="Top" Margin="40,0,0,0" HorizontalAlignment="Left" x:Name="_messageGrid" x:FieldModifier="private">
-        </Grid>
         <visualization:FarmingVisualizer Grid.Row="1" x:FieldModifier="private" x:Name="_visualization"/>
         <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Right">
             <StackPanel Orientation="Horizontal" x:FieldModifier="private" x:Name="PANEL_START_STOP_AUTO" Visibility="Collapsed" HorizontalAlignment="Right">
@@ -57,11 +55,14 @@
                 <Button x:Name="BTN_SET_TRACKINGLINE_AB" Style="{StaticResource BUTTON_TRACKLINE_AB}" Width="60" Height="60" Margin="10,10,10,10" Click="BTN_SET_TRACKINGLINE_AB_Click"/>
             </StackPanel>
         </StackPanel>
+        <Grid Grid.Row="1" Visibility="Hidden" VerticalAlignment="Top" Margin="40,0,0,0" HorizontalAlignment="Left" x:Name="_messageGrid" x:FieldModifier="private">
+        </Grid>
         <Border Background="Red" ClipToBounds="True" BorderBrush="Black" BorderThickness="2" CornerRadius="5" Margin="4" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1">
             <StackPanel Orientation="Horizontal">
                 <Grid>
+                    <Rectangle Fill="Yellow" Visibility="{Binding Path=GPSState, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}, Converter={StaticResource BoolToVis}}"/>
                     <Rectangle Fill="Green" Visibility="{Binding Path=FixModeState, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}, Converter={StaticResource BoolToVis}}"/>
-                    <TextBlock Background="Transparent" Padding="5" FontSize="14" Text="{Binding Path=FixMode, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}, Converter={StaticResource BoolToVis}}">Fix</TextBlock>
+                    <TextBlock Background="Transparent" Padding="5" FontSize="14">GPS</TextBlock>
                 </Grid>
                 <Grid>
                     <Rectangle Fill="Green" Visibility="{Binding Path=NTRIPState, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}, Converter={StaticResource BoolToVis}}"/>

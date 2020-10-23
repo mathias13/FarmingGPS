@@ -8,8 +8,7 @@
              xmlns:local2="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
              xmlns:themes="clr-namespace:Xceed.Wpf.Toolkit.Themes;assembly=Xceed.Wpf.Toolkit"
              xmlns:prim="clr-namespace:Xceed.Wpf.Toolkit.Primitives;assembly=Xceed.Wpf.Toolkit"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             mc:Ignorable="d">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -19,12 +18,12 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-        <Border Background="White" BorderThickness="2" CornerRadius="5" BorderBrush="Black">
+        <Border Background="LightGray" BorderThickness="5" CornerRadius="10" BorderBrush="Black">
         </Border>
         <StackPanel Orientation="Vertical">
             <Grid>
                 <Border Background="Yellow" ClipToBounds="True" BorderBrush="Black" BorderThickness="2" CornerRadius="5" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="13">
-                    <Grid Width="70" Height="70">
+                    <Grid Width="140" Height="140">
                         <Viewbox Style="{StaticResource SYMBOL_VIEWBOX}">
                             <Grid Width="32" Height="32">
                                 <Path Fill="Black" Data="{StaticResource SYMBOL_WARNING}"/>
@@ -34,7 +33,7 @@
                 </Border>
             </Grid>
             <Grid>
-                <TextBlock Style="{StaticResource MESSAGE_TEXT}" HorizontalAlignment="Center" Text="{Binding Path=Message, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:EventMessage}}}">Meddelande</TextBlock>
+                <TextBlock Style="{StaticResource MESSAGE_TEXT}" HorizontalAlignment="Center" x:FieldModifier="private" x:Name="messageText">Meddelande</TextBlock>
             </Grid>
         </StackPanel>
 
