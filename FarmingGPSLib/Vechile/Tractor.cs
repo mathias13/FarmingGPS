@@ -57,10 +57,8 @@ namespace FarmingGPSLib.Vechile
             }
             else
             {
-                if (_startOfReverse.Distance(receiver.CurrentCoordinate) > 15.0 || heading.IsBetween(reverseHeading.Subtract(45.0), reverseHeading.Add(45.0)))
-                {
+                if (_startOfReverse.Distance(receiver.CurrentCoordinate) > 20.0 || heading.IsBetween(reverseHeading.Subtract(45.0), reverseHeading.Add(45.0)) || receiver.CurrentSpeed.ToKilometersPerHour().Value > 4.0 )
                     _startOfReverse = Coordinate.Empty;
-                }
                 else
                     heading = heading.Mirror().Normalize();
             }
