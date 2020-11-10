@@ -389,20 +389,7 @@ namespace FarmingGPS.Visualization
             else
                 Dispatcher.Invoke(new Action<object, bool>(trackingLine_ActiveChanged), System.Windows.Threading.DispatcherPriority.Normal, sender, active);
         }
-
-        private void trackingLine_DepletedChanged(object sender, bool depleted)
-        {
-            if (Dispatcher.Thread.Equals(Thread.CurrentThread))
-            {
-                TrackingLine trackingLine = (TrackingLine)sender;
-                if (!_trackingLines.ContainsKey(trackingLine))
-                    return;
-                RedrawLines();
-            }
-            else
-                Dispatcher.Invoke(new Action<object, bool>(trackingLine_DepletedChanged), System.Windows.Threading.DispatcherPriority.Normal, sender, depleted);
-        }
-  
+          
         #endregion
 
         #region FieldTrackerEvents
@@ -716,7 +703,6 @@ namespace FarmingGPS.Visualization
             Int32Collection indices = builder.CreateIndices(linePoints.Count);
 
             trackingLine.ActiveChanged += trackingLine_ActiveChanged;
-            //trackingLine.DepletedChanged += trackingLine_DepletedChanged;
             _trackingLines.Add(trackingLine, new MeshData() { Points = points, Indices = indices });
         }
 
@@ -724,7 +710,6 @@ namespace FarmingGPS.Visualization
         {
             _trackingLines.Remove(trackingLine);
             trackingLine.ActiveChanged -= trackingLine_ActiveChanged;
-            trackingLine.DepletedChanged -= trackingLine_DepletedChanged;
         }
 
         private void FarmingVisualizer_Loaded(object sender, RoutedEventArgs e)
@@ -796,9 +781,6 @@ namespace FarmingGPS.Visualization
             _trackLineFocus.Positions = null;
             _trackLineFocus.TriangleIndices = null;
 
-            _trackLineDepleted.Positions = null;
-            _trackLineDepleted.TriangleIndices = null;
-
             _trackLineActive.Positions = null;
             _trackLineActive.TriangleIndices = null;
 
@@ -811,9 +793,6 @@ namespace FarmingGPS.Visualization
             var inactivePositions = new Point3DCollection();
             var inactiveIndices = new Int32Collection();
             var inactiveOffset = 0;
-            var depletedPositions = new Point3DCollection();
-            var depletedIndices = new Int32Collection();
-            var depletedOffset = 0;
 
             foreach (var trackingLine in _trackingLines)
             {
@@ -828,14 +807,6 @@ namespace FarmingGPS.Visualization
 
                     _trackLineFocus.Positions = focusPositions;
                     _trackLineFocus.TriangleIndices = focusIndices;
-                }
-                else if (trackingLine.Key.Depleted)
-                {
-                    foreach (var point in trackingLine.Value.Points)
-                        depletedPositions.Add(point);
-                    foreach (var indice in trackingLine.Value.Indices)
-                        depletedIndices.Add(indice + depletedOffset);
-                    depletedOffset += trackingLine.Value.Points.Count;
                 }
                 else if (trackingLine.Key.Active)
                 {
@@ -854,9 +825,6 @@ namespace FarmingGPS.Visualization
                     inactiveOffset += trackingLine.Value.Points.Count;
                 }
             }
-
-            _trackLineDepleted.Positions = depletedPositions;
-            _trackLineDepleted.TriangleIndices = depletedIndices;
 
             _trackLineActive.Positions = activePositions;
             _trackLineActive.TriangleIndices = activeIndices;

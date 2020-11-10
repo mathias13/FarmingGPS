@@ -164,15 +164,6 @@
                         </GeometryModel3D>
                         <GeometryModel3D>
                             <GeometryModel3D.BackMaterial>
-                                <DiffuseMaterial Brush="{StaticResource TRACK_LINE_DEPLETED}"/>
-                            </GeometryModel3D.BackMaterial>
-                            <GeometryModel3D.Geometry>
-                                <MeshGeometry3D x:Name="_trackLineDepleted" x:FieldModifier="private">
-                                </MeshGeometry3D>
-                            </GeometryModel3D.Geometry>
-                        </GeometryModel3D>
-                        <GeometryModel3D>
-                            <GeometryModel3D.BackMaterial>
                                 <DiffuseMaterial>
                                     <DiffuseMaterial.Brush>
                                         <SolidColorBrush x:Name="LineFocusBrush" Color="White"/>
