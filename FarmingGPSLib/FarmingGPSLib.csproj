@@ -123,6 +123,7 @@
     <Compile Include="Equipment\Win32\DCB.cs" />
     <Compile Include="Equipment\Win32\OVERLAPPED.cs" />
     <Compile Include="Equipment\Win32\Win32Com.cs" />
+    <Compile Include="FarmingModes\SeedingMode.cs" />
     <Compile Include="FieldItems\FieldRateTracker.cs" />
     <Compile Include="Settings\BogBalle\Calibrator.cs" />
     <Compile Include="Equipment\BogBalle\L2Plus.cs" />

@@ -51,17 +51,17 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Aktuell giva</TextBlock>
-                    <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg/ha" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=ActualSpreadingRate, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
+                    <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg/ha" Style="{StaticResource INTEGERUPDOWN_READONLY}" Value="{Binding Path=ActualSpreadingRate, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">PTO</TextBlock>
-                    <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 varv" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=PTO, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
+                    <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 varv" Style="{StaticResource INTEGERUPDOWN_READONLY}" Value="{Binding Path=PTO, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1">
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Inställd giva</TextBlock>
-                    <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg/ha" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=SetSpreadingRate, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
+                    <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg/ha" Style="{StaticResource INTEGERUPDOWN_READONLY}" Value="{Binding Path=SetSpreadingRate, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Hastighet</TextBlock>
-                    <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="50" AllowSpin="False" IsReadOnly="True" FormatString="0.0 km/h" Style="{StaticResource SINGLEUPDOWN}" Value="{Binding Path=Speed, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
+                    <extended:SingleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="50" AllowSpin="False" IsReadOnly="True" FormatString="0.0 km/h" Style="{StaticResource SINGLEUPDOWN_READONLY}" Value="{Binding Path=Speed, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Vikt</TextBlock>
-                    <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg" Style="{StaticResource INTEGERUPDOWN}" Value="{Binding Path=Tara, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
+                    <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" AllowSpin="False" IsReadOnly="True" FormatString="0 kg" Style="{StaticResource INTEGERUPDOWN_READONLY}" Value="{Binding Path=Tara, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:BogballeCalibrator}}}"/>
                 </StackPanel>
             </Grid>
         </StackPanel>

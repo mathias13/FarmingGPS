@@ -27,24 +27,37 @@ namespace FarmingGPSLib.FarmingModes.Tools
 
         private bool _active;
 
+        private bool _headland;
+
+        private IGeometry _startPoint = null;
+
+        private IGeometry _endPoint = null;
+
         protected ILineString _line;
 
         protected ILineSegment _extendedLine = null;
 
         #endregion
 
-        public TrackingLine(ILineString line, bool extendedLine)
+        public TrackingLine(ILineString line, bool headland)
         {
             _depleted = false;
             _active = false;
             _line = line;
-            if (extendedLine)
+            _headland = headland;
+            if (!headland)
             {
                 _extendedLine = new LineSegment(line.Coordinates[0], line.Coordinates[1]);
-                Coordinate p0 = HelperClassCoordinate.ComputePoint(line.Coordinates[0], _extendedLine.Angle, -25.0);
-                Coordinate p1 = HelperClassCoordinate.ComputePoint(line.Coordinates[1], _extendedLine.Angle, 25.0);
+                Coordinate p0 = HelperClassCoordinate.ComputePoint(line.Coordinates[0], _extendedLine.Angle, -40.0);
+                Coordinate p1 = HelperClassCoordinate.ComputePoint(line.Coordinates[1], _extendedLine.Angle, 40.0);
                 _extendedLine = new LineSegment(p0, p1);
             }
+        }
+
+        public TrackingLine(ILineString line, IGeometry startPoint, IGeometry endPoint, bool headland) : this(line, headland)
+        {
+            _startPoint = startPoint;
+            _endPoint = endPoint;
         }
 
         public OrientationToLine GetOrientationToLine(Coordinate point, DotSpatial.Positioning.Azimuth directionOfTravel)
@@ -53,7 +66,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
             Coordinate p1 = Coordinate.Empty;
             double tempDistance = 0.0;
             double distance = double.MaxValue;
-            if (_extendedLine != null)
+            if (_extendedLine != null  && !_headland)
             {
                 p0 = _extendedLine.P0;
                 p1 = _extendedLine.P1;
@@ -94,7 +107,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
         {
             double tempDistance = 0.0;
             double distance = double.MaxValue;
-            if (_extendedLine != null)
+            if (_extendedLine != null && !_headland)
                 distance = CgAlgorithms.DistancePointLine(point, _extendedLine.P0, _extendedLine.P1);
             else
             {
@@ -111,17 +124,23 @@ namespace FarmingGPSLib.FarmingModes.Tools
         public bool Depleted
         {
             get { return _depleted; }
-            set 
-            { 
-                if(_depleted != value)
+            set
+            {
+                bool changed = false;
+                if (_depleted != value)
                 {
                     if (value && Active)
                         Active = false;
+                    changed = true;
+                }
+                _depleted = value;
+
+                if (changed)
+                {
                     DepletedChangedEventHandler handler = DepletedChanged;
                     if (handler != null)
                         handler.Invoke(this, value);
                 }
-                _depleted = value;
             }
         }
 
@@ -130,16 +149,21 @@ namespace FarmingGPSLib.FarmingModes.Tools
             get { return _active; }
             set
             {
+                bool changed = false;
                 if(_active != value)
                 {
                     if (value && Depleted)
                         Depleted = false;
+                    changed = true;
+                }
+                _active = value;
 
+                if (changed)
+                {
                     ActiveChangedEventHandler handler = ActiveChanged;
                     if (handler != null)
                         handler.Invoke(this, value);
                 }
-                _active = value;
             }
         }
 
@@ -179,6 +203,16 @@ namespace FarmingGPSLib.FarmingModes.Tools
         public ILineString Line
         {
             get { return _line; }
+        }
+
+        public IGeometry StartPoint
+        {
+            get { return _startPoint; }
+        }
+
+        public IGeometry EndPoint
+        {
+            get { return _endPoint; }
         }
 
         public override bool Equals(object obj)

@@ -46,6 +46,13 @@ namespace FarmingGPSLib.FieldItems
 
         public struct TrackPoint
         {
+            public TrackPoint(Coordinate leftPoint, Coordinate rightPoint)
+            {
+                LineSegment line = new LineSegment(leftPoint, rightPoint);
+                LeftPoint = HelperClassCoordinate.ComputePoint(leftPoint, line.Angle + HelperClassAngles.DEGREE_180_RAD, 0.10);
+                RightPoint = HelperClassCoordinate.ComputePoint(rightPoint, line.Angle, 0.10);
+            }
+
             public Coordinate LeftPoint;
 
             public Coordinate RightPoint;
@@ -414,7 +421,7 @@ namespace FarmingGPSLib.FieldItems
         private bool CheckHoleValidity(ILinearRing hole)
         {
             double area = Math.Abs(CgAlgorithms.SignedArea(hole.Coordinates));
-            if (area < 0.4)
+            if (area < 4.0)
                 return false;
 
             return true;

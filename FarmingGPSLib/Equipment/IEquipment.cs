@@ -32,7 +32,7 @@ namespace FarmingGPSLib.Equipment
             get;
         }
 
-        Distance WidthExclOverlap
+        Distance WidthOverlap
         {
             get;
         }

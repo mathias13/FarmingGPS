@@ -357,6 +357,11 @@ namespace FarmingGPSLib.FarmingModes
             throw new NotImplementedException();
         }
 
+        public virtual void UpdateEvents(ILineString positionEquipment, DotSpatial.Positioning.Azimuth direction)
+        {
+            throw new NotImplementedException();
+        }
+
         public event EventHandler<string> FarmingEvent;
 
         #endregion
@@ -391,9 +396,9 @@ namespace FarmingGPSLib.FarmingModes
         {
             FarmingModeState farmingModeState = (FarmingModeState)restoredState;
             foreach (SimpleLine line in farmingModeState.TrackingLines)
-                _trackingLines.Add(new TrackingLine(new LineString(line.Line), true));
+                _trackingLines.Add(new TrackingLine(new LineString(line.Line), false));
             foreach (SimpleLine line in farmingModeState.TrackingLinesHeadLand)
-                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line), false));
+                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line), true));
         }
 
         #endregion

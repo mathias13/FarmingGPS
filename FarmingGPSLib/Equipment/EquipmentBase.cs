@@ -112,7 +112,7 @@ namespace FarmingGPSLib.Equipment
             }
         }
 
-        public Distance WidthExclOverlap
+        public Distance WidthOverlap
         {
             get
             {

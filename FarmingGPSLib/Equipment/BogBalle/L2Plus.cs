@@ -7,7 +7,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
 {
     public class L2Plus : EquipmentBase, IEquipmentControl, IEquipmentStat, IDisposable
     {
-        private readonly double[,] STOP_START_DISTANCES = new double[2, 3] { { 12, 0, 10 }, { 24, -6, 10 } };
+        private readonly double[,] STOP_START_DISTANCES = new double[2, 3] { { 12, 0, 10 }, { 24, -5, 9 } };
 
         private static double FULL_CONTENT = 1500.0;
 

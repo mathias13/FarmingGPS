@@ -56,22 +56,27 @@ namespace FarmingGPSLib.FarmingModes
         public override void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction)
         {
             base.UpdateEvents(position, direction);
+        }
+
+        public override void UpdateEvents(ILineString positionEquipment, DotSpatial.Positioning.Azimuth direction)
+        {
+            base.UpdateEvents(positionEquipment, direction);
             foreach (TrackingLine trackingLine in _trackingLines)
-                if(trackingLine is TrackingLineStartStopEvent)
-                    if(trackingLine.Active)
-                        if ((trackingLine as TrackingLineStartStopEvent).EventFired(direction, position))
+                if (trackingLine is TrackingLineStartStopEvent)
+                    if (trackingLine.Active)
+                        if ((trackingLine as TrackingLineStartStopEvent).EventFired(direction, positionEquipment))
                             OnFarmingEvent((trackingLine as TrackingLineStartStopEvent).Message);
         }
 
-        protected override void AddTrackingLines(IList<LineString> trackingLines)
+        protected override void AddTrackingLines(IList<LineString> trackingLines, IList<IGeometry> startPoints, IList<IGeometry> endPoints)
         {
             _trackingLines.Clear();
-            if(_startDistance == double.MinValue || _stopDistance == double.MinValue)
+            if (_startDistance == double.MinValue || _stopDistance == double.MinValue)
                 foreach (LineString line in trackingLines)
-                    _trackingLines.Add(new TrackingLine(line, true));
+                    _trackingLines.Add(new TrackingLine(line, false));
             else
-                foreach (LineString line in trackingLines)
-                    _trackingLines.Add(new TrackingLineStartStopEvent(line, _startDistance, _stopDistance));
+                for (int i = 0; i < trackingLines.Count; i++)
+                    _trackingLines.Add(new TrackingLineStartStopEvent(trackingLines[i], _startDistance, _stopDistance));
 
         }
 
@@ -104,9 +109,9 @@ namespace FarmingGPSLib.FarmingModes
             List<LineString> trackingLines = new List<LineString>();
             foreach (SimpleLine line in fertilizingModeState.TrackingLines)
                 trackingLines.Add(new LineString(line.Line));
-            AddTrackingLines(trackingLines);
+            AddTrackingLines(trackingLines, new List<IGeometry>(), new List<IGeometry>());
             foreach (SimpleLine line in fertilizingModeState.TrackingLinesHeadLand)
-                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line), false));
+                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line), true));
         }
 
         #endregion
