@@ -149,7 +149,7 @@ namespace FarmingGPSLib.FarmingModes
             for (int i = 0; i < _headlandTurns; i++)
             {
                 headlandTrackingLines.AddRange(GetHeadlandLines(distanceFromShell, leftConstraints, rightConstraints) );
-                distanceFromShell += _equipment.WidthExclOverlap.ToMeters().Value;
+                distanceFromShell += _equipment.WidthOverlap.ToMeters().Value;
             }
 
             foreach (LineString line in headlandTrackingLines)
@@ -178,21 +178,21 @@ namespace FarmingGPSLib.FarmingModes
 
             List<ILineSegment> linesExtended = new List<ILineSegment>();
             linesExtended.Add(baseLineExtended);
-            ILineSegment extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.WidthExclOverlap.ToMeters().Value);
+            ILineSegment extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.WidthOverlap.ToMeters().Value);
             int lineIteriator = 2;
             while (fieldEnvelope.Intersects(extendedLine))
             {
                 linesExtended.Add(extendedLine);
-                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.WidthExclOverlap.ToMeters().Value * lineIteriator);
+                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.WidthOverlap.ToMeters().Value * lineIteriator);
                 lineIteriator++;
             }
 
-            extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.WidthExclOverlap.ToMeters().Value);
+            extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.WidthOverlap.ToMeters().Value);
             lineIteriator = 2;
             while (fieldEnvelope.Intersects(extendedLine))
             {
                 linesExtended.Add(extendedLine);
-                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.WidthExclOverlap.ToMeters().Value * lineIteriator);
+                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.WidthOverlap.ToMeters().Value * lineIteriator);
                 lineIteriator++;
             }
 
