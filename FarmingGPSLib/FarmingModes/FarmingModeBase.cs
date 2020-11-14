@@ -83,7 +83,7 @@ namespace FarmingGPSLib.FarmingModes
         public FarmingModeBase(IField field, IEquipment equipment, Distance headlandDistance) : this(field)
         {
             double distance = headlandDistance.ToMeters().Value;
-            double equipmentWidth = equipment.WidthExclOverlap.ToMeters().Value;
+            double equipmentWidth = equipment.WidthOverlap.ToMeters().Value;
             int headLandTurns = 0;
             while ((headLandTurns * equipmentWidth) < distance)
                 headLandTurns++;

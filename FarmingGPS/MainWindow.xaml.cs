@@ -415,7 +415,7 @@ namespace FarmingGPS
                                 distanceToTrackingLine = _activeTrackingLine.GetDistanceToLine(coordinates[coordinates.Length - 1].Center);
                             if (distanceToTrackingLine > 1.0)
                             {
-                                TrackingLine newTrackingLine = _farmingMode.GetClosestLine(coordinates[coordinates.Length - 1].Center);
+                                TrackingLine newTrackingLine = _farmingMode.GetClosestLine(coordinates[coordinates.Length - 1].Center, coordinates[coordinates.Length - 1].Heading);
                                 if (_activeTrackingLine == null)
                                     _activeTrackingLine = newTrackingLine;
                                 else if (!_activeTrackingLine.Equals(newTrackingLine))
