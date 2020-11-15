@@ -59,7 +59,7 @@
             <Grid Grid.Row="3" Margin="20,10,20,20">
                 <StackPanel Orientation="Vertical">
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Tegmått</TextBlock>
-                    <ComboBox Style="{StaticResource COMBOBOX}" HorizontalAlignment="Center" x:FieldModifier="private" x:Name="HeadLandType" SelectionChanged="HeadLandType_SelectionChanged">
+                    <ComboBox Style="{StaticResource COMBOBOX}" HorizontalAlignment="Center" x:FieldModifier="private" x:Name="HeadLandType">
                         <ComboBoxItem Selector.IsSelected="True">Antal tegar</ComboBoxItem>
                         <ComboBoxItem>Minsta tegbredd</ComboBoxItem>
                     </ComboBox>
@@ -72,9 +72,9 @@
                         <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="1" Maximum="20" AllowSpin="True" Increment="1" FormatString="0.00 m" x:FieldModifier="private" x:Name="NumericHeadlandWidth" Style="{StaticResource INTEGERUPDOWN}" Value="6"/>
                     </StackPanel>
                     <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Tegriktning</TextBlock>
-                    <ComboBox Style="{StaticResource COMBOBOX}" HorizontalAlignment="Center" x:FieldModifier="private" x:Name="HeadLandOrientation" SelectionChanged="HeadLandType_SelectionChanged">
-                        <ComboBoxItem Selector.IsSelected="True">Utåt</ComboBoxItem>
-                        <ComboBoxItem>Innåt</ComboBoxItem>
+                    <ComboBox Style="{StaticResource COMBOBOX}" HorizontalAlignment="Center" x:FieldModifier="private" x:Name="HeadLandOrientation">
+                        <ComboBoxItem Selector.IsSelected="True">Utåt/Höger</ComboBoxItem>
+                        <ComboBoxItem>Innåt/Vänster</ComboBoxItem>
                     </ComboBox>
                 </StackPanel>
             </Grid>

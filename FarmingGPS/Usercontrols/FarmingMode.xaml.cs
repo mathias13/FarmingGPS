@@ -14,6 +14,7 @@ namespace FarmingGPS.Usercontrols
         public FarmingMode()
         {
             InitializeComponent();
+            HeadLandType.SelectionChanged += HeadLandType_SelectionChanged;
         }
         
 
@@ -39,6 +40,11 @@ namespace FarmingGPS.Usercontrols
         public Distance HeadLandWidth
         {
             get { return Distance.FromMeters(NumericHeadlandWidth.Value.Value); }
+        }
+
+        public bool EquipmentSideOutRight
+        {
+            get { return HeadLandOrientation.SelectedIndex == 0; }
         }
 
         #endregion
