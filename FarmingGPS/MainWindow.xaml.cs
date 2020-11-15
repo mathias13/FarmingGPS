@@ -945,6 +945,7 @@ namespace FarmingGPS
                 _visualization.DeleteLine(trackingLine);
             _farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadland[_selectedTrackingLine], headingFromLine);
 
+            _visualization.AddLines(_farmingMode.TrackingLinesHeadland.ToArray());
             _visualization.AddLines(_farmingMode.TrackingLines.ToArray());
             _visualization.CancelFocus();
             _selectedTrackingLine = -1;
@@ -1308,13 +1309,14 @@ namespace FarmingGPS
             }
             
             _equipment.Overlap = Distance.FromMeters(userControl.Overlap);
+            if (_equipment.SideDependent)
+                ;
             if (_equipment.FarmingMode == null)
             {
                 if(userControl.HeadLandWidthUsed)
                     _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, userControl.HeadLandWidth);
                 else
                     _farmingMode = new FarmingGPSLib.FarmingModes.GeneralHarrowingMode(_field, _equipment, userControl.Headlands);
-
             }
             else
             {

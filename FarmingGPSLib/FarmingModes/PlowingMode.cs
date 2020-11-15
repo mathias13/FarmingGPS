@@ -119,6 +119,10 @@ namespace FarmingGPSLib.FarmingModes
             this.CreateTrackingLines(trackingLine);
         }
 
+        public override void UpdateEvents(ILineString positionEquipment, Azimuth direction)
+        {
+        }
+
         public override void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction)
         {
             foreach (TrackingLine trackingLine in _trackingLines)
