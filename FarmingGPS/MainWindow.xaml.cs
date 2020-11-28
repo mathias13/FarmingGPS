@@ -769,7 +769,6 @@ namespace FarmingGPS
             if (_activeTrackingLine != null)
             {
                 OrientationToLine orientationToLine = _activeTrackingLine.GetOrientationToLine(vechileCoordinate, actualHeading);
-                _activeTrackingLine.Active = true;
                 LightBar.Direction direction = LightBar.Direction.Left;
                 if (orientationToLine.SideOfLine == OrientationToLine.Side.Left)
                     direction = LightBar.Direction.Right;
