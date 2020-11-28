@@ -23,9 +23,9 @@ namespace FarmingGPSLib.FarmingModes.Tools
 
         #region Private Variables
 
-        private bool _depleted;
+        private bool _depleted = false;
 
-        private bool _active;
+        private bool _active = false;
 
         private bool _headland;
 
