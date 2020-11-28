@@ -2,7 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
                     xmlns:themes="clr-namespace:Xceed.Wpf.Toolkit.Themes;assembly=Xceed.Wpf.Toolkit"
-                    xmlns:prim="clr-namespace:Xceed.Wpf.Toolkit.Primitives;assembly=Xceed.Wpf.Toolkit">
+                    xmlns:prim="clr-namespace:Xceed.Wpf.Toolkit.Primitives;assembly=Xceed.Wpf.Toolkit"     
+                    xmlns:hx="http://helix-toolkit.org/wpf/SharpDX">
 
     <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
@@ -886,8 +887,8 @@
         <Setter Property="Height" Value="{Binding ActualWidth, RelativeSource={RelativeSource Self}}"/>
     </Style>
 
-    <SolidColorBrush x:Key="TRACK_LINE_INACTIVE">#FFFFFFFF</SolidColorBrush>
-    <SolidColorBrush x:Key="TRACK_LINE_DEPLETED">#FF0000FF</SolidColorBrush>
+    <Color x:Key="TRACK_LINE_INACTIVE">#FFFFFFFF</Color>
+    <Color x:Key="TRACK_LINE_DEPLETED">#FF0000FF</Color>
 
     <ColorAnimationUsingKeyFrames x:Key="TRACK_LINE_ANIMATION" BeginTime="0:0:0" Duration="0:0:4" RepeatBehavior="Forever">
         <ColorKeyFrameCollection>
@@ -903,8 +904,8 @@
         </ColorKeyFrameCollection>
     </ColorAnimationUsingKeyFrames>
 
-    <SolidColorBrush x:Key="FIELD_OUTLINE">#FFFF0000</SolidColorBrush>
-    <SolidColorBrush x:Key="FIELD_FILL">#FF008000</SolidColorBrush>
-    <SolidColorBrush x:Key="TRACK_FILL">#FF32CD32</SolidColorBrush>
-    <SolidColorBrush x:Key="TRACK_HOLE">#FF008000</SolidColorBrush>
+    <Color x:Key="FIELD_OUTLINE">#FFFF0000</Color>
+    <hx:PhongMaterial x:Key="FIELD_FILL" EmissiveColor="#FF008000"/>
+    <hx:PhongMaterial x:Key="TRACK_FILL" EmissiveColor="#FF32CD32"/>
+    <hx:PhongMaterial x:Key="TRACK_HOLE" EmissiveColor="#FF008000"/>
 </ResourceDictionary>
