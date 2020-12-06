@@ -52,6 +52,12 @@ namespace FarmingGPSLib.Equipment
             get;
         }
 
+        bool OppositeSide
+        {
+            get;
+            set;
+        }
+
         DotSpatial.Topology.Coordinate GetLeftTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel);
 
         DotSpatial.Topology.Coordinate GetRightTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel);

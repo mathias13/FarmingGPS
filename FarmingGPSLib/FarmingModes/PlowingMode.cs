@@ -9,6 +9,7 @@ using DotSpatial.Topology.Algorithm;
 using DotSpatial.Topology.GeometriesGraph;
 using GpsUtilities.HelperClasses;
 using DotSpatial.Topology.Utilities;
+using DotSpatial.Projections.Transforms;
 
 namespace FarmingGPSLib.FarmingModes
 {
@@ -101,6 +102,7 @@ namespace FarmingGPSLib.FarmingModes
         public override void CreateTrackingLines(Coordinate aCoord, DotSpatial.Topology.Angle direction)
         {
             base.CreateTrackingLines(aCoord, direction);
+            FillFieldWithTrackingLines(HelperClassLines.CreateLine(aCoord, direction, 5.0));
         }
 
         public override void CreateTrackingLines(Coordinate aCoord, Coordinate bCoord)
@@ -116,7 +118,8 @@ namespace FarmingGPSLib.FarmingModes
 
         public override void CreateTrackingLines(TrackingLine trackingLine, DotSpatial.Topology.Angle directionFromLine)
         {
-            this.CreateTrackingLines(trackingLine);
+            DotSpatial.Topology.Angle newAngle = new DotSpatial.Topology.Angle(trackingLine.MainLine.Angle + directionFromLine.Radians);
+            this.CreateTrackingLines(trackingLine.MainLine.P0, newAngle);
         }
 
         public override void UpdateEvents(ILineString positionEquipment, Azimuth direction)
@@ -225,7 +228,14 @@ namespace FarmingGPSLib.FarmingModes
                 }
 
                 if (lineCoordinates.Count == 2)
-                    trackingLines.Add(new LineString(new List<Coordinate>() { lineCoordinates[0], lineCoordinates[1] }));
+                {
+                    //Check angle so we dont reverse the line
+                    var line = new LineSegment(lineCoordinates[0], lineCoordinates[1] );
+                    if ((int)line.Angle != (int)baseLine.Angle)
+                        trackingLines.Add(new LineString(new List<Coordinate>() { line.P1, line.P0 }));
+                    else
+                        trackingLines.Add(new LineString(new List<Coordinate>() { line.P0, line.P1 }));
+                }
                 else
                 {
                     int j = 1;
@@ -243,7 +253,12 @@ namespace FarmingGPSLib.FarmingModes
                         {
                             if (polygonToCheck.Contains(lineToCheck))
                             {
-                                trackingLines.Add(new LineString(new List<Coordinate>() { lineCoordinates[0], lineCoordinates[j] }));
+                                //Check angle so we dont reverse the line
+                                var line = new LineSegment(lineCoordinates[0], lineCoordinates[j]);
+                                if ((int)line.Angle != (int)baseLine.Angle)
+                                    trackingLines.Add(new LineString(new List<Coordinate>() { line.P1, line.P0 }));
+                                else
+                                    trackingLines.Add(new LineString(new List<Coordinate>() { line.P0, line.P1 }));
                                 lineCoordinates.RemoveAt(j);
                                 lineCoordinates.RemoveAt(0);
                                 j = 1;

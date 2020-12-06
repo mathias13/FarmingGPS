@@ -35,6 +35,8 @@ namespace FarmingGPSLib.Equipment
 
         protected bool _sideDependent = false;
 
+        protected bool _oppositeSide = false;
+
         protected Azimuth _fromDirectionOfTravel;
 
         protected Azimuth _bearingToLeftTip;
@@ -44,6 +46,16 @@ namespace FarmingGPSLib.Equipment
         protected Distance _distanceToLeftTip;
 
         protected Distance _distanceToRightTip;
+
+        protected Azimuth _oppositeSideFromDirectionOfTravel;
+
+        protected Azimuth _oppositeSideBearingToLeftTip;
+
+        protected Azimuth _oppositeSideBearingToRightTip;
+
+        protected Distance _oppositeSideDistanceToLeftTip;
+
+        protected Distance _oppositeSideDistanceToRightTip;
 
         #endregion
 
@@ -71,14 +83,26 @@ namespace FarmingGPSLib.Equipment
 
         private void CalculateDistances()
         {
-            Position attachedPoint = new Position(new Latitude(1.0), new Longitude(1.0));
-            Position centerOfEquipment = attachedPoint.TranslateTo(_fromDirectionOfTravel, _distanceFromVechile);
-            Position leftTip = centerOfEquipment.TranslateTo(Azimuth.West, CenterToTip);
-            Position rightTip = centerOfEquipment.TranslateTo(Azimuth.East, CenterToTip);
+            var attachedPoint = new Position(new Latitude(1.0), new Longitude(1.0));
+            var centerOfEquipment = attachedPoint.TranslateTo(_fromDirectionOfTravel, _distanceFromVechile);
+            var leftTip = centerOfEquipment.TranslateTo(Azimuth.West, CenterToTip);
+            var rightTip = centerOfEquipment.TranslateTo(Azimuth.East, CenterToTip);
             _bearingToLeftTip = attachedPoint.BearingTo(leftTip);
             _bearingToRightTip = attachedPoint.BearingTo(rightTip);
             _distanceToLeftTip = attachedPoint.DistanceTo(leftTip);
             _distanceToRightTip = attachedPoint.DistanceTo(rightTip);
+            if(SideDependent)
+            {
+                _oppositeSideFromDirectionOfTravel = Azimuth.South.Subtract(_fromDirectionOfTravel.Subtract(Azimuth.South));
+                var oppositeSideCenterOfEquipment = attachedPoint.TranslateTo(_oppositeSideFromDirectionOfTravel, _distanceFromVechile);
+                var oppositeSideLeftTip = oppositeSideCenterOfEquipment.TranslateTo(Azimuth.West, CenterToTip);
+                var oppositeSideRightTip = oppositeSideCenterOfEquipment.TranslateTo(Azimuth.East, CenterToTip);
+                _oppositeSideBearingToLeftTip = attachedPoint.BearingTo(oppositeSideLeftTip);
+                _oppositeSideBearingToRightTip = attachedPoint.BearingTo(oppositeSideRightTip);
+                _oppositeSideDistanceToLeftTip = attachedPoint.DistanceTo(oppositeSideLeftTip);
+                _oppositeSideDistanceToRightTip = attachedPoint.DistanceTo(oppositeSideRightTip);
+            }
+
         }
 
         #region IEquipment Implementation
@@ -90,7 +114,13 @@ namespace FarmingGPSLib.Equipment
 
         public Azimuth FromDirectionOfTravel
         {
-            get { return _fromDirectionOfTravel; }
+            get
+            {
+                if (SideDependent && OppositeSide)
+                    return _oppositeSideFromDirectionOfTravel;
+                else
+                    return _fromDirectionOfTravel;
+            }
         }
 
         public Distance Width
@@ -135,14 +165,26 @@ namespace FarmingGPSLib.Equipment
             get { return _sideDependent; }
         }
 
+        public virtual bool OppositeSide
+        {
+            get { return _oppositeSide; }
+            set { _oppositeSide = value; }
+        }
+
         public DotSpatial.Topology.Coordinate GetLeftTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel)
         {
-            return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_bearingToLeftTip)).Radians, _distanceToLeftTip.ToMeters().Value);
+            if (SideDependent && OppositeSide)
+                return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_oppositeSideBearingToLeftTip)).Radians, _oppositeSideDistanceToLeftTip.ToMeters().Value);
+            else
+                return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_bearingToLeftTip)).Radians, _distanceToLeftTip.ToMeters().Value);
         }
 
         public DotSpatial.Topology.Coordinate GetRightTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel)
         {
-            return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_bearingToRightTip)).Radians, _distanceToRightTip.ToMeters().Value);
+            if (SideDependent && OppositeSide)
+                return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_oppositeSideBearingToRightTip)).Radians, _oppositeSideDistanceToRightTip.ToMeters().Value);
+            else
+                return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_bearingToRightTip)).Radians, _distanceToRightTip.ToMeters().Value);
         }
 
         public DotSpatial.Topology.Coordinate GetCenter(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel)

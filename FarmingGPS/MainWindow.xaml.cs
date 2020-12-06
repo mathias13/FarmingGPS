@@ -131,6 +131,8 @@ namespace FarmingGPS
 
         private FarmingGPSLib.FarmingModes.IFarmingMode _farmingMode;
 
+        private bool _trackingLineBackwards = false;
+
         private IEquipment _equipment;
 
         private IVechile _vechile;
@@ -803,6 +805,11 @@ namespace FarmingGPS
             if (_activeTrackingLine != null)
             {
                 OrientationToLine orientationToLine = _activeTrackingLine.GetOrientationToLine(vechileCoordinate, actualHeading);
+
+                if (_equipment != null)
+                    if (_equipment.SideDependent)
+                        _equipment.OppositeSide = (_trackingLineBackwards && !orientationToLine.TrackingBackwards) || (!_trackingLineBackwards && orientationToLine.TrackingBackwards);
+
                 _activeTrackingLine.Active = true;
                 LightBar.Direction direction = LightBar.Direction.Left;
                 if (orientationToLine.SideOfLine == OrientationToLine.Side.Left)
@@ -1310,7 +1317,7 @@ namespace FarmingGPS
             
             _equipment.Overlap = Distance.FromMeters(userControl.Overlap);
             if (_equipment.SideDependent)
-                ;
+                _trackingLineBackwards = !userControl.EquipmentSideOutRight;
             if (_equipment.FarmingMode == null)
             {
                 if(userControl.HeadLandWidthUsed)

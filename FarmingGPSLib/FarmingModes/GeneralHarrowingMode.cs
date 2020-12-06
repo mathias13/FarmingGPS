@@ -157,7 +157,14 @@ namespace FarmingGPSLib.FarmingModes
                 }
 
                 if (lineCoordinates.Count == 2)
-                    linesToAdd.Add(new LineString(new List<Coordinate>() { lineCoordinates[0], lineCoordinates[1] }));
+                {
+                    //Check angle so we dont reverse the line
+                    var line = new LineSegment(lineCoordinates[0], lineCoordinates[1]);
+                    if ((int)line.Angle != (int)baseLine.Angle)
+                        linesToAdd.Add(new LineString(new List<Coordinate>() { line.P1, line.P0 }));
+                    else
+                        linesToAdd.Add(new LineString(new List<Coordinate>() { line.P0, line.P1 }));
+                }
                 else
                 {
                     int j = 1;
@@ -175,7 +182,12 @@ namespace FarmingGPSLib.FarmingModes
                         {
                             if (polygonToCheck.Contains(lineToCheck))
                             {
-                                linesToAdd.Add(new LineString(new List<Coordinate>() { lineCoordinates[0], lineCoordinates[j] }));
+                                //Check angle so we dont reverse the line
+                                var line = new LineSegment(lineCoordinates[0], lineCoordinates[j]);
+                                if ((int)line.Angle != (int)baseLine.Angle)
+                                    linesToAdd.Add(new LineString(new List<Coordinate>() { line.P1, line.P0 }));
+                                else
+                                    linesToAdd.Add(new LineString(new List<Coordinate>() { line.P0, line.P1 }));
                                 lineCoordinates.RemoveAt(j);
                                 lineCoordinates.RemoveAt(0);
                                 j = 1;
