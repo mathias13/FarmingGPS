@@ -816,7 +816,7 @@ namespace FarmingGPS.Visualization
                         activeIndices.Add(indice + activeOffset);
                     activeOffset += trackingLine.Value.Points.Count;
                 }
-                else
+                else if(!trackingLine.Key.Depleted)
                 {
                     foreach (var point in trackingLine.Value.Points)
                         inactivePositions.Add(point);

@@ -181,7 +181,7 @@ namespace FarmingGPS
             Closing += MainWindow_Closing;
 
             //Dispatcher timer so that receiver thread is not occupied 
-            _dispatcherTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(250.0), DispatcherPriority.Render, new EventHandler(_dispatcherTimer_Tick), Dispatcher);
+            _dispatcherTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(200.0), DispatcherPriority.Render, new EventHandler(_dispatcherTimer_Tick), Dispatcher);
             _dispatcherTimer.Start();
 
             //Thread for handling not so important stuff concerning position updates
@@ -237,10 +237,10 @@ namespace FarmingGPS
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            _secondaryTasksThreadStop = true;
+            _secondaryTasksThread.Join();
             _fieldTracker.StopTrack();
             _dispatcherTimer.Stop();
-            _secondaryTasksThreadStop = true;
-           _secondaryTasksThread.Join();
             if (_camera != null)
                 if (_camera is IDisposable)
                     (_camera as IDisposable).Dispose();
@@ -714,7 +714,7 @@ namespace FarmingGPS
             _sbpReceiverSender.ReadExceptionEvent += _sbpReceiverSender_ReadExceptionEvent;
             if (_receiver != null)
                 _receiver.Dispose();
-            _receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(200), TimeSpan.FromMilliseconds(1000))
+            _receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(1000))
             {
                 MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0)
             };
