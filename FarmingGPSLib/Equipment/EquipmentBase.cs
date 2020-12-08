@@ -23,6 +23,16 @@ namespace FarmingGPSLib.Equipment
             public double StatEndWeight;
 
             public bool SideDependent;
+
+            public double OppositeSideFromDirectionOfTravel;
+
+            public double OppositeSideBearingToLeftTip;
+
+            public double OppositeSideBearingToRightTip;
+
+            public double OppositeSideDistanceToLeftTip;
+
+            public double OppositeSideDistanceToRightTip;
         }
 
         #region Private Variables
@@ -47,15 +57,15 @@ namespace FarmingGPSLib.Equipment
 
         protected Distance _distanceToRightTip;
 
-        protected Azimuth _oppositeSideFromDirectionOfTravel;
+        protected Azimuth _oppositeSideFromDirectionOfTravel = Azimuth.Empty;
 
-        protected Azimuth _oppositeSideBearingToLeftTip;
+        protected Azimuth _oppositeSideBearingToLeftTip = Azimuth.Empty;
 
-        protected Azimuth _oppositeSideBearingToRightTip;
+        protected Azimuth _oppositeSideBearingToRightTip = Azimuth.Empty;
 
-        protected Distance _oppositeSideDistanceToLeftTip;
+        protected Distance _oppositeSideDistanceToLeftTip = Distance.Empty;
 
-        protected Distance _oppositeSideDistanceToRightTip;
+        protected Distance _oppositeSideDistanceToRightTip = Distance.Empty;
 
         #endregion
 
@@ -209,7 +219,18 @@ namespace FarmingGPSLib.Equipment
                     startWeight = stat.StartWeight;
                     endWeight = stat.EndWeight;
                 }
-                return new EquipmentState() { Width = Width.ToMeters().Value, DistanceFromVechile = DistanceFromVechileToCenter.ToMeters().Value, FromDirectionOfTravel = FromDirectionOfTravel.DecimalDegrees, Overlap = Overlap.ToMeters().Value, StatStartWeight = startWeight, StatEndWeight = endWeight, SideDependent = _sideDependent };
+                return new EquipmentState() { Width = Width.ToMeters().Value,
+                    DistanceFromVechile = DistanceFromVechileToCenter.ToMeters().Value,
+                    FromDirectionOfTravel = FromDirectionOfTravel.DecimalDegrees,
+                    Overlap = Overlap.ToMeters().Value,
+                    StatStartWeight = startWeight,
+                    StatEndWeight = endWeight,
+                    SideDependent = _sideDependent,
+                    OppositeSideFromDirectionOfTravel = _oppositeSideFromDirectionOfTravel.DecimalDegrees,
+                    OppositeSideBearingToLeftTip = _oppositeSideBearingToLeftTip.DecimalDegrees,
+                    OppositeSideBearingToRightTip = _oppositeSideBearingToRightTip.DecimalDegrees,
+                    OppositeSideDistanceToLeftTip = _oppositeSideDistanceToLeftTip.ToMeters().Value,
+                    OppositeSideDistanceToRightTip = _oppositeSideDistanceToRightTip.ToMeters().Value};
             }
         }
 
@@ -228,6 +249,14 @@ namespace FarmingGPSLib.Equipment
             _fromDirectionOfTravel = new Azimuth(equipmentState.FromDirectionOfTravel);
             _overlap = Distance.FromMeters(equipmentState.Overlap);
             _sideDependent = equipmentState.SideDependent;
+            if(SideDependent)
+            {
+                _oppositeSideFromDirectionOfTravel = new Azimuth(equipmentState.OppositeSideFromDirectionOfTravel);
+                _oppositeSideBearingToLeftTip = new Azimuth(equipmentState.OppositeSideBearingToLeftTip);
+                _oppositeSideBearingToRightTip = new Azimuth(equipmentState.OppositeSideBearingToRightTip);
+                _oppositeSideDistanceToLeftTip = Distance.FromMeters(equipmentState.OppositeSideDistanceToLeftTip);
+                _oppositeSideDistanceToRightTip = Distance.FromMeters(equipmentState.OppositeSideDistanceToRightTip);
+            }
 
             if (this is IEquipmentStat)
             {
