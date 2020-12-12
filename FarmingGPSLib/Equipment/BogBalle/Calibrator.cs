@@ -328,7 +328,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                         byte[] writeBytes = BuildMessage(COMMAND_INIT + writeMessage.Command + writeMessage.Value);
 
                         uint bytesWritten = 0;
-                        DateTime sendTimeout = DateTime.Now.AddMilliseconds(500);
+                        DateTime sendTimeout = DateTime.Now.AddMilliseconds(200);
                         while (bytesWritten != writeBytes.Length && DateTime.Now < sendTimeout)
                         {
                             if (!Win32Com.WriteFile(portHandle, writeBytes, (uint)writeBytes.Length, out bytesWritten, IntPtr.Zero))
@@ -341,7 +341,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                         if (bytesWritten == writeBytes.Length)
                         {
                             string answer = string.Empty;
-                            DateTime readTimeout = DateTime.Now.AddMilliseconds(500);
+                            DateTime readTimeout = DateTime.Now.AddMilliseconds(200);
                             while (!answer.Contains(END_CHAR) && DateTime.Now < readTimeout)
                             {
                                 uint bytesRead = 0;
@@ -373,7 +373,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                         byte[] writeBytes = BuildMessage(READ_INIT + _readMessage.Command);
 
                         uint bytesWritten = 0;
-                        DateTime sendTimeout = DateTime.Now.AddMilliseconds(500);
+                        DateTime sendTimeout = DateTime.Now.AddMilliseconds(200);
                         while (bytesWritten != writeBytes.Length && DateTime.Now < sendTimeout)
                         {
                             if (!Win32Com.WriteFile(portHandle, writeBytes, (uint)writeBytes.Length, out bytesWritten, IntPtr.Zero))
@@ -386,7 +386,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                         if (bytesWritten == writeBytes.Length)
                         {
                             string answer = string.Empty;
-                            DateTime readTimeout = DateTime.Now.AddMilliseconds(500);
+                            DateTime readTimeout = DateTime.Now.AddMilliseconds(200);
                             while (!answer.Contains(END_CHAR) && DateTime.Now < readTimeout)
                             {
                                 uint bytesRead = 0;
