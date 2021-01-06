@@ -95,6 +95,9 @@
     <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>FarmingGPS.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Cyotek.Drawing.BitmapFont, Version=1.0.0.0, Culture=neutral, PublicKeyToken=58daa28b0b2de221, processorArchitecture=MSIL">
       <HintPath>..\packages\Cyotek.Drawing.BitmapFont.1.3.4\lib\net46\Cyotek.Drawing.BitmapFont.dll</HintPath>
@@ -239,6 +242,7 @@
       <DependentUpon>UserPasswordDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="GeometryUtilities\Lines.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Settings\SettingGroup.cs" />
     <Compile Include="Usercontrols\Equipments\VaderstadController.xaml.cs">
       <DependentUpon>VaderstadController.xaml</DependentUpon>

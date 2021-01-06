@@ -80,6 +80,7 @@ namespace FarmingGPSLib.StateRecovery
 
             _preserveInterval = preserveInterval;
             _preserveThread = new Thread(new ThreadStart(PreserveThread));
+            _preserveThread.Priority = ThreadPriority.Lowest;
             _preserveThread.Start();
         }
 
@@ -144,7 +145,7 @@ namespace FarmingGPSLib.StateRecovery
                     nextPreserve = DateTime.Now.Add(_preserveInterval);
                 }
                 else
-                    Thread.Sleep(1);
+                    Thread.Sleep(500);
             }
         }
 

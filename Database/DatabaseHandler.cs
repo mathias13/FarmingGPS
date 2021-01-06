@@ -74,6 +74,7 @@ namespace FarmingGPS.Database
             _databaseContext = new FarmingGPSDataContext(connection.ConnectionString);
             _databaseContext.Connection.StateChange += Connection_StateChange;
             _onlineCheckerThread = new Thread(new ThreadStart(OnlineCheckThread));
+            _onlineCheckerThread.Priority = ThreadPriority.BelowNormal;
             _onlineCheckerThread.Start();
         }
 
@@ -492,7 +493,7 @@ namespace FarmingGPS.Database
                     nextConnectionCheck = DateTime.Now.AddSeconds(_online ? 120.0 : 30.0);
                 }
 
-                Thread.Sleep(10);
+                Thread.Sleep(500);
             }
         }
 

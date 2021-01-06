@@ -36,7 +36,7 @@ using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
-
+using System.Diagnostics;
 
 namespace FarmingGPS
 {
@@ -83,6 +83,8 @@ namespace FarmingGPS
         protected const double MINIMUM_CHANGE_DIRECTION = 3.0;
 
         protected const double MAXIMUM_CHANGE_DIRECTION = 10.0;
+
+        protected const double TRACKINGLINE_COVERAGE_DEPLETED = 0.95;
 
         protected readonly IDictionary<Type, Type> EQUIPMENTCONTROL_VISUALIZATION = new Dictionary<Type, Type>
         {
@@ -147,6 +149,8 @@ namespace FarmingGPS
         private bool _secondaryTasksThreadStop = false;
                
         private DispatcherTimer _dispatcherTimer;
+
+        private Stopwatch _stopWatch = new Stopwatch();
         
         private Queue<LightBarUpdateStruct> _lightBarQueue = new Queue<LightBarUpdateStruct>();
 
@@ -186,6 +190,7 @@ namespace FarmingGPS
 
             //Thread for handling not so important stuff concerning position updates
             _secondaryTasksThread = new System.Threading.Thread(new System.Threading.ThreadStart(SecondaryTasksThread));
+            _secondaryTasksThread.Priority = System.Threading.ThreadPriority.BelowNormal;
             _secondaryTasksThread.Start();
 
             //_camera = new AxisCamera("AxisCase");
@@ -195,6 +200,8 @@ namespace FarmingGPS
             SetValue(CameraUnavilableProperty, Visibility.Visible);
                         
             _distanceTriggerFieldTracker = new DistanceTrigger(MINIMUM_DISTANCE_BETWEEN_POINTS, MAXIMUM_DISTANCE_BETWEEN_POINTS, MINIMUM_CHANGE_DIRECTION, MAXIMUM_CHANGE_DIRECTION);
+
+            _stopWatch.Start();
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -361,6 +368,8 @@ namespace FarmingGPS
                 
         private void _dispatcherTimer_Tick(object sender, EventArgs e)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             CoordinateUpdateStruct? newCoord = null;
             LightBarUpdateStruct? newLightBar = null;
 
@@ -375,6 +384,9 @@ namespace FarmingGPS
             
             if (newLightBar.HasValue)
                 _lightBar.SetDistance(newLightBar.Value.Distance, newLightBar.Value.Direction);
+
+            if (stopwatch.ElapsedMilliseconds > 100)
+                Log.Info("Dispatcher timer took more than 100ms");
         }
 
         private void SecondaryTasksThread()
@@ -383,6 +395,8 @@ namespace FarmingGPS
             {
                 if (_coordinateUpdateStructQueueSecondaryTasks.Count > 0)
                 {
+                    Stopwatch stopwatch = new Stopwatch();
+                    stopwatch.Start();
                     CoordinateUpdateStruct[] coordinates = new CoordinateUpdateStruct[_coordinateUpdateStructQueueSecondaryTasks.Count];
                     for (int i = 0; i < coordinates.Length; i++)
                         coordinates[i] = _coordinateUpdateStructQueueSecondaryTasks.Dequeue();
@@ -395,10 +409,11 @@ namespace FarmingGPS
                             _fieldCreator = null;
                     }
 
+                    var trackingLineTime = stopwatch.ElapsedMilliseconds;
                     if (DateTime.Now > _trackingLineEvaluationTimeout)
                     {
                         if (_farmingMode != null)
-                        {
+                        {                            
                             double distanceToTrackingLine = double.MaxValue;
                             if (_activeTrackingLine != null)
                                 distanceToTrackingLine = _activeTrackingLine.GetDistanceToLine(coordinates[coordinates.Length - 1].Center);
@@ -409,7 +424,7 @@ namespace FarmingGPS
                                     _activeTrackingLine = newTrackingLine;
                                 else if (!_activeTrackingLine.Equals(newTrackingLine))
                                 {
-                                    if (_fieldTracker.GetTrackingLineCoverage(_activeTrackingLine) > 0.97)
+                                    if (_fieldTracker.GetTrackingLineCoverage(_activeTrackingLine) > TRACKINGLINE_COVERAGE_DEPLETED)
                                         _activeTrackingLine.Depleted = true;
                                     else
                                         _activeTrackingLine.Active = false;
@@ -422,7 +437,10 @@ namespace FarmingGPS
 
                         _trackingLineEvaluationTimeout = DateTime.Now.AddSeconds(3.0);
                     }
+                    trackingLineTime = stopwatch.ElapsedMilliseconds - trackingLineTime;
 
+                    var fieldTrackeTime = stopwatch.ElapsedMilliseconds;
+                    long testTime = 0;
                     if (coordinates[coordinates.Length - 1].Reversing)
                         _fieldTracker.StopTrack();
                     if (_fieldTracker.IsTracking && !_fieldTrackerActive)
@@ -449,8 +467,14 @@ namespace FarmingGPS
                             if (_distanceTriggerFieldTracker.CheckDistance(coordinate.Center, coordinate.Heading))
                                 trackPoints.Add(new FieldTracker.TrackPoint(coordinate.LeftTip, coordinate.RightTip ));
                         }
+                        testTime = stopwatch.ElapsedMilliseconds;
                         _fieldTracker.AddTrackPoints(trackPoints.ToArray());
+                        testTime = stopwatch.ElapsedMilliseconds - testTime;
                     }
+                    fieldTrackeTime = stopwatch.ElapsedMilliseconds - fieldTrackeTime;
+
+                    if (stopwatch.ElapsedMilliseconds > 200)
+                        Log.Info(String.Format("Secondary tasks took more than 200ms, trakingline:{0}, fieltracker: {1}, testtime: {2}", trackingLineTime.ToString("0ms"), fieldTrackeTime.ToString("0ms"), testTime.ToString("0ms")));
                 }
                 else if(_obstacleQueue.Count > 0)
                 {
@@ -464,7 +488,7 @@ namespace FarmingGPS
                             _database.AddRock(obstacle.Coordinate);
                     }
                 }
-                System.Threading.Thread.Sleep(500);
+                System.Threading.Thread.Sleep(250);
             }
         }
 
@@ -524,12 +548,12 @@ namespace FarmingGPS
                 return;
             foreach (TrackingLine line in _farmingMode.TrackingLinesHeadland)
                 if (!line.Depleted)
-                    if (_fieldTracker.GetTrackingLineCoverage(line) > 0.97)
+                    if (_fieldTracker.GetTrackingLineCoverage(line) > TRACKINGLINE_COVERAGE_DEPLETED)
                         line.Depleted = true;
 
             foreach (TrackingLine line in _farmingMode.TrackingLines)
                 if(!line.Depleted)
-                    if (_fieldTracker.GetTrackingLineCoverage(line) > 0.97)
+                    if (_fieldTracker.GetTrackingLineCoverage(line) > TRACKINGLINE_COVERAGE_DEPLETED)
                         line.Depleted = true;
         }
         
@@ -737,7 +761,9 @@ namespace FarmingGPS
         }
 
         private void _receiver_CoordinateUpdate(object sender, Coordinate actualPosition)
-        {            
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             IReceiver receiver = sender as IReceiver;
             if (_field == null || _vechile == null)
                 return;
@@ -778,6 +804,11 @@ namespace FarmingGPS
 
             _coordinateUpdateStructQueueSecondaryTasks.Enqueue(new CoordinateUpdateStruct() { LeftTip = leftTip, RightTip = rightTip, Center = vechileCoordinate, Heading = actualHeading, Reversing = _vechile.IsReversing });
             _coordinateUpdateStructQueueVisual.Enqueue(new CoordinateUpdateStruct() { LeftTip = leftTip, RightTip = rightTip, Center = vechileCoordinate, Heading = actualHeading, Reversing = _vechile.IsReversing });
+
+            if (_stopWatch.ElapsedMilliseconds > 250)
+                Log.Info("position update took more than 250ms, took " + _stopWatch.ElapsedMilliseconds.ToString());
+
+            _stopWatch.Restart();
         }
 
         private void _receiver_PositionUpdate(object sender, Position actualPosition)

@@ -156,6 +156,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                 _comPort = comPort;
                 _readInterval = readInterval;
                 _receiveSendThread = new Thread(new ThreadStart(ReceiveSendThreadSerial));
+                _receiveSendThread.Priority = ThreadPriority.Highest;
                 _receiveSendThread.Start();
                 _readThread = new Thread(new ThreadStart(ReadThread));
                 _readThread.Start();
