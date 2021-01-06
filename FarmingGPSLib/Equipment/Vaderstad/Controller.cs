@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using FarmingGPSLib.Equipment.Win32;
 using System.Threading;
@@ -368,8 +369,8 @@ namespace FarmingGPSLib.Equipment.Vaderstad
                         byte[] writeBytes = BuildMessage(COMMAND_INIT + writeMessage.Command + writeMessage.Value);
 
                         uint bytesWritten = 0;
-                        DateTime sendTimeout = DateTime.Now.AddMilliseconds(200);
-                        while (bytesWritten != writeBytes.Length && DateTime.Now < sendTimeout)
+                        Stopwatch sendTimeout = Stopwatch.StartNew();
+                        while (bytesWritten != writeBytes.Length && sendTimeout.ElapsedMilliseconds > 200)
                         {
                             if (!Win32Com.WriteFile(portHandle, writeBytes, (uint)writeBytes.Length, out bytesWritten, IntPtr.Zero))
                             {
@@ -381,8 +382,8 @@ namespace FarmingGPSLib.Equipment.Vaderstad
                         if (bytesWritten == writeBytes.Length)
                         {
                             string answer = string.Empty;
-                            DateTime readTimeout = DateTime.Now.AddMilliseconds(200);
-                            while (!answer.Contains(END_CHAR) && DateTime.Now < readTimeout)
+                            Stopwatch readTimeout = Stopwatch.StartNew();
+                            while (!answer.Contains(END_CHAR) && readTimeout.ElapsedMilliseconds > 200)
                             {
                                 uint bytesRead = 0;
                                 if (!Win32Com.ReadFile(portHandle, buffer, (uint)buffer.Length, out bytesRead, IntPtr.Zero))
@@ -413,8 +414,8 @@ namespace FarmingGPSLib.Equipment.Vaderstad
                         byte[] writeBytes = BuildMessage(READ_INIT + _readMessage.Command);
 
                         uint bytesWritten = 0;
-                        DateTime sendTimeout = DateTime.Now.AddMilliseconds(200);
-                        while (bytesWritten != writeBytes.Length && DateTime.Now < sendTimeout)
+                        Stopwatch sendTimeout = Stopwatch.StartNew();
+                        while (bytesWritten != writeBytes.Length && sendTimeout.ElapsedMilliseconds > 200)
                         {
                             if (!Win32Com.WriteFile(portHandle, writeBytes, (uint)writeBytes.Length, out bytesWritten, IntPtr.Zero))
                             {
@@ -426,8 +427,8 @@ namespace FarmingGPSLib.Equipment.Vaderstad
                         if (bytesWritten == writeBytes.Length)
                         {
                             string answer = string.Empty;
-                            DateTime readTimeout = DateTime.Now.AddMilliseconds(200);
-                            while (!answer.Contains(END_CHAR) && DateTime.Now < readTimeout)
+                            Stopwatch readTimeout = Stopwatch.StartNew();
+                            while (!answer.Contains(END_CHAR) && readTimeout.ElapsedMilliseconds > 200)
                             {
                                 uint bytesRead = 0;
                                 if (!Win32Com.ReadFile(portHandle, buffer, (uint)buffer.Length, out bytesRead, IntPtr.Zero))
