@@ -149,9 +149,7 @@ namespace FarmingGPS
         private bool _secondaryTasksThreadStop = false;
                
         private DispatcherTimer _dispatcherTimer;
-
-        private Stopwatch _stopWatch = new Stopwatch();
-        
+                
         private Queue<LightBarUpdateStruct> _lightBarQueue = new Queue<LightBarUpdateStruct>();
 
         private Queue<CoordinateUpdateStruct> _coordinateUpdateStructQueueSecondaryTasks = new Queue<CoordinateUpdateStruct>();
@@ -200,8 +198,6 @@ namespace FarmingGPS
             SetValue(CameraUnavilableProperty, Visibility.Visible);
                         
             _distanceTriggerFieldTracker = new DistanceTrigger(MINIMUM_DISTANCE_BETWEEN_POINTS, MAXIMUM_DISTANCE_BETWEEN_POINTS, MINIMUM_CHANGE_DIRECTION, MAXIMUM_CHANGE_DIRECTION);
-
-            _stopWatch.Start();
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -804,11 +800,6 @@ namespace FarmingGPS
 
             _coordinateUpdateStructQueueSecondaryTasks.Enqueue(new CoordinateUpdateStruct() { LeftTip = leftTip, RightTip = rightTip, Center = vechileCoordinate, Heading = actualHeading, Reversing = _vechile.IsReversing });
             _coordinateUpdateStructQueueVisual.Enqueue(new CoordinateUpdateStruct() { LeftTip = leftTip, RightTip = rightTip, Center = vechileCoordinate, Heading = actualHeading, Reversing = _vechile.IsReversing });
-
-            if (_stopWatch.ElapsedMilliseconds > 250)
-                Log.Info("position update took more than 250ms, took " + _stopWatch.ElapsedMilliseconds.ToString());
-
-            _stopWatch.Restart();
         }
 
         private void _receiver_PositionUpdate(object sender, Position actualPosition)
