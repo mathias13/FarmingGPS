@@ -1,6 +1,8 @@
 ﻿using System;
 using DotSpatial.Positioning;
+using DotSpatial.Topology;
 using FarmingGPSLib.FarmingModes;
+using FarmingGPSLib.Vechile;
 using GpsUtilities.HelperClasses;
 
 namespace FarmingGPSLib.Equipment
@@ -33,6 +35,8 @@ namespace FarmingGPSLib.Equipment
             public double OppositeSideDistanceToLeftTip;
 
             public double OppositeSideDistanceToRightTip;
+
+            public double OffsetFromVechile;
         }
 
         #region Private Variables
@@ -42,6 +46,8 @@ namespace FarmingGPSLib.Equipment
         protected Distance _distanceFromVechile;
 
         protected Distance _overlap;
+
+        protected Distance _offsetFromVechile;
 
         protected bool _sideDependent = false;
 
@@ -72,18 +78,23 @@ namespace FarmingGPSLib.Equipment
         public EquipmentBase()
         { }
 
-        public EquipmentBase(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel)
+        public EquipmentBase(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, IVechile vechile)
         {
             _width = width;
             _distanceFromVechile = distanceFromVechile;
             _fromDirectionOfTravel = fromDirectionOfTravel;
             _overlap = Distance.FromMeters(0);
             CalculateDistances();
+            var vechilePos = new Position(new Latitude(1.0), new Longitude(1.0));
+            var equipmentPosition = vechilePos.TranslateTo(vechile.AttachPointDirection, vechile.AttachPointDistance);
+            equipmentPosition = equipmentPosition.TranslateTo(fromDirectionOfTravel, distanceFromVechile);
+            var vechileLine = new Segment(vechilePos.TranslateTo(Azimuth.South, Distance.FromMeters(20.0)), vechilePos.TranslateTo(Azimuth.North, Distance.FromMeters(20.0)));
+            _offsetFromVechile = vechileLine.DistanceTo(equipmentPosition);
             HasChanged = true;
         }
 
-        public EquipmentBase(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, Distance overlap)
-            : this(width,distanceFromVechile,fromDirectionOfTravel)
+        public EquipmentBase(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, Distance overlap, IVechile vechile)
+            : this(width,distanceFromVechile,fromDirectionOfTravel, vechile)
         {
             if (overlap > width.Divide(2))
                 _overlap = width.Divide(2);
@@ -181,6 +192,10 @@ namespace FarmingGPSLib.Equipment
             set { _oppositeSide = value; }
         }
 
+        public virtual Distance OffsetFromVechile
+        {
+            get { return _offsetFromVechile; }
+        }
         public DotSpatial.Topology.Coordinate GetLeftTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel)
         {
             if (SideDependent && OppositeSide)
@@ -230,7 +245,8 @@ namespace FarmingGPSLib.Equipment
                     OppositeSideBearingToLeftTip = _oppositeSideBearingToLeftTip.DecimalDegrees,
                     OppositeSideBearingToRightTip = _oppositeSideBearingToRightTip.DecimalDegrees,
                     OppositeSideDistanceToLeftTip = _oppositeSideDistanceToLeftTip.ToMeters().Value,
-                    OppositeSideDistanceToRightTip = _oppositeSideDistanceToRightTip.ToMeters().Value};
+                    OppositeSideDistanceToRightTip = _oppositeSideDistanceToRightTip.ToMeters().Value,
+                    OffsetFromVechile = _offsetFromVechile.ToMeters().Value};
             }
         }
 
@@ -249,6 +265,7 @@ namespace FarmingGPSLib.Equipment
             _fromDirectionOfTravel = new Azimuth(equipmentState.FromDirectionOfTravel);
             _overlap = Distance.FromMeters(equipmentState.Overlap);
             _sideDependent = equipmentState.SideDependent;
+            _offsetFromVechile = Distance.FromMeters(equipmentState.OffsetFromVechile);
             if(SideDependent)
             {
                 _oppositeSideFromDirectionOfTravel = new Azimuth(equipmentState.OppositeSideFromDirectionOfTravel);

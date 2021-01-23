@@ -1,6 +1,7 @@
 ﻿using System;
 using DotSpatial.Positioning;
 using FarmingGPSLib.FarmingModes;
+using FarmingGPSLib.Vechile;
 
 namespace FarmingGPSLib.Equipment
 {
@@ -10,13 +11,13 @@ namespace FarmingGPSLib.Equipment
         {
         }
 
-        public Harrow(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel)
-            : base(width, distanceFromVechile, fromDirectionOfTravel)
+        public Harrow(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, IVechile vechile)
+            : base(width, distanceFromVechile, fromDirectionOfTravel, vechile)
         {
         }
 
-        public Harrow(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, Distance overlap)
-            : base(width, distanceFromVechile, fromDirectionOfTravel, overlap)
+        public Harrow(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, Distance overlap, IVechile vechile)
+            : base(width, distanceFromVechile, fromDirectionOfTravel, overlap, vechile)
         {
         }
 

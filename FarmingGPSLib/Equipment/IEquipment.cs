@@ -58,6 +58,11 @@ namespace FarmingGPSLib.Equipment
             set;
         }
 
+        Distance OffsetFromVechile
+        {
+            get;
+        }
+
         DotSpatial.Topology.Coordinate GetLeftTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel);
 
         DotSpatial.Topology.Coordinate GetRightTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel);
