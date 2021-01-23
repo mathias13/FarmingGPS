@@ -131,8 +131,6 @@ namespace FarmingGPS
 
         private FarmingGPSLib.FarmingModes.IFarmingMode _farmingMode;
 
-        private bool _trackingLineBackwards = false;
-
         private IEquipment _equipment;
 
         private IVechile _vechile;
@@ -781,16 +779,16 @@ namespace FarmingGPS
             _vechile.UpdatePosition(receiver);
             
             Coordinate vechileCoordinate = _vechile.CenterRearAxle;
-            Coordinate equipmentCoordinate = _vechile.CenterRearAxle;
+            Coordinate equipmentCoordinate = _vechile.AttachPoint;
             Coordinate leftTip = equipmentCoordinate;
             Coordinate rightTip = equipmentCoordinate;
             Azimuth actualHeading = _vechile.VechileDirection;
 
             if (_equipment != null)
             {
+                leftTip = _equipment.GetLeftTip(equipmentCoordinate, actualHeading);
+                rightTip = _equipment.GetRightTip(equipmentCoordinate, actualHeading);
                 equipmentCoordinate = _equipment.GetCenter(equipmentCoordinate, actualHeading);
-                leftTip = _equipment.GetLeftTip(vechileCoordinate, actualHeading);
-                rightTip = _equipment.GetRightTip(vechileCoordinate, actualHeading);
             }
 
             if (_farmingMode != null && !_vechile.IsReversing)
@@ -807,8 +805,13 @@ namespace FarmingGPS
                 OrientationToLine orientationToLine = _activeTrackingLine.GetOrientationToLine(vechileCoordinate, actualHeading);
 
                 if (_equipment != null)
+                {
                     if (_equipment.SideDependent)
-                        _equipment.OppositeSide = (_trackingLineBackwards && !orientationToLine.TrackingBackwards) || (!_trackingLineBackwards && orientationToLine.TrackingBackwards);
+                    {
+                        _equipment.OppositeSide = (!_farmingMode.EquipmentSideOutRight && !orientationToLine.TrackingBackwards) || (_farmingMode.EquipmentSideOutRight && orientationToLine.TrackingBackwards);
+                        _visualization.SetEquipmentOffset(_equipment.OffsetFromVechile, !_equipment.OppositeSide);
+                    }
+                }
 
                 _activeTrackingLine.Active = true;
                 LightBar.Direction direction = LightBar.Direction.Left;
@@ -950,7 +953,11 @@ namespace FarmingGPS
             _visualization.CancelFocus();
             foreach (var trackingLine in _farmingMode.TrackingLinesHeadland)
                 _visualization.DeleteLine(trackingLine);
-            _farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadland[_selectedTrackingLine], headingFromLine);
+
+            if (_equipment.SideDependent)
+                _farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadland[_selectedTrackingLine], headingFromLine, _equipment.OffsetFromVechile.ToMeters().Value);
+            else
+                _farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadland[_selectedTrackingLine], headingFromLine);
 
             _visualization.AddLines(_farmingMode.TrackingLinesHeadland.ToArray());
             _visualization.AddLines(_farmingMode.TrackingLines.ToArray());
@@ -1121,7 +1128,7 @@ namespace FarmingGPS
             if (sender is GetField)
                 GetFieldChanged((sender as GetField), e);
             else if (sender is GetVechileEquipment)
-                SetEquipment((sender as GetVechileEquipment));
+                SetVechileEquipment((sender as GetVechileEquipment));
             else if (sender is FarmingMode)
                 SetFarmingMode((sender as FarmingMode));
             else if (sender is GetEquipmentRate)
@@ -1171,13 +1178,15 @@ namespace FarmingGPS
                 _fieldRateTracker.RegisterEquipmentControl(_equipment as IEquipmentControl);
         }
 
-        private void SetEquipment(GetVechileEquipment userControl)
+        private void SetVechileEquipment(GetVechileEquipment userControl)
         {
             _stateRecovery.RemoveStateObject(_equipment);
 
             _vechile = new Tractor(new Azimuth(userControl.Vechile.ReceiverAngleFromCenter), 
                 Distance.FromMeters(userControl.Vechile.ReceiverDistFromCenter), 
-                Distance.FromMeters(userControl.Vechile.WheelAxesDist));
+                Distance.FromMeters(userControl.Vechile.WheelAxesDist),
+                Distance.FromMeters(userControl.VechileAttach.AttachDistFromCenter),
+                new Azimuth(userControl.VechileAttach.AttachAngleFromCenter));
             
 #if SIM
             if (_receiver != null)
@@ -1207,7 +1216,7 @@ namespace FarmingGPS
 
             if (userControl.Equipment.EquipmentClass == null)
             {
-                _equipment = new Harrow(Distance.FromMeters(userControl.Equipment.WorkWidth), Distance.FromMeters(userControl.Equipment.DistFromAttach), new Azimuth(userControl.Equipment.AngleFromAttach));
+                _equipment = new Harrow(Distance.FromMeters(userControl.Equipment.WorkWidth), Distance.FromMeters(userControl.Equipment.DistFromAttach), new Azimuth(userControl.Equipment.AngleFromAttach), _vechile);
             }
             else
             {
@@ -1215,11 +1224,11 @@ namespace FarmingGPS
                 {
                     Type equipmentClass = AppDomain.CurrentDomain.GetAssemblies().SelectMany(t => t.GetTypes()).Where(t => String.Equals(t.FullName, userControl.Equipment.EquipmentClass, StringComparison.Ordinal)).First();
                     if (equipmentClass == null)
-                        _equipment = new Harrow(Distance.FromMeters(userControl.Equipment.WorkWidth), Distance.FromMeters(userControl.Equipment.DistFromAttach), new Azimuth(userControl.Equipment.AngleFromAttach));
+                        _equipment = new Harrow(Distance.FromMeters(userControl.Equipment.WorkWidth), Distance.FromMeters(userControl.Equipment.DistFromAttach), new Azimuth(userControl.Equipment.AngleFromAttach), _vechile);
                     else if (equipmentClass.IsAssignableFrom(typeof(IEquipment)))
-                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(userControl.Equipment.WorkWidth), Distance.FromMeters(userControl.Equipment.DistFromAttach), new Azimuth(userControl.Equipment.AngleFromAttach));
+                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(userControl.Equipment.WorkWidth), Distance.FromMeters(userControl.Equipment.DistFromAttach), new Azimuth(userControl.Equipment.AngleFromAttach), _vechile);
                     else
-                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(userControl.Equipment.WorkWidth), Distance.FromMeters(userControl.Equipment.DistFromAttach), new Azimuth(userControl.Equipment.AngleFromAttach));
+                        _equipment = (IEquipment)Activator.CreateInstance(equipmentClass, Distance.FromMeters(userControl.Equipment.WorkWidth), Distance.FromMeters(userControl.Equipment.DistFromAttach), new Azimuth(userControl.Equipment.AngleFromAttach), _vechile);
 
                     if (_equipment is IEquipmentControl)
                         SetIEquipmentControl();
@@ -1316,8 +1325,6 @@ namespace FarmingGPS
             }
             
             _equipment.Overlap = Distance.FromMeters(userControl.Overlap);
-            if (_equipment.SideDependent)
-                _trackingLineBackwards = !userControl.EquipmentSideOutRight;
             if (_equipment.FarmingMode == null)
             {
                 if(userControl.HeadLandWidthUsed)
@@ -1340,6 +1347,8 @@ namespace FarmingGPS
                     return;
                 }
             }
+            if (_equipment.SideDependent)
+                _farmingMode.EquipmentSideOutRight = userControl.EquipmentSideOutRight;
 
             _visualization.AddLines(_farmingMode.TrackingLinesHeadland.ToArray());
             _visualization.AddLines(_farmingMode.TrackingLines.ToArray());

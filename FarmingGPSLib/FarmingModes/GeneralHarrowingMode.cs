@@ -19,7 +19,7 @@ namespace FarmingGPSLib.FarmingModes
         public GeneralHarrowingMode(IField field)
             : base(field)
         {
-            _equipment = new Harrow(Distance.FromMeters(6), Distance.FromMeters(1), new Azimuth(180.0));
+            _equipment = new Harrow();
             _headlandTurns = 1;
             CalculateHeadLand();
         }

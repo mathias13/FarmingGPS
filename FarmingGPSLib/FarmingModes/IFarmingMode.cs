@@ -16,6 +16,8 @@ namespace FarmingGPSLib.FarmingModes
 
         void CreateTrackingLines(TrackingLine trackingLine, Angle directionFromLine);
 
+        void CreateTrackingLines(TrackingLine trackingLine, Angle directionFromLine, double offset);
+
         void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction);
 
         void UpdateEvents(ILineString positionEquipment, DotSpatial.Positioning.Azimuth direction);
@@ -28,6 +30,12 @@ namespace FarmingGPSLib.FarmingModes
         IList<TrackingLine> TrackingLines
         {
             get;
+        }
+
+        bool EquipmentSideOutRight
+        {
+            get;
+            set;
         }
 
         TrackingLine GetClosestLine(Coordinate position, DotSpatial.Positioning.Azimuth direction);

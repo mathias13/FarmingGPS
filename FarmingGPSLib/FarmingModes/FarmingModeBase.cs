@@ -42,10 +42,13 @@ namespace FarmingGPSLib.FarmingModes
 
             public List<SimpleLine> TrackingLinesHeadLand;
 
-            public FarmingModeState(List<SimpleLine> trackingLines, List<SimpleLine> trackingLinesHeadLand)
+            public bool TrackingLineBackwards;
+
+            public FarmingModeState(List<SimpleLine> trackingLines, List<SimpleLine> trackingLinesHeadLand, bool trackingLineBackwards)
             {
                 TrackingLines = trackingLines;
                 TrackingLinesHeadLand = trackingLinesHeadLand;
+                TrackingLineBackwards = trackingLineBackwards;
             }
         }
 
@@ -60,6 +63,8 @@ namespace FarmingGPSLib.FarmingModes
         protected IEquipment _equipment;
 
         protected int _headlandTurns;
+
+        protected bool _trackingLineBackwards = false;
 
         private bool _hasChanged = true;
 
@@ -299,6 +304,12 @@ namespace FarmingGPSLib.FarmingModes
             get { return _trackingLines; }
         }
 
+        public bool EquipmentSideOutRight
+        { 
+            get { return _trackingLineBackwards; }
+            set { _trackingLineBackwards = value; }
+        }
+
         public virtual TrackingLine GetClosestLine(Coordinate position, Azimuth direction)
         {
             double distanceToLine = double.MaxValue;
@@ -352,6 +363,11 @@ namespace FarmingGPSLib.FarmingModes
             _hasChanged = true;
         }
 
+        public virtual void CreateTrackingLines(TrackingLine trackingLine, DotSpatial.Topology.Angle directionFromLine, double offset)
+        {
+            _hasChanged = true;
+        }
+
         public virtual void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction)
         {
             throw new NotImplementedException();
@@ -378,7 +394,7 @@ namespace FarmingGPSLib.FarmingModes
                 List<SimpleLine> trackingLinesHeadland = new List<SimpleLine>();
                 foreach (TrackingLine trackingLineHeadland in _trackingLinesHeadland)
                     trackingLinesHeadland.Add(new SimpleLine(new List<Coordinate>(trackingLineHeadland.Line.Coordinates)));
-                return new FarmingModeState(trackingLines, trackingLinesHeadland);
+                return new FarmingModeState(trackingLines, trackingLinesHeadland, _trackingLineBackwards);
             }
         }
 
@@ -399,6 +415,7 @@ namespace FarmingGPSLib.FarmingModes
                 _trackingLines.Add(new TrackingLine(new LineString(line.Line), false));
             foreach (SimpleLine line in farmingModeState.TrackingLinesHeadLand)
                 _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line), true));
+            _trackingLineBackwards = farmingModeState.TrackingLineBackwards;
         }
 
         #endregion
