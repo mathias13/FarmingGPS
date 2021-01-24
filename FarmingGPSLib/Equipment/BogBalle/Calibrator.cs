@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using FarmingGPSLib.Equipment.Win32;
 using System.Threading;
 using log4net;
 using System.Runtime.InteropServices;
+using System.Linq;
 
 namespace FarmingGPSLib.Equipment.BogBalle
 {
@@ -103,7 +105,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         private bool _readThreadStop = false;
 
-        private WriteMessage _writeMessage;
+        private LinkedList<WriteMessage> _writeMessages = new LinkedList<WriteMessage>();
 
         private ReadMessage _readMessage;
 
@@ -151,8 +153,6 @@ namespace FarmingGPSLib.Equipment.BogBalle
             {
                 _readMessage = new ReadMessage();
                 _readMessage.Finished = true;
-                _writeMessage = new WriteMessage();
-                _writeMessage.Finished = true;
                 _comPort = comPort;
                 _readInterval = readInterval;
                 _receiveSendThread = new Thread(new ThreadStart(ReceiveSendThreadSerial));
@@ -175,24 +175,24 @@ namespace FarmingGPSLib.Equipment.BogBalle
             _receiveSendThread.Join();
         }
 
-        public bool Start()
+        public void Start()
         {
-            return WriteValue(START_COMMAND, string.Empty);
+            WriteValue(START_COMMAND, string.Empty);
         }
 
-        public bool Stop()
+        public void Stop()
         {
-            return WriteValue(STOP_COMMAND, string.Empty);
+            WriteValue(STOP_COMMAND, string.Empty);
         }
         
-        public bool ChangeWidth(float width)
+        public void ChangeWidth(float width)
         {
-            return WriteValue(SPREAD_WIDTH_COMMAND, (width * 10).ToString("000"));
+            WriteValue(SPREAD_WIDTH_COMMAND, (width * 10).ToString("000"));
         }
 
-        public bool ChangeSpreadingRate(int rate)
+        public void ChangeSpreadingRate(int rate)
         {
-            return WriteValue(RATE_COMMAND, rate.ToString("0000"));
+            WriteValue(RATE_COMMAND, rate.ToString("0000"));
         }
 
         #endregion
@@ -267,6 +267,8 @@ namespace FarmingGPSLib.Equipment.BogBalle
             byte[] buffer = new byte[32];
             IntPtr portHandle = IntPtr.Zero;
             Thread.Sleep(1000);
+            WriteMessage writeMessage = new WriteMessage();
+            writeMessage.Finished = true;
 
             while (!_receiveSendThreadStopped)
             {
@@ -313,17 +315,27 @@ namespace FarmingGPSLib.Equipment.BogBalle
                     if (!Win32Com.GetHandleInformation(portHandle, out lpdwFlags))
                         throw new Exception(String.Format("Port {0} went offline", _comPort));
 
-                    if (!_writeMessage.Finished)
+
+                    if (_writeMessages.Count > 0 && writeMessage.Finished)
                     {
-                        byte[] writeBytes = BuildMessage(COMMAND_INIT + _writeMessage.Command + _writeMessage.Value);
+                        lock (_syncObject)
+                        {
+                            writeMessage = _writeMessages.First();
+                            _writeMessages.RemoveFirst();
+                        }
+                    }
+
+                    if (!writeMessage.Finished)
+                    {
+                        byte[] writeBytes = BuildMessage(COMMAND_INIT + writeMessage.Command + writeMessage.Value);
 
                         uint bytesWritten = 0;
-                        DateTime sendTimeout = DateTime.Now.AddMilliseconds(500);
-                        while (bytesWritten != writeBytes.Length && DateTime.Now < sendTimeout)
+                        Stopwatch sendTimeout = Stopwatch.StartNew();
+                        while (bytesWritten != writeBytes.Length && sendTimeout.ElapsedMilliseconds > 200)
                         {
                             if (!Win32Com.WriteFile(portHandle, writeBytes, (uint)writeBytes.Length, out bytesWritten, IntPtr.Zero))
                             {
-                                _writeMessage.Finished = true;
+                                writeMessage.Finished = true;
                                 throw new Exception(String.Format("Failed to write port {0}", _comPort));
                             }
                         }
@@ -331,13 +343,13 @@ namespace FarmingGPSLib.Equipment.BogBalle
                         if (bytesWritten == writeBytes.Length)
                         {
                             string answer = string.Empty;
-                            DateTime readTimeout = DateTime.Now.AddMilliseconds(500);
-                            while (!answer.Contains(END_CHAR) && DateTime.Now < readTimeout)
+                            Stopwatch readTimeout = Stopwatch.StartNew();
+                            while (!answer.Contains(END_CHAR) && readTimeout.ElapsedMilliseconds > 200)
                             {
                                 uint bytesRead = 0;
                                 if (!Win32Com.ReadFile(portHandle, buffer, (uint)buffer.Length, out bytesRead, IntPtr.Zero))
                                 {
-                                    _writeMessage.Finished = true;
+                                    writeMessage.Finished = true;
                                     throw new Exception(String.Format("Failed to read port {0}", _comPort));
                                 }
 
@@ -350,19 +362,21 @@ namespace FarmingGPSLib.Equipment.BogBalle
                             }
                             if (ValidateMessage(ref answer))
                             {
-                                if (answer.Contains(COMMAND_ANSWER + _writeMessage.Command))
-                                    _writeMessage.Success = true;
+                                if (answer.Contains(COMMAND_ANSWER + writeMessage.Command))
+                                    writeMessage.Success = true;
                             }
-                            _writeMessage.Finished = true;
+                            writeMessage.Finished = true;
                         }
+                        if (!writeMessage.Success)
+                            Log.Warn("Failed to write value with command: " + writeMessage.Command);
                     }
                     else if (!_readMessage.Finished)
                     {
                         byte[] writeBytes = BuildMessage(READ_INIT + _readMessage.Command);
 
                         uint bytesWritten = 0;
-                        DateTime sendTimeout = DateTime.Now.AddMilliseconds(500);
-                        while (bytesWritten != writeBytes.Length && DateTime.Now < sendTimeout)
+                        Stopwatch sendTimeout = Stopwatch.StartNew();
+                        while (bytesWritten != writeBytes.Length && sendTimeout.ElapsedMilliseconds > 200)
                         {
                             if (!Win32Com.WriteFile(portHandle, writeBytes, (uint)writeBytes.Length, out bytesWritten, IntPtr.Zero))
                             {
@@ -374,8 +388,8 @@ namespace FarmingGPSLib.Equipment.BogBalle
                         if (bytesWritten == writeBytes.Length)
                         {
                             string answer = string.Empty;
-                            DateTime readTimeout = DateTime.Now.AddMilliseconds(500);
-                            while (!answer.Contains(END_CHAR) && DateTime.Now < readTimeout)
+                            Stopwatch readTimeout = Stopwatch.StartNew();
+                            while (!answer.Contains(END_CHAR) && readTimeout.ElapsedMilliseconds > 200)
                             {
                                 uint bytesRead = 0;
                                 if (!Win32Com.ReadFile(portHandle, buffer, (uint)buffer.Length, out bytesRead, IntPtr.Zero))
@@ -413,8 +427,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                     Log.Error("Com port failiure", e);
                     _readMessage.Success = false;
                     _readMessage.Finished = true;
-                    _writeMessage.Success = false;
-                    _writeMessage.Finished = true;
+                    _writeMessages.Clear();
                     Win32Com.CancelIo(portHandle);
                     Win32Com.CloseHandle(portHandle);
                     portHandle = IntPtr.Zero;
@@ -538,10 +551,10 @@ namespace FarmingGPSLib.Equipment.BogBalle
         
         private string ReadValue(string command)
         {
-                _readMessage = new ReadMessage(command);
+            _readMessage = new ReadMessage(command);
 
-                while (!_readMessage.Finished)
-                    Thread.Sleep(1);
+            while (!_readMessage.Finished)
+                Thread.Sleep(1);
 
             if (_readMessage.Success)
             {
@@ -556,27 +569,17 @@ namespace FarmingGPSLib.Equipment.BogBalle
             }
         }
             
-        private bool WriteValue(string command, string value)
+        private void WriteValue(string command, string value)
         {
             if (!IsConnected)
-                return false;
+                return;
 
-            _writeMessage = new WriteMessage(command, value);
-
-            while (!_writeMessage.Finished)
-                Thread.Sleep(1);
-
-            if (_writeMessage.Success)
-            {
-                _noAnswerCount = 0;
-                return true;
-            }
+            if (command == START_COMMAND)
+                lock(_syncObject)
+                    _writeMessages.AddFirst(new WriteMessage(command, value));
             else
-            {
-                _noAnswerCount++;
-                Log.Warn("Failed to write value with command: " + command);
-                return false;
-            }
+                lock (_syncObject)
+                    _writeMessages.AddLast(new WriteMessage(command, value));
         }
 
         #endregion
