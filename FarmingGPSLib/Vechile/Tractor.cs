@@ -32,7 +32,7 @@ namespace FarmingGPSLib.Vechile
         {
         }
 
-        public Tractor(Azimuth offsetDirection, Distance offsetDistance, Distance wheelAxesDistance) : base(offsetDirection, offsetDistance, wheelAxesDistance)
+        public Tractor(Azimuth offsetDirection, Distance offsetDistance, Distance wheelAxesDistance, Distance attachPointDistance, Azimuth attachPointDirection) : base(offsetDirection, offsetDistance, wheelAxesDistance, attachPointDistance, attachPointDirection)
         {
             CalculateVector();
         }
@@ -57,10 +57,8 @@ namespace FarmingGPSLib.Vechile
             }
             else
             {
-                if (_startOfReverse.Distance(receiver.CurrentCoordinate) > 15.0 || heading.IsBetween(reverseHeading.Subtract(45.0), reverseHeading.Add(45.0)))
-                {
+                if (_startOfReverse.Distance(receiver.CurrentCoordinate) > 20.0 || heading.IsBetween(reverseHeading.Subtract(45.0), reverseHeading.Add(45.0)) || receiver.CurrentSpeed.ToKilometersPerHour().Value > 4.0 )
                     _startOfReverse = Coordinate.Empty;
-                }
                 else
                     heading = heading.Mirror().Normalize();
             }
@@ -153,6 +151,7 @@ namespace FarmingGPSLib.Vechile
             _prevHeading = receiver.CurrentBearing;
             _prevTime = DateTime.Now;
             _firstUpdate = false;
+            _attachPosition = HelperClassCoordinate.ComputePoint(_position, HelperClassAngles.GetCartesianAngle(VechileDirection - AttachPointDirection).Radians, AttachPointDistance.ToMeters().Value);
             return _position;
         }
 

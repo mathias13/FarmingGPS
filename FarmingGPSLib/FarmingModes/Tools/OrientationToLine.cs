@@ -14,24 +14,17 @@ namespace FarmingGPSLib.FarmingModes.Tools
             Right
         }
 
-        private Side _sideOfLine;
-
-        private double _distanceTo;
-
-        public OrientationToLine(Side sideOfLine, double distanceTo)
+        public OrientationToLine(Side sideOfLine, double distanceTo, bool trackingBackwards)
         {
-            _sideOfLine = sideOfLine;
-            _distanceTo = distanceTo;
+            SideOfLine = sideOfLine;
+            DistanceTo = distanceTo;
+            TrackingBackwards = trackingBackwards;
         }
 
-        public Side SideOfLine
-        {
-            get { return _sideOfLine; }
-        }
+        public bool TrackingBackwards { get; }
 
-        public double DistanceTo
-        {
-            get { return _distanceTo; }
-        }
+        public Side SideOfLine { get; }
+
+        public double DistanceTo { get; }
     }
 }

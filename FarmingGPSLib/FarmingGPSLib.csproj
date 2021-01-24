@@ -113,6 +113,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Equipment\BogBalle\Calibrator.cs" />
+    <Compile Include="Equipment\Plow.cs" />
     <Compile Include="Equipment\IEquipmentStat.cs" />
     <Compile Include="Equipment\Vaderstad\Controller.cs" />
     <Compile Include="Equipment\Vaderstad\DS400.cs" />

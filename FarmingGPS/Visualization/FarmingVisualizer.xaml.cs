@@ -96,6 +96,10 @@ namespace FarmingGPS.Visualization
 
         private double _lastAngle = 0.0;
 
+        private double _equipmentWidth = 4.0;
+
+        private double _equipmentOffset = 0.0;
+
         private DotSpatial.Topology.Coordinate _minPoint;
 
         private IDictionary<TrackingLine, MeshData> _trackingLines = new Dictionary<TrackingLine, MeshData>();
@@ -129,7 +133,7 @@ namespace FarmingGPS.Visualization
         private Vector3D _viewLookVector = new Vector3D(0.0, 0.0, 0.0);
 
         private TrackingLine _focusedTrackline = null;
-                
+                        
         #endregion
 
         public FarmingVisualizer()
@@ -233,19 +237,24 @@ namespace FarmingGPS.Visualization
 
         public void SetEquipmentWidth(Distance width)
         {
+            _equipmentWidth = width.ToMeters().Value;
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
-            {
-                float widthDivided = (float)width.ToMeters().Value / 2.0f;
-                for (int i = 0; i < 4; i++)
-                    _equipmentMesh.Geometry.Positions[i] = new Vector3(_equipmentMesh.Geometry.Positions[i].X, widthDivided, _equipmentMesh.Geometry.Positions[i].Z);
-
-                for (int i = 4; i < 8; i++)
-                    _equipmentMesh.Geometry.Positions[i] = new Vector3(_equipmentMesh.Geometry.Positions[i].X, widthDivided * -1.0f, _equipmentMesh.Geometry.Positions[i].Z);
-
-                _equipmentMesh.Geometry.UpdateVertices();
-            }
+                DrawEquipment();
             else
-                Dispatcher.Invoke(new Action<Distance>(SetEquipmentWidth), System.Windows.Threading.DispatcherPriority.Normal, width);
+                Dispatcher.BeginInvoke(new Action(DrawEquipment), System.Windows.Threading.DispatcherPriority.Normal);
+        }
+
+        public void SetEquipmentOffset(Distance offset, bool right)
+        {
+            var newOffset = offset.ToMeters().Value * (right ? -1.0 : 1.0);
+            if (newOffset != _equipmentOffset)
+            {
+                _equipmentOffset = newOffset;
+                if (Dispatcher.Thread.Equals(Thread.CurrentThread))
+                    DrawEquipment();
+                else
+                    Dispatcher.BeginInvoke(new Action(DrawEquipment), System.Windows.Threading.DispatcherPriority.Normal);
+            }
         }
 
         public void AddPoint(DotSpatial.Topology.Coordinate coord, SharpDX.Color color)
@@ -806,6 +815,16 @@ namespace FarmingGPS.Visualization
                 SetValue(CameraFarPlaneDistanceProperty, VIEW_BEHIND_FAR_PLANE + _viewZoomVector.Length);
             }
             UpdateCamera();
+        }
+
+        private void DrawEquipment()
+        {
+            double widthDivided = _equipmentWidth / 2.0;
+            for (int i = 0; i < 4; i++)
+                _equipmentMesh.Positions[i] = new Point3D(_equipmentMesh.Positions[i].X, widthDivided + _equipmentOffset, _equipmentMesh.Positions[i].Z);
+
+            for (int i = 4; i < 8; i++)
+                _equipmentMesh.Positions[i] = new Point3D(_equipmentMesh.Positions[i].X, (widthDivided * -1.0) + _equipmentOffset, _equipmentMesh.Positions[i].Z);
         }
 
         private void DrawOutline(IList<DotSpatial.Topology.Coordinate> coordinates)

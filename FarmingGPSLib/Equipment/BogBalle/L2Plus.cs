@@ -2,12 +2,13 @@
 using DotSpatial.Positioning;
 using FarmingGPSLib.FarmingModes;
 using FarmingGPSLib.Settings;
+using FarmingGPSLib.Vechile;
 
 namespace FarmingGPSLib.Equipment.BogBalle
 {
     public class L2Plus : EquipmentBase, IEquipmentControl, IEquipmentStat, IDisposable
     {
-        private readonly double[,] STOP_START_DISTANCES = new double[2, 3] { { 12, 0, 10 }, { 24, -5, 9 } };
+        private readonly double[,] STOP_START_DISTANCES = new double[2, 3] { { 12, 0, 10 }, { 24, -6, 10 } };
 
         private static double FULL_CONTENT = 1500.0;
 
@@ -25,14 +26,14 @@ namespace FarmingGPSLib.Equipment.BogBalle
         {
         }
 
-        public L2Plus(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel)
-            : base(width, distanceFromVechile, fromDirectionOfTravel)
+        public L2Plus(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, IVechile vechile)
+            : base(width, distanceFromVechile, fromDirectionOfTravel, vechile)
         {
             SetDistances();
         }
 
-        public L2Plus(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, Distance overlap)
-            : base(width, distanceFromVechile, fromDirectionOfTravel, overlap)
+        public L2Plus(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, Distance overlap, IVechile vechile)
+            : base(width, distanceFromVechile, fromDirectionOfTravel, overlap, vechile)
         {
             SetDistances();
         }

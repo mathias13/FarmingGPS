@@ -1,6 +1,8 @@
 ﻿using System;
 using DotSpatial.Positioning;
+using DotSpatial.Topology;
 using FarmingGPSLib.FarmingModes;
+using FarmingGPSLib.Vechile;
 using GpsUtilities.HelperClasses;
 
 namespace FarmingGPSLib.Equipment
@@ -21,6 +23,20 @@ namespace FarmingGPSLib.Equipment
             public double StatStartWeight;
 
             public double StatEndWeight;
+
+            public bool SideDependent;
+
+            public double OppositeSideFromDirectionOfTravel;
+
+            public double OppositeSideBearingToLeftTip;
+
+            public double OppositeSideBearingToRightTip;
+
+            public double OppositeSideDistanceToLeftTip;
+
+            public double OppositeSideDistanceToRightTip;
+
+            public double OffsetFromVechile;
         }
 
         #region Private Variables
@@ -30,6 +46,12 @@ namespace FarmingGPSLib.Equipment
         protected Distance _distanceFromVechile;
 
         protected Distance _overlap;
+
+        protected Distance _offsetFromVechile;
+
+        protected bool _sideDependent = false;
+
+        protected bool _oppositeSide = false;
 
         protected Azimuth _fromDirectionOfTravel;
 
@@ -41,23 +63,38 @@ namespace FarmingGPSLib.Equipment
 
         protected Distance _distanceToRightTip;
 
+        protected Azimuth _oppositeSideFromDirectionOfTravel = Azimuth.Empty;
+
+        protected Azimuth _oppositeSideBearingToLeftTip = Azimuth.Empty;
+
+        protected Azimuth _oppositeSideBearingToRightTip = Azimuth.Empty;
+
+        protected Distance _oppositeSideDistanceToLeftTip = Distance.Empty;
+
+        protected Distance _oppositeSideDistanceToRightTip = Distance.Empty;
+
         #endregion
 
         public EquipmentBase()
         { }
 
-        public EquipmentBase(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel)
+        public EquipmentBase(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, IVechile vechile)
         {
             _width = width;
             _distanceFromVechile = distanceFromVechile;
             _fromDirectionOfTravel = fromDirectionOfTravel;
             _overlap = Distance.FromMeters(0);
             CalculateDistances();
+            var vechilePos = new Position(new Latitude(1.0), new Longitude(1.0));
+            var equipmentPosition = vechilePos.TranslateTo(vechile.AttachPointDirection, vechile.AttachPointDistance);
+            equipmentPosition = equipmentPosition.TranslateTo(fromDirectionOfTravel, distanceFromVechile);
+            var vechileLine = new Segment(vechilePos.TranslateTo(Azimuth.South, Distance.FromMeters(20.0)), vechilePos.TranslateTo(Azimuth.North, Distance.FromMeters(20.0)));
+            _offsetFromVechile = vechileLine.DistanceTo(equipmentPosition);
             HasChanged = true;
         }
 
-        public EquipmentBase(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, Distance overlap)
-            : this(width,distanceFromVechile,fromDirectionOfTravel)
+        public EquipmentBase(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, Distance overlap, IVechile vechile)
+            : this(width,distanceFromVechile,fromDirectionOfTravel, vechile)
         {
             if (overlap > width.Divide(2))
                 _overlap = width.Divide(2);
@@ -67,14 +104,26 @@ namespace FarmingGPSLib.Equipment
 
         private void CalculateDistances()
         {
-            Position attachedPoint = new Position(new Latitude(1.0), new Longitude(1.0));
-            Position centerOfEquipment = attachedPoint.TranslateTo(_fromDirectionOfTravel, _distanceFromVechile);
-            Position leftTip = centerOfEquipment.TranslateTo(Azimuth.West, CenterToTip);
-            Position rightTip = centerOfEquipment.TranslateTo(Azimuth.East, CenterToTip);
+            var attachedPoint = new Position(new Latitude(1.0), new Longitude(1.0));
+            var centerOfEquipment = attachedPoint.TranslateTo(_fromDirectionOfTravel, _distanceFromVechile);
+            var leftTip = centerOfEquipment.TranslateTo(Azimuth.West, CenterToTip);
+            var rightTip = centerOfEquipment.TranslateTo(Azimuth.East, CenterToTip);
             _bearingToLeftTip = attachedPoint.BearingTo(leftTip);
             _bearingToRightTip = attachedPoint.BearingTo(rightTip);
             _distanceToLeftTip = attachedPoint.DistanceTo(leftTip);
             _distanceToRightTip = attachedPoint.DistanceTo(rightTip);
+            if(SideDependent)
+            {
+                _oppositeSideFromDirectionOfTravel = Azimuth.South.Subtract(_fromDirectionOfTravel.Subtract(Azimuth.South));
+                var oppositeSideCenterOfEquipment = attachedPoint.TranslateTo(_oppositeSideFromDirectionOfTravel, _distanceFromVechile);
+                var oppositeSideLeftTip = oppositeSideCenterOfEquipment.TranslateTo(Azimuth.West, CenterToTip);
+                var oppositeSideRightTip = oppositeSideCenterOfEquipment.TranslateTo(Azimuth.East, CenterToTip);
+                _oppositeSideBearingToLeftTip = attachedPoint.BearingTo(oppositeSideLeftTip);
+                _oppositeSideBearingToRightTip = attachedPoint.BearingTo(oppositeSideRightTip);
+                _oppositeSideDistanceToLeftTip = attachedPoint.DistanceTo(oppositeSideLeftTip);
+                _oppositeSideDistanceToRightTip = attachedPoint.DistanceTo(oppositeSideRightTip);
+            }
+
         }
 
         #region IEquipment Implementation
@@ -86,7 +135,13 @@ namespace FarmingGPSLib.Equipment
 
         public Azimuth FromDirectionOfTravel
         {
-            get { return _fromDirectionOfTravel; }
+            get
+            {
+                if (SideDependent && OppositeSide)
+                    return _oppositeSideFromDirectionOfTravel;
+                else
+                    return _fromDirectionOfTravel;
+            }
         }
 
         public Distance Width
@@ -126,14 +181,35 @@ namespace FarmingGPSLib.Equipment
             get { return null; }
         }
 
+        public virtual bool SideDependent
+        {
+            get { return _sideDependent; }
+        }
+
+        public virtual bool OppositeSide
+        {
+            get { return _oppositeSide; }
+            set { _oppositeSide = value; }
+        }
+
+        public virtual Distance OffsetFromVechile
+        {
+            get { return _offsetFromVechile; }
+        }
         public DotSpatial.Topology.Coordinate GetLeftTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel)
         {
-            return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_bearingToLeftTip)).Radians, _distanceToLeftTip.ToMeters().Value);
+            if (SideDependent && OppositeSide)
+                return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_oppositeSideBearingToLeftTip)).Radians, _oppositeSideDistanceToLeftTip.ToMeters().Value);
+            else
+                return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_bearingToLeftTip)).Radians, _distanceToLeftTip.ToMeters().Value);
         }
 
         public DotSpatial.Topology.Coordinate GetRightTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel)
         {
-            return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_bearingToRightTip)).Radians, _distanceToRightTip.ToMeters().Value);
+            if (SideDependent && OppositeSide)
+                return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_oppositeSideBearingToRightTip)).Radians, _oppositeSideDistanceToRightTip.ToMeters().Value);
+            else
+                return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_bearingToRightTip)).Radians, _distanceToRightTip.ToMeters().Value);
         }
 
         public DotSpatial.Topology.Coordinate GetCenter(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel)
@@ -158,7 +234,19 @@ namespace FarmingGPSLib.Equipment
                     startWeight = stat.StartWeight;
                     endWeight = stat.EndWeight;
                 }
-                return new EquipmentState() { Width = Width.ToMeters().Value, DistanceFromVechile = DistanceFromVechileToCenter.ToMeters().Value, FromDirectionOfTravel = FromDirectionOfTravel.DecimalDegrees, Overlap = Overlap.ToMeters().Value, StatStartWeight = startWeight, StatEndWeight = endWeight };
+                return new EquipmentState() { Width = Width.ToMeters().Value,
+                    DistanceFromVechile = DistanceFromVechileToCenter.ToMeters().Value,
+                    FromDirectionOfTravel = FromDirectionOfTravel.DecimalDegrees,
+                    Overlap = Overlap.ToMeters().Value,
+                    StatStartWeight = startWeight,
+                    StatEndWeight = endWeight,
+                    SideDependent = _sideDependent,
+                    OppositeSideFromDirectionOfTravel = _oppositeSideFromDirectionOfTravel.DecimalDegrees,
+                    OppositeSideBearingToLeftTip = _oppositeSideBearingToLeftTip.DecimalDegrees,
+                    OppositeSideBearingToRightTip = _oppositeSideBearingToRightTip.DecimalDegrees,
+                    OppositeSideDistanceToLeftTip = _oppositeSideDistanceToLeftTip.ToMeters().Value,
+                    OppositeSideDistanceToRightTip = _oppositeSideDistanceToRightTip.ToMeters().Value,
+                    OffsetFromVechile = _offsetFromVechile.ToMeters().Value};
             }
         }
 
@@ -176,6 +264,16 @@ namespace FarmingGPSLib.Equipment
             _distanceFromVechile = Distance.FromMeters(equipmentState.DistanceFromVechile);
             _fromDirectionOfTravel = new Azimuth(equipmentState.FromDirectionOfTravel);
             _overlap = Distance.FromMeters(equipmentState.Overlap);
+            _sideDependent = equipmentState.SideDependent;
+            _offsetFromVechile = Distance.FromMeters(equipmentState.OffsetFromVechile);
+            if(SideDependent)
+            {
+                _oppositeSideFromDirectionOfTravel = new Azimuth(equipmentState.OppositeSideFromDirectionOfTravel);
+                _oppositeSideBearingToLeftTip = new Azimuth(equipmentState.OppositeSideBearingToLeftTip);
+                _oppositeSideBearingToRightTip = new Azimuth(equipmentState.OppositeSideBearingToRightTip);
+                _oppositeSideDistanceToLeftTip = Distance.FromMeters(equipmentState.OppositeSideDistanceToLeftTip);
+                _oppositeSideDistanceToRightTip = Distance.FromMeters(equipmentState.OppositeSideDistanceToRightTip);
+            }
 
             if (this is IEquipmentStat)
             {

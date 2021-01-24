@@ -253,6 +253,9 @@
     <Compile Include="Usercontrols\Equipments\EquipmentStat.xaml.cs">
       <DependentUpon>EquipmentStat.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Usercontrols\Events\EventMessage.xaml.cs">
+      <DependentUpon>EventMessage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Usercontrols\FarmingMode.xaml.cs">
       <DependentUpon>FarmingMode.xaml</DependentUpon>
     </Compile>
@@ -329,6 +332,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Usercontrols\Equipments\EquipmentStat.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Usercontrols\Events\EventMessage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

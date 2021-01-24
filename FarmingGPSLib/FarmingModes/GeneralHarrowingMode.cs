@@ -13,30 +13,28 @@ namespace FarmingGPSLib.FarmingModes
 {
     public class GeneralHarrowingMode : FarmingModeBase
     {
-        protected IEquipment _equipment;
-
-        protected int _headlandTurns;
-
         public GeneralHarrowingMode() : base()
         { }
 
         public GeneralHarrowingMode(IField field)
             : base(field)
         {
-            _equipment = new Harrow(Distance.FromMeters(6), Distance.FromMeters(1), new Azimuth(180.0));
+            _equipment = new Harrow();
             _headlandTurns = 1;
             CalculateHeadLand();
         }
 
         public GeneralHarrowingMode(IField field, IEquipment equipment, int headLandTurns)
-            : base(field)
+            : base(field, equipment, headLandTurns)
         {
-            _equipment = equipment;
-            _headlandTurns = headLandTurns;
-            CalculateHeadLand();
         }
 
-        protected void CalculateHeadLand()
+        public GeneralHarrowingMode(IField field, IEquipment equipment, Distance headlandDistance)
+            : base(field, equipment, headlandDistance)
+        {
+        }
+
+        protected override void CalculateHeadLand()
         {
             double distanceFromShell = _equipment.CenterToTip.ToMeters().Value;
             List<LineString> trackingLines = new List<LineString>();
@@ -159,7 +157,14 @@ namespace FarmingGPSLib.FarmingModes
                 }
 
                 if (lineCoordinates.Count == 2)
-                    linesToAdd.Add(new LineString(new List<Coordinate>() { lineCoordinates[0], lineCoordinates[1] }));
+                {
+                    //Check angle so we dont reverse the line
+                    var line = new LineSegment(lineCoordinates[0], lineCoordinates[1]);
+                    if ((int)line.Angle != (int)baseLine.Angle)
+                        linesToAdd.Add(new LineString(new List<Coordinate>() { line.P1, line.P0 }));
+                    else
+                        linesToAdd.Add(new LineString(new List<Coordinate>() { line.P0, line.P1 }));
+                }
                 else
                 {
                     int j = 1;
@@ -177,7 +182,12 @@ namespace FarmingGPSLib.FarmingModes
                         {
                             if (polygonToCheck.Contains(lineToCheck))
                             {
-                                linesToAdd.Add(new LineString(new List<Coordinate>() { lineCoordinates[0], lineCoordinates[j] }));
+                                //Check angle so we dont reverse the line
+                                var line = new LineSegment(lineCoordinates[0], lineCoordinates[j]);
+                                if ((int)line.Angle != (int)baseLine.Angle)
+                                    linesToAdd.Add(new LineString(new List<Coordinate>() { line.P1, line.P0 }));
+                                else
+                                    linesToAdd.Add(new LineString(new List<Coordinate>() { line.P0, line.P1 }));
                                 lineCoordinates.RemoveAt(j);
                                 lineCoordinates.RemoveAt(0);
                                 j = 1;

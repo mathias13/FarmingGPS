@@ -33,7 +33,6 @@ namespace FarmingGPSLib.StateRecovery
             if (!Directory.Exists(_folderPath))
                 Directory.CreateDirectory(_folderPath);
 
-            TextReader reader = null;
             try
             {
                 var filesToUse = new List<string>();
@@ -64,18 +63,13 @@ namespace FarmingGPSLib.StateRecovery
                     Type restoredType = Type.GetType(fileInfo.Name.Remove(fileInfo.Name.Length - 4, 4));
                     IStateObject stateObject = Activator.CreateInstance(restoredType) as IStateObject;
                     XmlSerializer serializer = new XmlSerializer(stateObject.StateType);
-                    reader = new StreamReader(_folderPath + fileInfo.Name);
-                    _objectsRecovered.Add(new KeyValuePair<Type, object>(restoredType, serializer.Deserialize(reader)));
+                    using (var reader = new StreamReader(_folderPath + fileInfo.Name))
+                        _objectsRecovered.Add(new KeyValuePair<Type, object>(restoredType, serializer.Deserialize(reader)));
                 }
             }
             catch (Exception e)
             {
                 Log.Error("Failed to restore StateObjects", e);
-            }
-            finally
-            {
-                if (reader != null)
-                    reader.Close();
             }
 
             _preserveInterval = preserveInterval;
