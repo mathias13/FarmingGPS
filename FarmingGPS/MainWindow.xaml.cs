@@ -369,8 +369,6 @@ namespace FarmingGPS
                 
         private void _dispatcherTimer_Tick(object sender, EventArgs e)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
             CoordinateUpdateStruct? newCoord = null;
             LightBarUpdateStruct? newLightBar = null;
 
@@ -399,8 +397,6 @@ namespace FarmingGPS
             {
                 if (_coordinateUpdateStructQueueSecondaryTasks.Count > 0)
                 {
-                    Stopwatch stopwatch = new Stopwatch();
-                    stopwatch.Start();
                     CoordinateUpdateStruct[] coordinates = new CoordinateUpdateStruct[_coordinateUpdateStructQueueSecondaryTasks.Count];
                     for (int i = 0; i < coordinates.Length; i++)
                         coordinates[i] = _coordinateUpdateStructQueueSecondaryTasks.Dequeue();
@@ -413,7 +409,6 @@ namespace FarmingGPS
                             _fieldCreator = null;
                     }
 
-                    var trackingLineTime = stopwatch.ElapsedMilliseconds;
                     if (DateTime.Now > _trackingLineEvaluationTimeout)
                     {
                         if (_farmingMode != null)
@@ -441,10 +436,6 @@ namespace FarmingGPS
 
                         _trackingLineEvaluationTimeout = DateTime.Now.AddSeconds(3.0);
                     }
-                    trackingLineTime = stopwatch.ElapsedMilliseconds - trackingLineTime;
-
-                    var fieldTrackeTime = stopwatch.ElapsedMilliseconds;
-                    long testTime = 0;
                     if (coordinates[coordinates.Length - 1].Reversing)
                         _fieldTracker.StopTrack();
                     if (_fieldTracker.IsTracking && !_fieldTrackerActive)
@@ -471,14 +462,8 @@ namespace FarmingGPS
                             if (_distanceTriggerFieldTracker.CheckDistance(coordinate.Center, coordinate.Heading))
                                 trackPoints.Add(new FieldTracker.TrackPoint(coordinate.LeftTip, coordinate.RightTip ));
                         }
-                        testTime = stopwatch.ElapsedMilliseconds;
                         _fieldTracker.AddTrackPoints(trackPoints.ToArray());
-                        testTime = stopwatch.ElapsedMilliseconds - testTime;
                     }
-                    fieldTrackeTime = stopwatch.ElapsedMilliseconds - fieldTrackeTime;
-
-                    if (stopwatch.ElapsedMilliseconds > 200)
-                        Log.Info(String.Format("Secondary tasks took more than 200ms, trakingline:{0}, fieltracker: {1}, testtime: {2}", trackingLineTime.ToString("0ms"), fieldTrackeTime.ToString("0ms"), testTime.ToString("0ms")));
                 }
                 else if(_obstacleQueue.Count > 0)
                 {
