@@ -821,10 +821,12 @@ namespace FarmingGPS.Visualization
         {
             double widthDivided = _equipmentWidth / 2.0;
             for (int i = 0; i < 4; i++)
-                _equipmentMesh.Positions[i] = new Point3D(_equipmentMesh.Positions[i].X, widthDivided + _equipmentOffset, _equipmentMesh.Positions[i].Z);
+                _equipmentMesh.Geometry.Positions[i] = new Vector3(_equipmentMesh.Geometry.Positions[i].X, (float)widthDivided + (float)_equipmentOffset, _equipmentMesh.Geometry.Positions[i].Z);
 
             for (int i = 4; i < 8; i++)
-                _equipmentMesh.Positions[i] = new Point3D(_equipmentMesh.Positions[i].X, (widthDivided * -1.0) + _equipmentOffset, _equipmentMesh.Positions[i].Z);
+                _equipmentMesh.Geometry.Positions[i] = new Vector3(_equipmentMesh.Geometry.Positions[i].X, (float)widthDivided * -1.0f, _equipmentMesh.Geometry.Positions[i].Z);
+
+            _equipmentMesh.Geometry.UpdateVertices();
         }
 
         private void DrawOutline(IList<DotSpatial.Topology.Coordinate> coordinates)
