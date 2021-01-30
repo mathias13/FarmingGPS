@@ -520,13 +520,16 @@ namespace FarmingGPS
         {
             if(e.Contains("EQUIPMENT"))
             {
-                if (_equipment is IEquipmentControl && _startStopAuto)
+                if (_equipment is IEquipmentControl)
                 {
-                    IEquipmentControl equipmentControl = _equipment as IEquipmentControl;
-                    if (e.Contains("START"))
-                        equipmentControl.Start();
-                    else if (e.Contains("STOP"))
-                        equipmentControl.Stop();
+                    if (_startStopAuto)
+                    {
+                        IEquipmentControl equipmentControl = _equipment as IEquipmentControl;
+                        if (e.Contains("START"))
+                            equipmentControl.Start();
+                        else if (e.Contains("STOP"))
+                            equipmentControl.Stop();
+                    }
                 }
                 else
                 {
