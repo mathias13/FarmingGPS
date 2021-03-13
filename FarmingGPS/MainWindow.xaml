@@ -86,7 +86,7 @@
         </Grid>
         <Grid Grid.Row="1" Style="{Binding Path=CameraSize, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" MouseLeftButtonUp="Camera_MouseLeftButtonUp">
             <Border Background="White" BorderThickness="2" CornerRadius="5" BorderBrush="Black">
-                <Image Source="{Binding Path=CameraImage, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                <Image x:Name="_cameraImage" x:FieldModifier="private"/>
             </Border>
             <Rectangle Margin="2,2,2,2" RadiusX="5" RadiusY="5" Fill="Gray" Opacity="0.6" Visibility="{Binding Path=CameraUnavailable, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
             <Viewbox Margin="10,10,10,10" Stretch="Uniform">

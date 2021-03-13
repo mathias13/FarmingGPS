@@ -1,12 +1,25 @@
 ﻿using System;
+using System.Windows.Media.Imaging;
 
 namespace FarmingGPS.Camera
 {
     interface ICamera
     {
-        event EventHandler<CameraImageEventArgs> CameraImageEvent;
-
         event EventHandler<CameraConnectedEventArgs> CameraConnectedChangedEvent;
+
+        event EventHandler<Exception> ExceptionEvent;
+
+        void ChangeVideoFrameSize(int maxHeight);
+
+        BitmapSource Bitmap
+        {
+            get;
+        }
+
+        double SourceAspectRatio
+        {
+            get;
+        }
 
         bool Connected
         {

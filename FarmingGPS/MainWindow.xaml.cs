@@ -196,12 +196,9 @@ namespace FarmingGPS
             _secondaryTasksThread.Priority = System.Threading.ThreadPriority.BelowNormal;
             _secondaryTasksThread.Start();
 
-            //_camera = new AxisCamera("AxisCase");
-            _camera = new AxisCamera(System.Net.IPAddress.Parse("192.168.43.132"));
-            _camera.CameraConnectedChangedEvent += _camera_CameraConnectedChangedEvent;
-            _camera.CameraImageEvent += _camera_CameraImageEvent;
             SetValue(CameraUnavilableProperty, Visibility.Visible);
-                        
+            SetValue(CameraSizeProperty, (Style)this.FindResource("PiPvideo"));
+
             _distanceTriggerFieldTracker = new DistanceTrigger(MINIMUM_DISTANCE_BETWEEN_POINTS, MAXIMUM_DISTANCE_BETWEEN_POINTS, MINIMUM_CHANGE_DIRECTION, MAXIMUM_CHANGE_DIRECTION);
         }
 
@@ -220,8 +217,6 @@ namespace FarmingGPS
         protected static readonly DependencyProperty FieldTrackerButtonStyleProperty = DependencyProperty.Register("FieldTrackerButtonStyle", typeof(Style), typeof(MainWindow));
 
         protected static readonly DependencyProperty FieldTrackerClearButtonVisibility = DependencyProperty.Register("FieldTrackerClearButtonVisibility", typeof(Visibility), typeof(MainWindow));
-
-        protected static readonly DependencyProperty CameraImageProperty = DependencyProperty.Register("CameraImage", typeof(BitmapImage), typeof(MainWindow));
 
         protected static readonly DependencyProperty CameraSizeProperty = DependencyProperty.Register("CameraSize", typeof(Style), typeof(MainWindow));
 
@@ -273,7 +268,6 @@ namespace FarmingGPS
         private void MainWindow_ContentRendered(object sender, EventArgs e)
         {   
             SetValue(FieldTrackerButtonStyleProperty, (Style)this.FindResource("BUTTON_PLAY"));
-            SetValue(CameraSizeProperty, (Style)this.FindResource("PiPvideo"));
 
             SetupSettingsPanel(null);
             
@@ -365,8 +359,14 @@ namespace FarmingGPS
                 else
                     _stateRecovery.Clear();
             }
+
+            _cameraImage.SizeChanged += _cameraImage_SizeChanged;
+            _camera = new Camera.Garmin.GarminVirb();
+            _camera.CameraConnectedChangedEvent += _camera_CameraConnectedChangedEvent;
+            _camera.ExceptionEvent += _camera_ExceptionEvent;
+            _cameraImage.Source = _camera.Bitmap;
         }
-                
+
         private void _dispatcherTimer_Tick(object sender, EventArgs e)
         {
             CoordinateUpdateStruct? newCoord = null;
@@ -620,14 +620,18 @@ namespace FarmingGPS
 
         #region Camera Events
 
-        private void _camera_CameraImageEvent(object sender, CameraImageEventArgs e)
+        private void _cameraImage_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (Dispatcher.Thread.Equals(System.Threading.Thread.CurrentThread))
+            if(_camera != null)
             {
-                SetValue(CameraImageProperty, e.BitmapImage);
+                _camera.ChangeVideoFrameSize((int)e.NewSize.Height);
+                _cameraImage.Source = _camera.Bitmap;
             }
-            else
-                Dispatcher.Invoke(DispatcherPriority.Render, new Action<object, CameraImageEventArgs>(_camera_CameraImageEvent), sender, e);
+        }
+
+        private void _camera_ExceptionEvent(object sender, Exception e)
+        {
+            Log.Warn("Camera exception", e);
         }
 
         private void _camera_CameraConnectedChangedEvent(object sender, CameraConnectedEventArgs e)

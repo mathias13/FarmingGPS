@@ -846,9 +846,10 @@
     <Style x:Key="Fullvideo" TargetType="Grid">
         <Setter Property="Margin" Value="2,2,2,2"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
         <Setter Property="Width" Value="Auto"/>
         <Setter Property="Height" Value="Auto"/>
+        <Setter Property="MaxHeight" Value="720"/>
     </Style>
     
     <RadialGradientBrush Center="0.4,0.4" x:Key="LIGHT_BULB_GREEN_ON">
