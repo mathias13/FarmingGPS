@@ -1,14 +1,12 @@
 ﻿using FarmingGPS.Camera.FFmpeg;
 using Newtonsoft.Json.Linq;
 using RtspClientSharp;
-using RtspClientSharp.Rtsp;
 using RtspClientSharp.RawFrames;
 using RtspClientSharp.RawFrames.Video;
 using System;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Windows;
@@ -55,14 +53,6 @@ namespace FarmingGPS.Camera.Garmin
 
             _dirtyRect = new Int32Rect(0, 0, (int)width, height);
 
-            PropertyInfo dpiXProperty =
-                typeof(SystemParameters).GetProperty("DpiX", BindingFlags.NonPublic | BindingFlags.Static);
-            PropertyInfo dpiYProperty =
-                typeof(SystemParameters).GetProperty("Dpi", BindingFlags.NonPublic | BindingFlags.Static);
-
-            var dpiX = dpiXProperty != null ? (int)dpiXProperty.GetValue(null, null) : 96.0;
-            var dpiY = dpiYProperty != null ? (int)dpiYProperty.GetValue(null, null) : 96.0;
-
             lock (_syncObject)
             {
                 if (_scalerPointer != IntPtr.Zero)
@@ -74,8 +64,8 @@ namespace FarmingGPS.Camera.Garmin
                 _writeableBitmap = new WriteableBitmap(
                     (int)width,
                     height,
-                    dpiX,
-                    dpiY,
+                    96.0,
+                    96.0,
                     PixelFormats.Pbgra32,
                     null);
 
