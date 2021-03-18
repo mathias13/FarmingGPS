@@ -119,15 +119,7 @@ namespace FarmingGPS.Camera.Garmin
 
                 if ((int)response["result"] == 1)
                 {
-                    _extraData = new byte[0];
-                    int resultCode = FFmpegVideoPInvoke.CreateVideoDecoder((int)FFmpegVideoCodecId.H264, out _decoderPointer);
-
-                    if (resultCode != 0)
-                    {
-                        OnException(new Exception($"An error occurred while creating video decoder, code: {resultCode}"));
-                        return;
-                    }
-
+                    var reconnect = true;
                     _cancellationToken = new CancellationTokenSource();
                     var connectionParameters = new ConnectionParameters(new Uri((string)response["url"]));
                     connectionParameters.RtpTransport = RtpTransportProtocol.UDP;
@@ -135,44 +127,63 @@ namespace FarmingGPS.Camera.Garmin
                     _rtspClient = new RtspClient(connectionParameters);
                     _rtspClient.FrameReceived += _rtspClient_FrameReceived;
 
-                    try
+                    while (reconnect)
                     {
-                        await _rtspClient.ConnectAsync(_cancellationToken.Token);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                    }
-                    catch (Exception e1)
-                    {
-                        OnException(e1);
-                    }
+                        reconnect = false;
+                        _extraData = new byte[0];
+                        int resultCode = FFmpegVideoPInvoke.CreateVideoDecoder((int)FFmpegVideoCodecId.H264, out _decoderPointer);
 
-                    try
-                    {
-                        OnCameraConnectedChanged(true);
-                        await _rtspClient.ReceiveAsync(_cancellationToken.Token);
-                    }
-                    catch(OperationCanceledException)
-                    {
-                    }
-                    catch (Exception e1)
-                    {
-                        OnException(e1);
-                    }
+                        if (resultCode != 0)
+                        {
+                            OnException(new Exception($"An error occurred while creating video decoder, code: {resultCode}"));
+                            return;
+                        }
 
-                    OnCameraConnectedChanged(false);
-                    if (_decoderPointer != IntPtr.Zero)
-                    {
-                        _decoderPointer = IntPtr.Zero;
-                        FFmpegVideoPInvoke.RemoveVideoDecoder(_decoderPointer);
-                    }
+                        var connected = false;
+                        try
+                        {
+                            await _rtspClient.ConnectAsync(_cancellationToken.Token);
+                            connected = true;
+                        }
+                        catch (OperationCanceledException)
+                        {
+                        }
+                        catch (Exception e1)
+                        {
+                            OnException(e1);
+                            reconnect = true;
+                        }
 
-                    if (_scalerPointer != IntPtr.Zero)
-                    {
-                        FFmpegVideoPInvoke.RemoveVideoScaler(_scalerPointer);
-                        _scalerPointer = IntPtr.Zero;
-                    }
+                        if (connected)
+                        {
+                            try
+                            {
+                                OnCameraConnectedChanged(true);
+                                await _rtspClient.ReceiveAsync(_cancellationToken.Token);
+                            }
+                            catch (OperationCanceledException)
+                            {
+                            }
+                            catch (Exception e1)
+                            {
+                                OnException(e1);
+                                reconnect = true;
+                            }
+                        }
 
+                        OnCameraConnectedChanged(false);
+                        if (_decoderPointer != IntPtr.Zero)
+                        {
+                            _decoderPointer = IntPtr.Zero;
+                            FFmpegVideoPInvoke.RemoveVideoDecoder(_decoderPointer);
+                        }
+
+                        if (_scalerPointer != IntPtr.Zero)
+                        {
+                            FFmpegVideoPInvoke.RemoveVideoScaler(_scalerPointer);
+                            _scalerPointer = IntPtr.Zero;
+                        }
+                    }
                     _rtspClient.Dispose();
                     _rtspClient = null;
                 }
