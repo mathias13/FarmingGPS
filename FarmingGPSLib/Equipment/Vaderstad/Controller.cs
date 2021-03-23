@@ -371,7 +371,7 @@ namespace FarmingGPSLib.Equipment.Vaderstad
 
                         uint bytesWritten = 0;
                         Stopwatch sendTimeout = Stopwatch.StartNew();
-                        while (bytesWritten != writeBytes.Length && sendTimeout.ElapsedMilliseconds > 200)
+                        while (bytesWritten != writeBytes.Length && sendTimeout.ElapsedMilliseconds < 200)
                         {
                             if (!Win32Com.WriteFile(portHandle, writeBytes, (uint)writeBytes.Length, out bytesWritten, IntPtr.Zero))
                             {
@@ -384,7 +384,7 @@ namespace FarmingGPSLib.Equipment.Vaderstad
                         {
                             string answer = string.Empty;
                             Stopwatch readTimeout = Stopwatch.StartNew();
-                            while (!answer.Contains(END_CHAR) && readTimeout.ElapsedMilliseconds > 200)
+                            while (!answer.Contains(END_CHAR) && readTimeout.ElapsedMilliseconds < 200)
                             {
                                 uint bytesRead = 0;
                                 if (!Win32Com.ReadFile(portHandle, buffer, (uint)buffer.Length, out bytesRead, IntPtr.Zero))
@@ -416,7 +416,7 @@ namespace FarmingGPSLib.Equipment.Vaderstad
 
                         uint bytesWritten = 0;
                         Stopwatch sendTimeout = Stopwatch.StartNew();
-                        while (bytesWritten != writeBytes.Length && sendTimeout.ElapsedMilliseconds > 200)
+                        while (bytesWritten != writeBytes.Length && sendTimeout.ElapsedMilliseconds < 200)
                         {
                             if (!Win32Com.WriteFile(portHandle, writeBytes, (uint)writeBytes.Length, out bytesWritten, IntPtr.Zero))
                             {
@@ -429,7 +429,7 @@ namespace FarmingGPSLib.Equipment.Vaderstad
                         {
                             string answer = string.Empty;
                             Stopwatch readTimeout = Stopwatch.StartNew();
-                            while (!answer.Contains(END_CHAR) && readTimeout.ElapsedMilliseconds > 200)
+                            while (!answer.Contains(END_CHAR) && readTimeout.ElapsedMilliseconds < 200)
                             {
                                 uint bytesRead = 0;
                                 if (!Win32Com.ReadFile(portHandle, buffer, (uint)buffer.Length, out bytesRead, IntPtr.Zero))
