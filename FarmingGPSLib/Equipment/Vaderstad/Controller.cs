@@ -474,6 +474,7 @@ namespace FarmingGPSLib.Equipment.Vaderstad
             }
             Win32Com.CancelIo(portHandle);
             Win32Com.CloseHandle(portHandle);
+            _readMessage.Finished = true;
         }
 
         private void ReadThread()
