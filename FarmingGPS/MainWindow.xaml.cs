@@ -822,7 +822,6 @@ namespace FarmingGPS
                     }
                 }
 
-                _activeTrackingLine.Active = true;
                 LightBar.Direction direction = LightBar.Direction.Left;
                 if (orientationToLine.SideOfLine == OrientationToLine.Side.Left)
                     direction = LightBar.Direction.Right;
