@@ -667,11 +667,14 @@ namespace FarmingGPS
                 ConnectTimeout = 5
             };
 
-            UserPasswordDialog userPassDialog = new UserPasswordDialog(connSetting.UserName);
-            userPassDialog.ShowDialog();
+            if (!connString.IntegratedSecurity)
+            {
+                UserPasswordDialog userPassDialog = new UserPasswordDialog(connSetting.UserName);
+                userPassDialog.ShowDialog();
 
-            connString.UserID = userPassDialog.UserName;
-            connString.Password = userPassDialog.Password;
+                connString.UserID = userPassDialog.UserName;
+                connString.Password = userPassDialog.Password;
+            }
 
             _database = new Database.DatabaseHandler(connString);
             _database.DatabaseOnlineChanged += _database_DatabaseOnlineChanged;
@@ -725,6 +728,7 @@ namespace FarmingGPS
             {
                 _ntripConnected = false;
                 ChangeNTRIPState();
+                Log.Warn(e);
             }
             _ntripClient.Connect();
         }

@@ -170,9 +170,9 @@ namespace FarmingGPSLib.Equipment.BogBalle
         public void Dispose()
         {
             _readThreadStop = true;
-            _readThread.Join();
             _receiveSendThreadStopped = true;
             _receiveSendThread.Join();
+            _readThread.Join();
         }
 
         public void Start()
