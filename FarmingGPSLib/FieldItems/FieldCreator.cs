@@ -35,7 +35,7 @@ namespace FarmingGPSLib.FieldItems
 
         protected const double MAXIMUM_CHANGE_DIRECTION = 10.0;
 
-        protected const double DISTANCE_TO_START_FIELD_FINISHED = 5.0;
+        protected const double DISTANCE_TO_START_FIELD_FINISHED = 10.0;
 
         private Orientation _orientation;
 
@@ -70,7 +70,6 @@ namespace FarmingGPSLib.FieldItems
             fieldPoints.Add(currentPosition.TranslateTo(Azimuth.Northwest, Distance.FromMeters(1.0)));
             _distanceTrigger = new DistanceTrigger(MINIMUM_DISTANCE_BETWEEN_POINTS, MAXIMUM_DISTANCE_BETWEEN_POINTS, MINIMUM_CHANGE_DIRECTION, MAXIMUM_CHANGE_DIRECTION);
             _field = new Field(fieldPoints, projectionInfo);
-            //receiver.CoordinateUpdate += Receiver_CoordinateUpdate;
         }
         
         private void AddPoint(Coordinate actualPosition)
@@ -97,7 +96,8 @@ namespace FarmingGPSLib.FieldItems
                     double[] xyArray = new double[2];
                     double[] zArray = new double[1];
                     List<Position> coordinates = new List<Position>();
-                    foreach(Coordinate coord in _track)
+                    var polygon = (Polygon)DotSpatial.Topology.Simplify.TopologyPreservingSimplifier.Simplify(new Polygon(new LinearRing(_track)), 0.5);
+                    foreach (Coordinate coord in polygon.Coordinates)
                     {
                         xyArray[0] = coord.X;
                         xyArray[1] = coord.Y;
