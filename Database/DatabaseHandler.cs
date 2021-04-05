@@ -476,14 +476,17 @@ namespace FarmingGPS.Database
                 {
                     try
                     {
-                        lock (_syncObject)
+                        if (_databaseContext.Connection.State == ConnectionState.Closed || _databaseContext.Connection.State == ConnectionState.Broken)
                         {
-                            _databaseContext.Connection.Close();
-                            _databaseContext.Connection.Open();
-                            if (_databaseContext.Connection.State == ConnectionState.Open)
-                                OnDatabaseOnlineChanged(true);
-                            else
-                                OnDatabaseOnlineChanged(true);
+                            lock (_syncObject)
+                            {
+                                _databaseContext.Connection.Close();
+                                _databaseContext.Connection.Open();
+                                if (_databaseContext.Connection.State == ConnectionState.Open)
+                                    OnDatabaseOnlineChanged(true);
+                                else
+                                    OnDatabaseOnlineChanged(false);
+                            }
                         }
                     }
                     catch (Exception e)
