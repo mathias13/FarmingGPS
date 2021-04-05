@@ -260,7 +260,7 @@ namespace FarmingGPS
                 if (_equipment is IDisposable)
                     (_equipment as IDisposable).Dispose();
 
-            YesNoDialog dialog = new YesNoDialog("Vill du radera all sessions data?");
+            YesNoDialog dialog = new YesNoDialog("Vill du radera nuvarande arbete?");
             if (dialog.ShowDialog().Value)
                 _stateRecovery.Clear();
         }
@@ -280,7 +280,7 @@ namespace FarmingGPS
 
             if (_stateRecovery.ObjectsRecovered.Count > 0)
             {
-                YesNoDialog dialog = new YesNoDialog("Vill du återställa tidigare tillstånd?");
+                YesNoDialog dialog = new YesNoDialog("Vill du återställa tidigare arbete?");
                 if (dialog.ShowDialog().Value)
                 {
                     foreach (KeyValuePair<Type, object> recoveredObject in _stateRecovery.ObjectsRecovered)
@@ -343,7 +343,8 @@ namespace FarmingGPS
                     if (_receiver != null)
                         _receiver.Dispose();
                     _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0),
-                        new Longitude(13.855149568), new Latitude(58.5125995962)),
+                        new Longitude(13.6234063), new Latitude(58.531409)),
+                        //new Longitude(13.855149568), new Latitude(58.5125995962)),
                         false,
                         _vechile.OffsetDirection,
                         _vechile.OffsetDistance,
