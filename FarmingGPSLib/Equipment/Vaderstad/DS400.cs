@@ -50,6 +50,7 @@ namespace FarmingGPSLib.Equipment.Vaderstad
 
         public void Dispose()
         {
+            _controller.ValuesUpdated -= _controller_ValuesUpdated;
             _controller.Dispose();
         }
 

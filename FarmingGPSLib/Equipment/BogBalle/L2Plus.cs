@@ -69,6 +69,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         public void Dispose()
         {
+            _calibrator.ValuesUpdated -= _calibrator_ValuesUpdated;
             _calibrator.Dispose();
         }
 
