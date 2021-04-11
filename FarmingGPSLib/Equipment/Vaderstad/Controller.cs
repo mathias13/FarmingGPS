@@ -600,7 +600,6 @@ namespace FarmingGPSLib.Equipment.Vaderstad
 
         private string ReadValue(string command)
         {
-            if()
             _readMessage = new ReadMessage(command);
 
             while (!_readMessage.Finished)
