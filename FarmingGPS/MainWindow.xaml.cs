@@ -1185,7 +1185,12 @@ namespace FarmingGPS
                 _stateRecovery.RemoveStateObject(_fieldRateTracker);
 
             BTN_RATE_AUTO.Visibility = Visibility.Visible;
-            _fieldRateTracker = new FieldRateTracker(usercontrol.DefaultRate, 5.0, usercontrol.ShapeFile, 1, _field);
+            var rateColumn = 0;
+            if (usercontrol.ShapeFile.DataTable.Columns.Count > 1)
+                for (int i = 0; i < usercontrol.ShapeFile.DataTable.Columns.Count; i++)
+                    if (usercontrol.ShapeFile.DataTable.Columns[i].ColumnName.ToLower().Contains("rate") || usercontrol.ShapeFile.DataTable.Columns[i].ColumnName.ToLower().Contains("giva"))
+                        rateColumn = i;
+            _fieldRateTracker = new FieldRateTracker(usercontrol.DefaultRate, 5.0, usercontrol.ShapeFile, rateColumn, _field);
             _stateRecovery.AddStateObject(_fieldRateTracker);
             if (_equipment is IEquipmentControl)
                 _fieldRateTracker.RegisterEquipmentControl(_equipment as IEquipmentControl);
