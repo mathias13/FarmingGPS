@@ -12,8 +12,14 @@ namespace FarmingGPSLib.Vechile
         Distance OffsetDistance { get; }
 
         Distance WheelAxesDistance { get; }
-        
+
+        Azimuth AttachPointDirection { get; }
+
+        Distance AttachPointDistance { get; }
+
         DotSpatial.Topology.Coordinate CenterRearAxle { get; }
+
+        DotSpatial.Topology.Coordinate AttachPoint { get; }
 
         Azimuth VechileDirection { get; }
 

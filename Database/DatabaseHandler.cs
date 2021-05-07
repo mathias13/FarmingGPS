@@ -74,6 +74,7 @@ namespace FarmingGPS.Database
             _databaseContext = new FarmingGPSDataContext(connection.ConnectionString);
             _databaseContext.Connection.StateChange += Connection_StateChange;
             _onlineCheckerThread = new Thread(new ThreadStart(OnlineCheckThread));
+            _onlineCheckerThread.Priority = ThreadPriority.BelowNormal;
             _onlineCheckerThread.Start();
         }
 
@@ -475,14 +476,17 @@ namespace FarmingGPS.Database
                 {
                     try
                     {
-                        lock (_syncObject)
+                        if (_databaseContext.Connection.State == ConnectionState.Closed || _databaseContext.Connection.State == ConnectionState.Broken)
                         {
-                            _databaseContext.Connection.Close();
-                            _databaseContext.Connection.Open();
-                            if (_databaseContext.Connection.State == ConnectionState.Open)
-                                OnDatabaseOnlineChanged(true);
-                            else
-                                OnDatabaseOnlineChanged(true);
+                            lock (_syncObject)
+                            {
+                                _databaseContext.Connection.Close();
+                                _databaseContext.Connection.Open();
+                                if (_databaseContext.Connection.State == ConnectionState.Open)
+                                    OnDatabaseOnlineChanged(true);
+                                else
+                                    OnDatabaseOnlineChanged(false);
+                            }
                         }
                     }
                     catch (Exception e)
@@ -492,7 +496,7 @@ namespace FarmingGPS.Database
                     nextConnectionCheck = DateTime.Now.AddSeconds(_online ? 120.0 : 30.0);
                 }
 
-                Thread.Sleep(10);
+                Thread.Sleep(500);
             }
         }
 

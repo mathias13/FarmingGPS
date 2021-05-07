@@ -2,6 +2,7 @@
 using DotSpatial.Positioning;
 using FarmingGPSLib.FarmingModes;
 using FarmingGPSLib.Settings;
+using FarmingGPSLib.Vechile;
 
 namespace FarmingGPSLib.Equipment.Vaderstad
 {
@@ -9,9 +10,9 @@ namespace FarmingGPSLib.Equipment.Vaderstad
     {
         private static double FULL_CONTENT = 700.0;
 
-        private readonly double _stopDistance = 0.2;
+        private readonly double _stopDistance = 0.8;
 
-        private readonly double _startDistance = -1.3;
+        private readonly double _startDistance = -0.7;
 
         private double _startWeight = double.MinValue;
 
@@ -23,13 +24,13 @@ namespace FarmingGPSLib.Equipment.Vaderstad
         {
         }
 
-        public DS400(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel)
-            : base(width, distanceFromVechile, fromDirectionOfTravel)
+        public DS400(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, IVechile vechile)
+            : base(width, distanceFromVechile, fromDirectionOfTravel, vechile)
         {
         }
 
-        public DS400(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, Distance overlap)
-            : base(width, distanceFromVechile, fromDirectionOfTravel, overlap)
+        public DS400(Distance width, Distance distanceFromVechile, Azimuth fromDirectionOfTravel, Distance overlap, IVechile vechile)
+            : base(width, distanceFromVechile, fromDirectionOfTravel, overlap, vechile)
         {
         }
 
@@ -49,6 +50,7 @@ namespace FarmingGPSLib.Equipment.Vaderstad
 
         public void Dispose()
         {
+            _controller.ValuesUpdated -= _controller_ValuesUpdated;
             _controller.Dispose();
         }
 

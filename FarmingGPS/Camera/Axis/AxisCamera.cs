@@ -3,8 +3,12 @@ using System.Net;
 using System.Collections.Generic;
 using System.Timers;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 using Rssdp;
 using MjpegProcessor;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.IO;
 
 namespace FarmingGPS.Camera.Axis
 {
@@ -59,7 +63,6 @@ namespace FarmingGPS.Camera.Axis
         {
             _timeoutTimer.Stop();
             OnCameraConnectedChanged(true);
-            OnCameraImage(e.BitmapImage);
             _timeoutTimer.Start();
         }
 
@@ -85,6 +88,11 @@ namespace FarmingGPS.Camera.Axis
                     break;
                 }
             }
+        }
+
+        public override BitmapSource Bitmap
+        {
+            get { return _decoder.BitmapImage; }
         }
 
         public override void Dispose()

@@ -58,8 +58,24 @@
             </Grid>
             <Grid Grid.Row="3" Margin="20,10,20,20">
                 <StackPanel Orientation="Vertical">
-                    <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Antal tegar</TextBlock>
-                    <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="1" Maximum="20" AllowSpin="True" Increment="1" FormatString="0 varv" x:FieldModifier="private" x:Name="NumericHeadland" Style="{StaticResource INTEGERUPDOWN}" Value="1"/>
+                    <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Tegmått</TextBlock>
+                    <ComboBox Style="{StaticResource COMBOBOX}" HorizontalAlignment="Center" x:FieldModifier="private" x:Name="HeadLandType">
+                        <ComboBoxItem Selector.IsSelected="True">Antal tegar</ComboBoxItem>
+                        <ComboBoxItem>Minsta tegbredd</ComboBoxItem>
+                    </ComboBox>
+                    <StackPanel Orientation="Vertical" x:FieldModifier="private" x:Name="NumericHeadlandGrid" Visibility="Visible">
+                        <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Antal tegar</TextBlock>
+                        <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="1" Maximum="20" AllowSpin="True" Increment="1" FormatString="0 varv" x:FieldModifier="private" x:Name="NumericHeadland" Style="{StaticResource INTEGERUPDOWN}" Value="1"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical" x:FieldModifier="private" x:Name="NumericHeadlandWidthGrid" Visibility="Collapsed">
+                        <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Tegmått</TextBlock>
+                        <extended:IntegerUpDown HorizontalAlignment="Center" Minimum="1" Maximum="20" AllowSpin="True" Increment="1" FormatString="0.00 m" x:FieldModifier="private" x:Name="NumericHeadlandWidth" Style="{StaticResource INTEGERUPDOWN}" Value="6"/>
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource SETTING_HEADER}" HorizontalAlignment="Center">Tegriktning</TextBlock>
+                    <ComboBox Style="{StaticResource COMBOBOX}" HorizontalAlignment="Center" x:FieldModifier="private" x:Name="HeadLandOrientation">
+                        <ComboBoxItem Selector.IsSelected="True">Utåt/Höger</ComboBoxItem>
+                        <ComboBoxItem>Innåt/Vänster</ComboBoxItem>
+                    </ComboBox>
                 </StackPanel>
             </Grid>
             <Grid Grid.Row="4">

@@ -23,9 +23,9 @@ namespace FarmingGPSLib.FarmingModes.Tools
 
         #region Private Variables
 
-        private bool _depleted;
+        private bool _depleted = false;
 
-        private bool _active;
+        private bool _active = false;
 
         private bool _headland;
 
@@ -64,7 +64,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
         {
             Coordinate p0 = Coordinate.Empty;
             Coordinate p1 = Coordinate.Empty;
-            double tempDistance = 0.0;
+            bool trackingBackwards;
             double distance = double.MaxValue;
             if (_extendedLine != null  && !_headland)
             {
@@ -76,7 +76,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
             {
                 for (int i = 0; i < _line.Coordinates.Count - 1; i++)
                 {
-                    tempDistance = CgAlgorithms.DistancePointLine(point, _line.Coordinates[i], _line.Coordinates[i + 1]);
+                    double tempDistance = CgAlgorithms.DistancePointLine(point, _line.Coordinates[i], _line.Coordinates[i + 1]);
                     if (tempDistance < distance)
                     {
                         p0 = _line.Coordinates[i];
@@ -95,12 +95,15 @@ namespace FarmingGPSLib.FarmingModes.Tools
             OrientationToLine.Side side = (CgAlgorithms.OrientationIndex(p0, p1, point) > 0) ? OrientationToLine.Side.Left : OrientationToLine.Side.Right;
             if(!(angleDiff.Degrees < 90 && angleDiff.Degrees > -90))
             {
+                trackingBackwards = true;
                 if(side == OrientationToLine.Side.Right)
                     side = OrientationToLine.Side.Left;
                 else if(side == OrientationToLine.Side.Left)
                     side = OrientationToLine.Side.Right;
             }
-            return new OrientationToLine(side, distance);
+            else
+                trackingBackwards = false;
+            return new OrientationToLine(side, distance, trackingBackwards);
         }
         
         public double GetDistanceToLine(Coordinate point)

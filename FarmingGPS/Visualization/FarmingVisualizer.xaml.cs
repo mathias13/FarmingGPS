@@ -2,8 +2,11 @@
 using DotSpatial.Topology;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
+using HelixToolkit.Wpf.SharpDX;
+using HelixToolkit.Wpf.SharpDX.Shaders;
 using HelixToolkit.Wpf;
 using log4net;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
@@ -14,6 +17,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Media3D;
+using System.Runtime.InteropServices;
 
 namespace FarmingGPS.Visualization
 {
@@ -33,26 +37,24 @@ namespace FarmingGPS.Visualization
 
         struct MeshData
         {
-            public IList<Point3D> Points { get; set; }
+            public Vector3Collection Points { get; set; }
 
-            public Int32Collection Indices { get; set; }
+            public IntCollection Indices { get; set; }
+
+            public Vector3Collection Normals { get; set; }
         }
 
         #region Consts
 
-        private const double LINE_THICKNESS = 0.2;
-
-        private const double LINE_Z_INDEX = 0.0;
+        private const float LINE_Z_INDEX = 0.0f;
 
         private const double FIELD_TRACK_HOLES_Z_INDEX = -0.03;
         
         private const double FIELD_TRACK_Z_INDEX = -0.06;
 
-        private const double FIELD_Z_INDEX = -0.09;
+        private const float FIELD_Z_INDEX = -0.09f;
 
-        private const double FIELD_TRACK_HOLE_RED_MAX_AREA = 100.0;
-
-        private readonly Point3D VIEW_TOP_POSTION = new Point3D(2.0, 0.0, 30.0);
+        private readonly Vector3D VIEW_TOP_POSTION = new Vector3D(2.0, 0.0, 30.0);
 
         private readonly Vector3D VIEW_TOP_ZOOM_VECTOR = new Vector3D(1.8, 0.0, 10.0);
 
@@ -62,7 +64,7 @@ namespace FarmingGPS.Visualization
 
         private readonly double VIEW_TOP_FAR_PLANE = 35.0;
 
-        private readonly Point3D VIEW_BEHIND_POSITION = new Point3D(-30.0, 0.0, 14.0);
+        private readonly Vector3D VIEW_BEHIND_POSITION = new Vector3D(-30.0, 0.0, 14.0);
 
         private readonly Vector3D VIEW_BEHIND_ZOOM_VECTOR = new Vector3D(-3.0, 0.0, 1.4);
 
@@ -72,7 +74,7 @@ namespace FarmingGPS.Visualization
 
         private readonly double VIEW_BEHIND_FAR_PLANE = 200.0;
 
-        private readonly Point3D VIEW_TRACKLINE_POSITION = new Point3D(-308.0, 0.0, 88.0);
+        private readonly Vector3D VIEW_TRACKLINE_POSITION = new Vector3D(-308.0, 0.0, 88.0);
 
         private readonly Vector3D VIEW_TRACKLINE_LOOK_DIRECTION = new Vector3D(8.0, 0.0, -1.0);
 
@@ -93,6 +95,10 @@ namespace FarmingGPS.Visualization
         private System.Windows.Point _lastPoint = new System.Windows.Point(0.0, 0.0);
 
         private double _lastAngle = 0.0;
+
+        private double _equipmentWidth = 4.0;
+
+        private double _equipmentOffset = 0.0;
 
         private DotSpatial.Topology.Coordinate _minPoint;
 
@@ -116,13 +122,24 @@ namespace FarmingGPS.Visualization
 
         private double _viewBehindZoomLevel = 7.0;
 
+        private Vector3D _cameraPosition = new Vector3D();
+
+        private double _cameraRotation = 0.0;
+
+        private Vector3D _viewZoomVector = new Vector3D();
+
+        private Vector3D _viewPositionVector = new Vector3D(0.0, 0.0, 0.0);
+
+        private Vector3D _viewLookVector = new Vector3D(0.0, 0.0, 0.0);
+
         private TrackingLine _focusedTrackline = null;
-                
+                        
         #endregion
 
         public FarmingVisualizer()
         {
             InitializeComponent();
+            _viewPort.EffectsManager = new DefaultEffectsManager();
             this.Loaded += FarmingVisualizer_Loaded;
         }
 
@@ -140,6 +157,9 @@ namespace FarmingGPS.Visualization
                 SetValue(ShiftHeadingProperty, angle);
                 _lastPoint = position;
                 _lastAngle = angle;
+                _cameraPosition = new Vector3D(position.X, position.Y, 0.0);
+                _cameraRotation = angle;
+                UpdateCamera();
             }
             else
                 Dispatcher.BeginInvoke(new Action<System.Windows.Point,double>(UpdatePosition), System.Windows.Threading.DispatcherPriority.Render, position, angle);
@@ -164,6 +184,9 @@ namespace FarmingGPS.Visualization
                 SetValue(ShiftHeadingProperty, bearing.DecimalDegrees);
                 _lastPoint = new System.Windows.Point((double)GetValue(ShiftXProperty), (double)GetValue(ShiftYProperty));
                 _lastAngle = (double)GetValue(ShiftHeadingProperty);
+                _cameraPosition = new Vector3D(x, y, 0.0);
+                _cameraRotation = bearing.DecimalDegrees;
+                UpdateCamera();
             }
             else
                 Dispatcher.BeginInvoke(new Action<DotSpatial.Topology.Coordinate, Azimuth>(UpdatePosition), System.Windows.Threading.DispatcherPriority.Render, coord, bearing);
@@ -174,18 +197,23 @@ namespace FarmingGPS.Visualization
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
             {
                 _viewTrackLine = true;
-                SetValue(ShiftXProperty, trackingLine.MainLine.P0.X - _minPoint.X);
-                SetValue(ShiftYProperty, trackingLine.MainLine.P0.Y - _minPoint.Y);
+                var x = trackingLine.MainLine.P0.X - _minPoint.X;
+                var y = trackingLine.MainLine.P0.Y - _minPoint.Y;
+                SetValue(ShiftXProperty, x);
+                SetValue(ShiftYProperty, y);
                 double angle = 360 - trackingLine.Angle;
                 SetValue(ShiftHeadingProperty, angle);
                 if (!_trackingLines.ContainsKey(trackingLine))
                     return;
                 _focusedTrackline = trackingLine;
                 RedrawLines();
-                SetValue(CameraPositionProperty, VIEW_TRACKLINE_POSITION);
+                _cameraRotation = angle;
+                _cameraPosition = new Vector3D(x, y, 0.0);
+                _viewPositionVector = VIEW_TRACKLINE_POSITION;
                 SetValue(CameraLookDirectionProperty, VIEW_TRACKLINE_LOOK_DIRECTION);
                 SetValue(CameraNearPlaneDistanceProperty, VIEW_TRACKLINE_NEAR_PLANE);
                 SetValue(CameraFarPlaneDistanceProperty, VIEW_TRACKLINE_FAR_PLANE);
+                UpdateCamera();
             }
             else
                 Dispatcher.BeginInvoke(new Action<TrackingLine>(FocusTrackingLine), System.Windows.Threading.DispatcherPriority.Normal, trackingLine);
@@ -209,38 +237,45 @@ namespace FarmingGPS.Visualization
 
         public void SetEquipmentWidth(Distance width)
         {
+            _equipmentWidth = width.ToMeters().Value;
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
-            {
-                double widthDivided = width.ToMeters().Value / 2.0;
-                for (int i = 0; i < 4; i++)
-                    _equipmentMesh.Positions[i] = new Point3D(_equipmentMesh.Positions[i].X, widthDivided, _equipmentMesh.Positions[i].Z);
-
-                for (int i = 4; i < 8; i++)
-                    _equipmentMesh.Positions[i] = new Point3D(_equipmentMesh.Positions[i].X, widthDivided * -1.0, _equipmentMesh.Positions[i].Z);
-            }
+                DrawEquipment();
             else
-                Dispatcher.Invoke(new Action<Distance>(SetEquipmentWidth), System.Windows.Threading.DispatcherPriority.Normal, width);
+                Dispatcher.BeginInvoke(new Action(DrawEquipment), System.Windows.Threading.DispatcherPriority.Normal);
         }
 
-        public void AddPoint(DotSpatial.Topology.Coordinate coord, Color color)
+        public void SetEquipmentOffset(Distance offset, bool right)
         {
-            if (!Dispatcher.Thread.Equals(Thread.CurrentThread))
-                Dispatcher.Invoke(new Action<DotSpatial.Topology.Coordinate, Color>(AddPoint), System.Windows.Threading.DispatcherPriority.Normal, coord, color);
-            else
+            var newOffset = offset.ToMeters().Value * (right ? -1.0 : 1.0);
+            if (newOffset != _equipmentOffset)
             {
-                double x = coord.X;
-                double y = coord.Y;
-                if (_minPoint != null)
-                {
-                    x -= _minPoint.X;
-                    y -= _minPoint.Y;
-                }
-                PointsVisual3D pointVisual = new PointsVisual3D();
-                pointVisual.Points.Add(new Point3D(x, y, 0.1));
-                pointVisual.Color = color;
-                pointVisual.Size = 2;
-                _viewPort.Children.Add(pointVisual);
+                _equipmentOffset = newOffset;
+                if (Dispatcher.Thread.Equals(Thread.CurrentThread))
+                    DrawEquipment();
+                else
+                    Dispatcher.BeginInvoke(new Action(DrawEquipment), System.Windows.Threading.DispatcherPriority.Normal);
             }
+        }
+
+        public void AddPoint(DotSpatial.Topology.Coordinate coord, SharpDX.Color color)
+        {
+            //if (!Dispatcher.Thread.Equals(Thread.CurrentThread))
+            //    Dispatcher.Invoke(new Action<DotSpatial.Topology.Coordinate, SharpDX.Color>(AddPoint), System.Windows.Threading.DispatcherPriority.Normal, coord, color);
+            //else
+            //{
+            //    double x = coord.X;
+            //    double y = coord.Y;
+            //    if (_minPoint != null)
+            //    {
+            //        x -= _minPoint.X;
+            //        y -= _minPoint.Y;
+            //    }
+            //    PointsVisual3D pointVisual = new PointsVisual3D();
+            //    pointVisual.Points.Add(new Point3D(x, y, 0.1));
+            //    pointVisual.Color = color;
+            //    pointVisual.Size = 2;
+            //    _viewPort.Children.Add(pointVisual);
+            //}
 
         }
 
@@ -261,10 +296,17 @@ namespace FarmingGPS.Visualization
         {
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
             {
-                foreach(var trackingLine in trackingLines)
-                    if(!_trackingLines.ContainsKey(trackingLine))
+                bool redraw = false;
+                foreach (var trackingLine in trackingLines)
+                {
+                    if (!_trackingLines.ContainsKey(trackingLine))
+                    {
                         DoAddLine(trackingLine);
-                RedrawLines();
+                        redraw = true;
+                    }
+                }
+                if(redraw)
+                    RedrawLines();
             }
             else
                 Dispatcher.Invoke(new Action<TrackingLine[]>(AddLines), System.Windows.Threading.DispatcherPriority.Normal, trackingLines);
@@ -491,128 +533,147 @@ namespace FarmingGPS.Visualization
 
         private void UpdatePolygon(PolygonData polygonData, int polygonId)
         {
-            _fieldTrack.Positions = null;
-            _fieldTrack.TriangleIndices = null;
-
-            var polygonPositions = new Point3DCollection();
-            var polygonPoints = new List<System.Windows.Point>();
+            var geometry = new HelixToolkit.Wpf.SharpDX.MeshGeometry3D();
+            var polygonPositions = new Vector3Collection();
+            var polygonPoints = new List<Vector2>();
+            var normals = new Vector3Collection();
             foreach (var coord in polygonData.Coordinates)
             {
-                polygonPositions.Add(new Point3D(coord.X, coord.Y, coord.Z));
-                polygonPoints.Add(new System.Windows.Point(coord.X, coord.Y));
+                polygonPositions.Add(new Vector3((float)coord.X, (float)coord.Y, (float)coord.Z));
+                polygonPoints.Add(new Vector2((float)coord.X, (float)coord.Y));
+                normals.Add(new Vector3(0, 0, 1));
             }
 
-            var meshData = new MeshData() { Points = polygonPositions, Indices = CuttingEarsTriangulator.Triangulate(polygonPoints) };
+            var meshData = new MeshData() { Points = polygonPositions, Indices = new IntCollection(CuttingEarsTriangulator.Triangulate(polygonPoints)), Normals = normals };
             _trackMesh[polygonId] = meshData;
 
             var offset = 0;
-            var newPositions = new Point3DCollection();
-            var newIndices = new Int32Collection();
+            var newPositions = new Vector3Collection();
+            var newIndices = new IntCollection();
+            var newNormals = new Vector3Collection();
             foreach (var mesh in _trackMesh.Values)
             {
                 foreach (var point in mesh.Points)
-                    newPositions.Add(point);
+                    newPositions.Add(new Vector3(point.X, point.Y, point.Z));
                 foreach (var indice in mesh.Indices)
                     newIndices.Add(indice + offset);
+                foreach (var normal in mesh.Normals)
+                    newNormals.Add(normal);
                 offset += mesh.Points.Count;
             }
 
-            _fieldTrack.Positions = newPositions;
-            _fieldTrack.TriangleIndices = newIndices;
+            geometry.Positions = newPositions;
+            geometry.Indices = newIndices;
+            geometry.Normals = newNormals;
+            _fieldTrack.Geometry = geometry;
         }
         
         private void AddPolygon(PolygonData polygonData, int polygonId)
         {
-            _fieldTrack.Positions = null;
-            _fieldTrack.TriangleIndices = null;
-            var polygonPositions = new Point3DCollection();
-            var polygonPoints = new List<System.Windows.Point>();
+            var geometry = new HelixToolkit.Wpf.SharpDX.MeshGeometry3D();
+            var polygonPositions = new Vector3Collection();
+            var polygonPoints = new List<Vector2>();
+            var normals = new Vector3Collection();
             foreach (var coord in polygonData.Coordinates)
             {
-                polygonPositions.Add(new Point3D(coord.X, coord.Y, coord.Z));
-                polygonPoints.Add(new System.Windows.Point(coord.X, coord.Y));
+                polygonPositions.Add(new Vector3((float)coord.X, (float)coord.Y, (float)coord.Z));
+                polygonPoints.Add(new Vector2((float)coord.X, (float)coord.Y));
+                normals.Add(new Vector3(0, 0, 1));
             }
 
-            var meshData = new MeshData() { Points = polygonPositions, Indices = CuttingEarsTriangulator.Triangulate(polygonPoints) };
+            var meshData = new MeshData() { Points = polygonPositions, Indices = new IntCollection(CuttingEarsTriangulator.Triangulate(polygonPoints)), Normals = normals };
             _trackMesh.Add(polygonId, meshData);
             _trackMeshHoles.Add(polygonId, new List<MeshData>());
 
             var offset = 0;
-            var newPositions = new Point3DCollection();
-            var newIndices = new Int32Collection();
+            var newPositions = new Vector3Collection();
+            var newIndices = new IntCollection();
+            var newNormals = new Vector3Collection();
             foreach (var mesh in _trackMesh.Values)
             {
                 foreach (var point in mesh.Points)
-                    newPositions.Add(point);
+                    newPositions.Add(new Vector3((float)point.X, (float)point.Y, (float)point.Z));
                 foreach (var indice in mesh.Indices)
                     newIndices.Add(indice + offset);
+                foreach (var normal in mesh.Normals)
+                    newNormals.Add(normal);
                 offset += mesh.Points.Count;
             }
 
-            _fieldTrack.Positions = newPositions;
-            _fieldTrack.TriangleIndices = newIndices;
-
+            geometry.Positions = newPositions;
+            geometry.Indices = newIndices;
+            geometry.Normals = newNormals;
+            _fieldTrack.Geometry = geometry;
         }
 
         private void AddPolygonHole(PolygonData polygonData, int polygonId)
         {
-            var polygonPositions = new Point3DCollection();
-            var polygonPoints = new List<System.Windows.Point>();
+            var polygonPositions = new Vector3Collection();
+            var polygonPoints = new List<Vector2>();
+            var normals = new Vector3Collection();
             foreach (var coord in polygonData.Coordinates)
             {
-                polygonPositions.Add(new Point3D(coord.X, coord.Y, coord.Z));
-                polygonPoints.Add(new System.Windows.Point(coord.X, coord.Y));
+                polygonPositions.Add(new Vector3((float)coord.X, (float)coord.Y, (float)coord.Z));
+                polygonPoints.Add(new Vector2((float)coord.X, (float)coord.Y));
+                normals.Add(new Vector3(0, 0, 1));
             }
 
-            var meshData = new MeshData() { Points = polygonPositions, Indices = CuttingEarsTriangulator.Triangulate(polygonPoints) };
+            var meshData = new MeshData() { Points = polygonPositions, Indices = new IntCollection(CuttingEarsTriangulator.Triangulate(polygonPoints)), Normals = normals };
             _trackMeshHoles[polygonId].Add(meshData);
         }
 
         private void RedrawHoles()
         {
-            _fieldTrackHoles.Positions = null;
-            _fieldTrackHoles.TriangleIndices = null;
-
             var offset = 0;
-            var newPositions = new Point3DCollection();
-            var newIndices = new Int32Collection();
+            var geometry = new HelixToolkit.Wpf.SharpDX.MeshGeometry3D();
+            var newPositions = new Vector3Collection();
+            var newIndices = new IntCollection();
+            var normals = new Vector3Collection();
             foreach (var polygonHoles in _trackMeshHoles.Values)
             {
                 foreach (var mesh in polygonHoles)
                 {
                     foreach (var point in mesh.Points)
-                        newPositions.Add(point);
+                        newPositions.Add(new Vector3((float)point.X, (float)point.Y, (float)point.Z));
                     foreach (var indice in mesh.Indices)
                         newIndices.Add(indice + offset);
+                    foreach (var normal in mesh.Normals)
+                        normals.Add(normal);
                     offset += mesh.Points.Count;
                 }
             }
 
-            _fieldTrackHoles.Positions = newPositions;
-            _fieldTrackHoles.TriangleIndices = newIndices;
+            geometry.Positions = newPositions;
+            geometry.Indices = newIndices;
+            geometry.Normals = normals;
+            _fieldTrackHoles.Geometry = geometry;
         }
 
         private void RemovePolygon(int polygonId)
         {
-            _fieldTrack.Positions = null;
-            _fieldTrack.TriangleIndices = null;
-
             _trackMesh.Remove(polygonId);
 
             var offset = 0;
-            var positions = new Point3DCollection();
-            var indices = new Int32Collection();
+            var geometry = new HelixToolkit.Wpf.SharpDX.MeshGeometry3D();
+            var positions = new Vector3Collection();
+            var indices = new IntCollection();
+            var normals = new Vector3Collection();
             foreach (var mesh in _trackMesh.Values)
             {
                 foreach (var point in mesh.Points)
-                    positions.Add(point);
+                    positions.Add(new Vector3((float)point.X, (float)point.Y, (float)point.Z));
                 foreach (var indice in mesh.Indices)
                     indices.Add(indice + offset);
+                foreach (var normal in mesh.Normals)
+                    normals.Add(normal);
                 offset += mesh.Points.Count;
             }
 
-            _fieldTrack.Positions = positions;
-            _fieldTrack.TriangleIndices = indices;
+
+            geometry.Positions = positions;
+            geometry.Indices = indices;
+            geometry.Normals = normals;
+            _fieldTrack.Geometry = geometry;
         }
 
         private void RemovePolygonHole(int polygonId, int holeIndex)
@@ -680,30 +741,20 @@ namespace FarmingGPS.Visualization
 
         private void DoAddLine(TrackingLine trackingLine)
         {
-            LineGeometryBuilder builder = new LineGeometryBuilder(_viewPort.Children[0]);
-            List<Point3D> linePoints = new List<Point3D>();
-            for (int i = 0; i < trackingLine.Points.Count - 1; i++)
+            var points = new Vector3Collection();
+            for (int i = 0; i < trackingLine.Points.Count; i++)
             {
-                double x1 = trackingLine.Points[i].X;
-                double y1 = trackingLine.Points[i].Y;
-                double x2 = trackingLine.Points[i + 1].X;
-                double y2 = trackingLine.Points[i + 1].Y;
+                float x1 = (float)trackingLine.Points[i].X;
+                float y1 = (float)trackingLine.Points[i].Y;
                 if (_minPoint != null)
                 {
-                    x1 -= _minPoint.X;
-                    y1 -= _minPoint.Y;
-                    x2 -= _minPoint.X;
-                    y2 -= _minPoint.Y;
+                    x1 -= (float)_minPoint.X;
+                    y1 -= (float)_minPoint.Y;
                 }
-                linePoints.Add(new Point3D(x1, y1, LINE_Z_INDEX));
-                linePoints.Add(new Point3D(x2, y2, LINE_Z_INDEX));
+                points.Add(new Vector3(x1, y1, LINE_Z_INDEX));
             }
-
-            Point3DCollection points = builder.CreatePositions(linePoints, LINE_THICKNESS, 0.0, null);
-            Int32Collection indices = builder.CreateIndices(linePoints.Count);
-
             trackingLine.ActiveChanged += trackingLine_ActiveChanged;
-            _trackingLines.Add(trackingLine, new MeshData() { Points = points, Indices = indices });
+            _trackingLines.Add(trackingLine, new MeshData() { Points = points  });
         }
 
         private void DoDeleteLine(TrackingLine trackingLine)
@@ -714,7 +765,33 @@ namespace FarmingGPS.Visualization
 
         private void FarmingVisualizer_Loaded(object sender, RoutedEventArgs e)
         {
+            _trackLineFocus.Geometry = new LineGeometry3D();
+            _trackLineActive.Geometry = new LineGeometry3D();
+            _trackLineInactive.Geometry = new LineGeometry3D();
+            _trackLineInactive.Geometry.IsDynamic = true;
+            _trackLineInactive.Geometry.PreDefinedVertexCount = 300;
+            _trackLineInactive.Geometry.PreDefinedIndexCount = 300;
             UpdateZoomLevel();
+        }
+
+        private void UpdateCamera()
+        {            
+            var test = new Matrix3D();
+            test.Translate(_viewPositionVector);
+            test.Rotate(new System.Windows.Media.Media3D.Quaternion(new Vector3D(0.0, 0.0, -1.0), _cameraRotation));
+            test.Translate(_cameraPosition);
+            var position = test.Transform(new Point3D(0.0, 0.0, 0.0));
+            SetValue(CameraPositionProperty, position);
+            test = new Matrix3D();
+            test.Translate(_viewLookVector);
+            test.Rotate(new System.Windows.Media.Media3D.Quaternion(new Vector3D(0.0, 0.0, -1.0), _cameraRotation));            
+            var rotatedVector = test.Transform(new Point3D(0.0, 0.0, 0.0));
+            SetValue(CameraLookDirectionProperty, new Vector3D(rotatedVector.X, rotatedVector.Y, rotatedVector.Z));
+            test = new Matrix3D();
+            test.Translate(new Vector3D(1.0,0.0,1.0));
+            test.Rotate(new System.Windows.Media.Media3D.Quaternion(new Vector3D(0.0, 0.0, -1.0), _cameraRotation));
+            rotatedVector = test.Transform(new Point3D(0.0, 0.0, 0.0));
+            SetValue(CameraUpDirection, new Vector3D(rotatedVector.X, rotatedVector.Y, rotatedVector.Z));
         }
 
         private void UpdateZoomLevel()
@@ -723,52 +800,65 @@ namespace FarmingGPS.Visualization
                 return;
             if (_viewTopActive)
             {
-                Vector3D zoomVector = VIEW_TOP_ZOOM_VECTOR * _viewTopZoomLevel;
-                SetValue(CameraPositionProperty, VIEW_TOP_POSTION + zoomVector);
-                SetValue(CameraLookDirectionProperty, VIEW_TOP_LOOK_DIRECTION);
-                SetValue(CameraNearPlaneDistanceProperty, VIEW_TOP_NEAR_PLANE + zoomVector.Length);
-                SetValue(CameraFarPlaneDistanceProperty, VIEW_TOP_FAR_PLANE + zoomVector.Length);
+                _viewZoomVector  = VIEW_TOP_ZOOM_VECTOR * _viewTopZoomLevel;
+                _viewPositionVector = VIEW_TOP_POSTION + _viewZoomVector;
+                _viewLookVector = VIEW_TOP_LOOK_DIRECTION;
+                SetValue(CameraNearPlaneDistanceProperty, VIEW_TOP_NEAR_PLANE + _viewZoomVector.Length);
+                SetValue(CameraFarPlaneDistanceProperty, VIEW_TOP_FAR_PLANE + _viewZoomVector.Length);
             }
             else
             {
-                Vector3D zoomVector = VIEW_BEHIND_ZOOM_VECTOR * _viewBehindZoomLevel;
-                SetValue(CameraPositionProperty, VIEW_BEHIND_POSITION + zoomVector);
-                SetValue(CameraLookDirectionProperty, VIEW_BEHIND_LOOK_DIRECTION);
-                SetValue(CameraNearPlaneDistanceProperty, VIEW_BEHIND_NEAR_PLANE + zoomVector.Length);
-                SetValue(CameraFarPlaneDistanceProperty, VIEW_BEHIND_FAR_PLANE + zoomVector.Length);
+                _viewZoomVector = VIEW_BEHIND_ZOOM_VECTOR * _viewBehindZoomLevel;
+                _viewPositionVector = VIEW_BEHIND_POSITION + _viewZoomVector;
+                _viewLookVector = VIEW_BEHIND_LOOK_DIRECTION;
+                SetValue(CameraNearPlaneDistanceProperty, VIEW_BEHIND_NEAR_PLANE + _viewZoomVector.Length);
+                SetValue(CameraFarPlaneDistanceProperty, VIEW_BEHIND_FAR_PLANE + _viewZoomVector.Length);
             }
+            UpdateCamera();
+        }
+
+        private void DrawEquipment()
+        {
+            double widthDivided = _equipmentWidth / 2.0;
+            for (int i = 0; i < 4; i++)
+                _equipmentMesh.Geometry.Positions[i] = new Vector3(_equipmentMesh.Geometry.Positions[i].X, (float)widthDivided + (float)_equipmentOffset, _equipmentMesh.Geometry.Positions[i].Z);
+
+            for (int i = 4; i < 8; i++)
+                _equipmentMesh.Geometry.Positions[i] = new Vector3(_equipmentMesh.Geometry.Positions[i].X, (float)widthDivided * -1.0f, _equipmentMesh.Geometry.Positions[i].Z);
+
+            _equipmentMesh.Geometry.UpdateVertices();
         }
 
         private void DrawOutline(IList<DotSpatial.Topology.Coordinate> coordinates)
         {
-            LineGeometryBuilder builder = new LineGeometryBuilder(_fieldVisual);
-            List<Point3D> outlinePoints = new List<Point3D>();
+            LineBuilder builder = new LineBuilder();
 
             for (int i = 0; i < coordinates.Count - 1; i++)
-            {
-                outlinePoints.Add(new Point3D(coordinates[i].X - _minPoint.X, coordinates[i].Y - _minPoint.Y, LINE_Z_INDEX));
-                outlinePoints.Add(new Point3D(coordinates[i + 1].X - _minPoint.X, coordinates[i + 1].Y - _minPoint.Y, LINE_Z_INDEX));
-            }
-            outlinePoints.Add(outlinePoints[outlinePoints.Count - 1]);
-            outlinePoints.Add(outlinePoints[0]);
+                builder.AddLine(new Vector3((float)(coordinates[i].X - _minPoint.X), (float)(coordinates[i].Y - _minPoint.Y), LINE_Z_INDEX), new Vector3((float)(coordinates[i + 1].X - _minPoint.X), (float)(coordinates[i + 1].Y - _minPoint.Y), LINE_Z_INDEX));
 
-            _fieldOutline.Positions = builder.CreatePositions(outlinePoints, LINE_THICKNESS, 0.0, null);
-            _fieldOutline.TriangleIndices = builder.CreateIndices(outlinePoints.Count);
+            builder.AddLine(new Vector3((float)(coordinates[coordinates.Count - 1].X - _minPoint.X), (float)(coordinates[coordinates.Count - 1].Y - _minPoint.Y), LINE_Z_INDEX), new Vector3((float)(coordinates[0].X - _minPoint.X), (float)(coordinates[0].Y - _minPoint.Y), LINE_Z_INDEX));
+
+            _fieldOutline.Geometry = builder.ToLineGeometry3D();
         }
 
         private void DrawFieldMesh(IList<DotSpatial.Topology.Coordinate> coordinates)
         {
-            Point3DCollection points3D = new Point3DCollection(coordinates.Count - 1);
-            PointCollection points2D = new PointCollection(coordinates.Count - 1);
-            
+            var geometry = new HelixToolkit.Wpf.SharpDX.MeshGeometry3D();
+            var points3D = new Vector3Collection(coordinates.Count - 1);
+            var points2D = new List<Vector2>(coordinates.Count - 1);
+            geometry.Normals = new Vector3Collection();
+
             for (int i = 0; i < coordinates.Count - 1; i++)
             {
-                points3D.Add(new Point3D(coordinates[i].X - _minPoint.X, coordinates[i].Y - _minPoint.Y, FIELD_Z_INDEX));
-                points2D.Add(new System.Windows.Point(coordinates[i].X - _minPoint.X, coordinates[i].Y - _minPoint.Y));
+                points3D.Add(new Vector3((float)(coordinates[i].X - _minPoint.X), (float)(coordinates[i].Y - _minPoint.Y), FIELD_Z_INDEX));
+                points2D.Add(new Vector2((float)(coordinates[i].X - _minPoint.X), (float)(coordinates[i].Y - _minPoint.Y)));
+                geometry.Normals.Add(new Vector3(0, 0, 1));
             }
 
-            _fieldMesh.Positions = points3D;
-            _fieldMesh.TriangleIndices = CuttingEarsTriangulator.Triangulate(points2D);
+            var indices = CuttingEarsTriangulator.Triangulate(points2D);
+            geometry.Positions = points3D;
+            geometry.Indices = new IntCollection(indices);
+            _fieldMesh.Geometry = geometry;
         }
 
         private void AddLine(List<Point3D> positions)
@@ -778,59 +868,26 @@ namespace FarmingGPS.Visualization
 
         private void RedrawLines()
         {
-            _trackLineFocus.Positions = null;
-            _trackLineFocus.TriangleIndices = null;
-
-            _trackLineActive.Positions = null;
-            _trackLineActive.TriangleIndices = null;
-
-            _trackLineInactive.Positions = null;
-            _trackLineInactive.TriangleIndices = null;
-
-            var activePositions = new Point3DCollection();
-            var activeIndices = new Int32Collection();
-            var activeOffset = 0;
-            var inactivePositions = new Point3DCollection();
-            var inactiveIndices = new Int32Collection();
-            var inactiveOffset = 0;
+            var focusbuilder = new LineBuilder();
+            var activebuilder = new LineBuilder();
+            var inactivebuilder = new LineBuilder();
 
             foreach (var trackingLine in _trackingLines)
             {
                 if (trackingLine.Key == _focusedTrackline)
-                {
-                    var focusPositions = new Point3DCollection();
-                    var focusIndices = new Int32Collection();
-                    foreach (var point in trackingLine.Value.Points)
-                        focusPositions.Add(point);
-                    foreach (var indice in trackingLine.Value.Indices)
-                        focusIndices.Add(indice);
-
-                    _trackLineFocus.Positions = focusPositions;
-                    _trackLineFocus.TriangleIndices = focusIndices;
-                }
+                    for (int i = 0; i < trackingLine.Value.Points.Count - 1; i++)
+                        focusbuilder.AddLine(trackingLine.Value.Points[i], trackingLine.Value.Points[i + 1]);
                 else if (trackingLine.Key.Active)
-                {
-                    foreach (var point in trackingLine.Value.Points)
-                        activePositions.Add(point);
-                    foreach (var indice in trackingLine.Value.Indices)
-                        activeIndices.Add(indice + activeOffset);
-                    activeOffset += trackingLine.Value.Points.Count;
-                }
-                else if(!trackingLine.Key.Depleted)
-                {
-                    foreach (var point in trackingLine.Value.Points)
-                        inactivePositions.Add(point);
-                    foreach (var indice in trackingLine.Value.Indices)
-                        inactiveIndices.Add(indice + inactiveOffset);
-                    inactiveOffset += trackingLine.Value.Points.Count;
-                }
+                    for (int i = 0; i < trackingLine.Value.Points.Count - 1; i++)
+                        activebuilder.AddLine(trackingLine.Value.Points[i], trackingLine.Value.Points[i + 1]);
+                else if (!trackingLine.Key.Depleted)
+                    for (int i = 0; i < trackingLine.Value.Points.Count - 1; i++)
+                        inactivebuilder.AddLine(trackingLine.Value.Points[i], trackingLine.Value.Points[i + 1]);
             }
 
-            _trackLineActive.Positions = activePositions;
-            _trackLineActive.TriangleIndices = activeIndices;
-
-            _trackLineInactive.Positions = inactivePositions;
-            _trackLineInactive.TriangleIndices = inactiveIndices;
+            _trackLineFocus.Geometry = focusbuilder.ToLineGeometry3D();
+            _trackLineActive.Geometry = activebuilder.ToLineGeometry3D();
+            _trackLineInactive.Geometry = inactivebuilder.ToLineGeometry3D();
         }
 
         #endregion
@@ -846,6 +903,8 @@ namespace FarmingGPS.Visualization
         protected static readonly DependencyProperty CameraPositionProperty = DependencyProperty.Register("CameraPosition", typeof(Point3D), typeof(FarmingVisualizer));
 
         protected static readonly DependencyProperty CameraLookDirectionProperty = DependencyProperty.Register("CameraLookDirection", typeof(Vector3D), typeof(FarmingVisualizer));
+
+        protected static readonly DependencyProperty CameraUpDirection = DependencyProperty.Register("CameraUpDirection", typeof(Vector3D), typeof(FarmingVisualizer));
 
         protected static readonly DependencyProperty CameraNearPlaneDistanceProperty = DependencyProperty.Register("CameraNearPlaneDistance", typeof(double), typeof(FarmingVisualizer));
 
