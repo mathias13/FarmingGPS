@@ -192,6 +192,9 @@ namespace FarmingGPS.Camera.Garmin
 
         private unsafe void _rtspClient_FrameReceived(object sender, RawFrame e)
         {
+            if (!(e is RawVideoFrame rawVideoFrame))
+                return;
+
             fixed (byte* rawBufferPtr = &e.FrameSegment.Array[e.FrameSegment.Offset])
             {
                 int resultCode;
@@ -213,7 +216,10 @@ namespace FarmingGPS.Camera.Garmin
                                 (IntPtr)initDataPtr, _extraData.Length);
 
                             if (resultCode != 0)
+                            {
+                                OnException(new Exception($"An error occurred while setting video extra data, code: {resultCode}"));
                                 return;
+                            }
                         }
                     }
                 }
@@ -222,8 +228,11 @@ namespace FarmingGPS.Camera.Garmin
                     e.FrameSegment.Count,
                     out int width, out int height, out FFmpegPixelFormat pixelFormat);
 
-                if(resultCode != 0)
+                if (resultCode != 0)
+                {
                     OnException(new Exception($"An error occurred while decoding frame, code: {resultCode}"));
+                    return;
+                }
 
                 lock (_syncObject)
                 {
