@@ -3,7 +3,7 @@ using System.Windows.Media.Imaging;
 
 namespace FarmingGPS.Camera
 {
-    interface ICamera
+    interface ICamera : IDisposable
     {
         event EventHandler<CameraConnectedEventArgs> CameraConnectedChangedEvent;
 

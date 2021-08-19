@@ -1,7 +1,6 @@
 ﻿using DotSpatial.Positioning;
 using DotSpatial.Topology;
 using FarmingGPS.Camera;
-using FarmingGPS.Camera.Axis;
 using FarmingGPS.Dialogs;
 using FarmingGPS.Settings;
 using FarmingGPSLib.Settings;
@@ -33,7 +32,6 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using FarmingGPS.Usercontrols.Events;
@@ -192,8 +190,8 @@ namespace FarmingGPS
             _dispatcherTimer.Start();
 
             //Thread for handling not so important stuff concerning position updates
-            _secondaryTasksThread = new System.Threading.Thread(new System.Threading.ThreadStart(SecondaryTasksThread));
-            _secondaryTasksThread.Priority = System.Threading.ThreadPriority.BelowNormal;
+            _secondaryTasksThread = new Thread(new ThreadStart(SecondaryTasksThread));
+            _secondaryTasksThread.Priority = ThreadPriority.BelowNormal;
             _secondaryTasksThread.Start();
 
             SetValue(CameraUnavilableProperty, Visibility.Visible);
@@ -362,10 +360,6 @@ namespace FarmingGPS
             }
 
             _cameraImage.SizeChanged += _cameraImage_SizeChanged;
-            _camera = new Camera.Garmin.GarminVirb();
-            _camera.CameraConnectedChangedEvent += _camera_CameraConnectedChangedEvent;
-            _camera.ExceptionEvent += _camera_ExceptionEvent;
-            _cameraImage.Source = _camera.Bitmap;
         }
 
         private void _dispatcherTimer_Tick(object sender, EventArgs e)
@@ -619,7 +613,35 @@ namespace FarmingGPS
 
         #endregion
 
-        #region Camera Events
+        #region Camera
+
+        private void SetupCamera(Visualization.Settings.Camera settings)
+        {
+            if (_camera != null)
+            {
+                _camera.Dispose();
+                _camera = null;
+            }
+            switch (settings.CameraType)
+            {
+                case Visualization.Settings.CameraTypes.Axis:
+                    if (settings.Address == string.Empty)
+                        _camera = new Camera.Axis.AxisCamera();
+                    else
+                        _camera = new Camera.Axis.AxisCamera(settings.Address);
+                    break;
+
+                case Visualization.Settings.CameraTypes.GarminVirb:
+                    if (settings.Address == string.Empty)
+                        _camera = new Camera.Garmin.GarminVirb();
+                    else
+                        _camera = new Camera.Garmin.GarminVirb(settings.Address);
+                    break;
+            }
+            _camera.CameraConnectedChangedEvent += _camera_CameraConnectedChangedEvent;
+            _camera.ExceptionEvent += _camera_ExceptionEvent;
+            _cameraImage.Source = _camera.Bitmap;
+        }
 
         private void _cameraImage_SizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -1056,6 +1078,25 @@ namespace FarmingGPS
 
         private void SetupSettingsPanel(SettingsCollection settings)
         {
+
+            ISettingsCollection visual = new SettingsCollection("Visualisering");
+            visual.ChildSettings.Add(new Visualization.Settings.LightBar());
+            SettingGroup lightBarGroup = new SettingGroup(visual.ChildSettings[0].Name, null, new SettingsCollectionControl(visual.ChildSettings[0]));
+            (lightBarGroup.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+            SettingGroup visualGroup = new SettingGroup("Visualisering", new SettingGroup[] { lightBarGroup }, null);
+
+            var sectionCamera = (Visualization.Settings.Camera)_config.Sections[typeof(Visualization.Settings.Camera).FullName];
+            ISettingsCollection camera;
+            if (sectionCamera != null)
+            {
+                camera = new Visualization.Settings.Camera(sectionCamera);
+                SetupCamera(sectionCamera);
+            }
+            else
+                camera = new Visualization.Settings.Camera();
+            SettingGroup cameraGroup = new SettingGroup("Kamera", null, new SettingsCollectionControl(camera));
+            (cameraGroup.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+
             ClientSettingsExt sectionNTRIP = (ClientSettingsExt)_config.Sections[typeof(ClientSettingsExt).FullName];
             ISettingsCollection ntripClient;
             if (sectionNTRIP != null)
@@ -1086,12 +1127,6 @@ namespace FarmingGPS
             else
                 database = new DatabaseConn();
 
-            ISettingsCollection visual = new SettingsCollection("Visualisering");
-            visual.ChildSettings.Add(new FarmingGPS.Visualization.Settings.LightBar());
-            SettingGroup lightBarGroup = new SettingGroup(visual.ChildSettings[0].Name, null, new SettingsCollectionControl(visual.ChildSettings[0]));
-            (lightBarGroup.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
-            SettingGroup visualGroup = new SettingGroup("Visualisering", new SettingGroup[] { lightBarGroup }, null);
-
             ISettingsCollection connections = new SettingsCollection("Anslutningar");
             connections.ChildSettings.Add(ntripClient);
             connections.ChildSettings.Add(database);
@@ -1118,7 +1153,7 @@ namespace FarmingGPS
             (redskap.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
             (equipmentRate.SettingControl as ISettingsChanged).RegisterSettingEvent((redskap.SettingControl as ISettingsChanged));
 
-            SettingGroup settingRoot = new SettingGroup("Inställningar", new SettingGroup[] { connectionGroup, field, redskap, visualGroup }, null);
+            SettingGroup settingRoot = new SettingGroup("Inställningar", new SettingGroup[] { connectionGroup, field, redskap, visualGroup, cameraGroup }, null);
             _settingsTree.ItemsSource = settingRoot;
         }
 
@@ -1170,6 +1205,8 @@ namespace FarmingGPS
                     SetupReceiver(settingControl.Settings as SBPSerial);
                 else if (settingControl.Settings is Visualization.Settings.LightBar)
                     _lightBar.Tolerance = new Distance((settingControl.Settings as Visualization.Settings.LightBar).Tolerance, DistanceUnit.Centimeters);
+                else if (settingControl.Settings is Visualization.Settings.Camera)
+                    SetupCamera(settingControl.Settings as Visualization.Settings.Camera);
                 else if (_equipment is IEquipmentControl)
                 {
                     IEquipmentControl equipmentControl = _equipment as IEquipmentControl;

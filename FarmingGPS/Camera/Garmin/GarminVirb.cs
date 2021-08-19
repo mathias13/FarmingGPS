@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -42,6 +43,12 @@ namespace FarmingGPS.Camera.Garmin
             _serviceBrowser = new ServiceBrowser();
             _serviceBrowser.ServiceAdded += _serviceBrowser_ServiceAdded;
             _serviceBrowser.StartBrowse("_garmin-virb._tcp");
+        }
+
+        public GarminVirb(string address)
+        {
+            ChangeVideoFrameSize(720);
+            Connect(address);
         }
 
         public override void ChangeVideoFrameSize(int maxHeight)
@@ -105,22 +112,38 @@ namespace FarmingGPS.Camera.Garmin
             {
                 _rtspClient.FrameReceived -= _rtspClient_FrameReceived;
                 _cancellationToken.Cancel();
-            }    
+            }
+            if (_serviceBrowser != null)
+            {
+                _serviceBrowser.ServiceAdded -= _serviceBrowser_ServiceAdded;
+                _serviceBrowser.StopBrowse();
+            }
             base.Dispose();
         }
 
-        async void _serviceBrowser_ServiceAdded(object sender, ServiceAnnouncementEventArgs e)
+        private void _serviceBrowser_ServiceAdded(object sender, ServiceAnnouncementEventArgs e)
         {
+            Connect(e.Announcement.Addresses[0].ToString());
+        }
+
+        private async void Connect(string address)
+        {
+            _cancellationToken = new CancellationTokenSource();
             if (_rtspClient == null)
             {
-                var jobj = new JObject { { "command", "livePreview" }, { "streamType", "rtp" } };
-                var adress = String.Format("http://{0}/virb", e.Announcement.Addresses[0].ToString());
-                var response = Send(adress, jobj.ToString());
+                JObject response = null;
+                while (response == null)
+                {
+                    var jobj = new JObject { { "command", "livePreview" }, { "streamType", "rtp" } };
+                    var adress = String.Format("http://{0}/virb", address);
+                    response = await Send(adress, jobj.ToString());
+                    if (_cancellationToken.IsCancellationRequested)
+                        return;
+                }
 
                 if ((int)response["result"] == 1)
                 {
                     var reconnect = true;
-                    _cancellationToken = new CancellationTokenSource();
                     var connectionParameters = new ConnectionParameters(new Uri((string)response["url"]));
                     connectionParameters.RtpTransport = RtpTransportProtocol.UDP;
                     connectionParameters.CancelTimeout = TimeSpan.FromSeconds(1);
@@ -274,7 +297,7 @@ namespace FarmingGPS.Camera.Garmin
             }
         }
 
-        private JObject Send(string url, string json)
+        private async Task<JObject> Send(string url, string json)
         {
             var content = string.Empty;
             try
@@ -285,12 +308,12 @@ namespace FarmingGPS.Camera.Garmin
                 request.Method = "POST";
 
                 var buffer = Encoding.GetEncoding("UTF-8").GetBytes(json);
-                var requestStream = request.GetRequestStream();
-                requestStream.Write(buffer, 0, buffer.Length);
+                var requestStream = await request.GetRequestStreamAsync();
+                await requestStream.WriteAsync(buffer, 0, buffer.Length);
                 requestStream.Close();
 
 
-                var webRequest = request.GetResponse();
+                var webRequest = await request.GetResponseAsync();
                 var receiveStream = webRequest.GetResponseStream();
                 var reader = new StreamReader(receiveStream, Encoding.UTF8);
                 content = reader.ReadToEnd();

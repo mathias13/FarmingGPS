@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Windows;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace FarmingGPS.Camera
 {
+
     public abstract class CameraBase : ICamera, IDisposable
     {
         protected bool _connected;
@@ -54,5 +53,6 @@ namespace FarmingGPS.Camera
         public virtual void Dispose()
         {
         }
+
     }
 }

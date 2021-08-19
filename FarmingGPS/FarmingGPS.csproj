@@ -344,6 +344,7 @@
     <Compile Include="Visualization\LightBar.xaml.cs">
       <DependentUpon>LightBar.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Visualization\Settings\Camera.cs" />
     <Compile Include="Visualization\Settings\LightBar.cs" />
     <Compile Include="Visualization\SpeedBar.xaml.cs">
       <DependentUpon>SpeedBar.xaml</DependentUpon>
