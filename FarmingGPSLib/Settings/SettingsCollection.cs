@@ -12,11 +12,9 @@ namespace FarmingGPSLib.Settings
 
         protected ISettingsCollection _parentSetting = null;
 
-        private string _name = String.Empty;
-        
         public SettingsCollection(string name)
         {
-            _name = name;
+            Name = name;
             _childSettings = new List<ISettingsCollection>();
         }
         
@@ -60,13 +58,7 @@ namespace FarmingGPSLib.Settings
             }
         }
 
-        public string Name
-        {
-            get
-            {
-                return _name;
-            }
-        }
+        public string Name { get; } = String.Empty;
 
         public ISettingsCollection ParentSetting
         {

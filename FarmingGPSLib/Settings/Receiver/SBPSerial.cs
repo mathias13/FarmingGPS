@@ -18,8 +18,6 @@ namespace FarmingGPSLib.Settings.Receiver
 
         SettingsCollection _settings;
 
-        ISettingsCollection _parent;
-        
         private static ConfigurationProperty _comport =
             new ConfigurationProperty("COMPort", typeof(string), String.Empty, ConfigurationPropertyOptions.IsRequired);
 
@@ -120,18 +118,7 @@ namespace FarmingGPSLib.Settings.Receiver
             }
         }
 
-        public ISettingsCollection ParentSetting
-        {
-            get
-            {
-                return _parent;
-            }
-
-            set
-            {
-                _parent = value;
-            }
-        }
+        public ISettingsCollection ParentSetting { get; set; }
 
         public IEnumerator<ISetting> GetEnumerator()
         {

@@ -9,8 +9,6 @@ namespace FarmingGPSLib.Settings.NTRIP
     {
         SettingsCollection _settings;
 
-        ISettingsCollection _parent;
-
         public ClientSettingsExt() : base()
         {
             _settings = new SettingsCollection("NTRIP");
@@ -75,13 +73,8 @@ namespace FarmingGPSLib.Settings.NTRIP
             get { return _settings.Name; }
         }
 
-        public ISettingsCollection ParentSetting
-        {
-            get { return _parent; }
+        public ISettingsCollection ParentSetting { get; set; }
 
-            set { _parent = value; }
-        }
-        
         public IEnumerator<ISetting> GetEnumerator()
         {
             return _settings.GetEnumerator();

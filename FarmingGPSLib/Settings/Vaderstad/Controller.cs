@@ -9,8 +9,6 @@ namespace FarmingGPSLib.Settings.Vaderstad
     {
         SettingsCollection _settings;
 
-        ISettingsCollection _parent;
-
         private static ConfigurationProperty _comport =
             new ConfigurationProperty("COMPort", typeof(string), "COM1", ConfigurationPropertyOptions.IsRequired);
 
@@ -96,18 +94,7 @@ namespace FarmingGPSLib.Settings.Vaderstad
             }
         }
 
-        public ISettingsCollection ParentSetting
-        {
-            get
-            {
-                return _parent;
-            }
-
-            set
-            {
-                _parent = value;
-            }
-        }
+        public ISettingsCollection ParentSetting { get; set; }
 
         public IEnumerator<ISetting> GetEnumerator()
         {

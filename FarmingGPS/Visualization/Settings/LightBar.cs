@@ -10,8 +10,6 @@ namespace FarmingGPS.Visualization.Settings
     {
         SettingsCollection _settings;
 
-        ISettingsCollection _parent;
-
         private static ConfigurationProperty _tolerance =
             new ConfigurationProperty("Tolerance", typeof(int), 20, ConfigurationPropertyOptions.IsRequired);
                 
@@ -77,18 +75,7 @@ namespace FarmingGPS.Visualization.Settings
             }
         }
 
-        public ISettingsCollection ParentSetting
-        {
-            get
-            {
-                return _parent;
-            }
-
-            set
-            {
-                _parent = value;
-            }
-        }
+        public ISettingsCollection ParentSetting { get; set; }
 
         public IEnumerator<ISetting> GetEnumerator()
         {

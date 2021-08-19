@@ -9,8 +9,6 @@ namespace FarmingGPSLib.Settings.Database
     {
         SettingsCollection _settings;
 
-        ISettingsCollection _parent;
-        
         private static ConfigurationProperty _encrypt =
             new ConfigurationProperty("Encrypt", typeof(bool), false, ConfigurationPropertyOptions.IsRequired);
 
@@ -157,18 +155,7 @@ namespace FarmingGPSLib.Settings.Database
             }
         }
 
-        public ISettingsCollection ParentSetting
-        {
-            get
-            {
-                return _parent;
-            }
-
-            set
-            {
-                _parent = value;
-            }
-        }
+        public ISettingsCollection ParentSetting { get; set; }
 
         public IEnumerator<ISetting> GetEnumerator()
         {
