@@ -137,8 +137,11 @@ namespace FarmingGPS.Camera.Garmin
                     var jobj = new JObject { { "command", "livePreview" }, { "streamType", "rtp" } };
                     var adress = String.Format("http://{0}/virb", address);
                     response = await Send(adress, jobj.ToString());
+                    if (response == null)
+                        Thread.Sleep(2000);
                     if (_cancellationToken.IsCancellationRequested)
                         return;
+
                 }
 
                 if ((int)response["result"] == 1)
