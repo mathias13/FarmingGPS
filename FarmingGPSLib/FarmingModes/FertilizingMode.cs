@@ -53,11 +53,6 @@ namespace FarmingGPSLib.FarmingModes
             }
         }
 
-        public override void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction)
-        {
-            base.UpdateEvents(position, direction);
-        }
-
         public override void UpdateEvents(ILineString positionEquipment, DotSpatial.Positioning.Azimuth direction)
         {
             base.UpdateEvents(positionEquipment, direction);

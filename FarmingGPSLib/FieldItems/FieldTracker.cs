@@ -250,7 +250,7 @@ namespace FarmingGPSLib.FieldItems
                 }
                 catch (Exception e)
                 {
-                    Log.Error("Failed add new trackingpoints", e);
+                    Log.Error("Failed to add new trackingpoints", e);
                 }
             }
         }

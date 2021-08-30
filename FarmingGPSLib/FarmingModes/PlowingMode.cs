@@ -15,6 +15,30 @@ namespace FarmingGPSLib.FarmingModes
 {
     public class PlowingMode : FarmingModeBase
     {
+        [Serializable]
+        public struct PlowingModeState
+        {
+            public List<SimpleLine> TrackingLines;
+
+            public List<SimpleLine> TrackingLinesHeadLand;
+
+            public double StartDistance;
+
+            public double StopDistance;
+
+            public PlowingModeState(List<SimpleLine> trackingLines, List<SimpleLine> trackingLinesHeadLand, double startDistance, double stopDistance)
+            {
+                TrackingLines = trackingLines;
+                TrackingLinesHeadLand = trackingLinesHeadLand;
+                StartDistance = startDistance;
+                StopDistance = stopDistance;
+            }
+        }
+
+        private double _startDistance = -4.0;
+
+        private double _stopDistance = 0.0;
+
         public PlowingMode() : base()
         {
         }
@@ -115,14 +139,10 @@ namespace FarmingGPSLib.FarmingModes
 
         public override void UpdateEvents(ILineString positionEquipment, Azimuth direction)
         {
-        }
-
-        public override void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction)
-        {
             foreach (TrackingLine trackingLine in _trackingLines)
                 if (trackingLine is TrackingLineStartStopEvent)
                     if (trackingLine.Active)
-                        if ((trackingLine as TrackingLineStartStopEvent).EventFired(direction, position))
+                        if ((trackingLine as TrackingLineStartStopEvent).EventFired(direction, positionEquipment))
                             OnFarmingEvent((trackingLine as TrackingLineStartStopEvent).Message);
         }
 
@@ -281,8 +301,53 @@ namespace FarmingGPSLib.FarmingModes
         {
             _trackingLines.Clear();
                 foreach (LineString line in trackingLines)
-                    _trackingLines.Add(new TrackingLineStartStopEvent(line, 0.0, 0.0));
+                    _trackingLines.Add(new TrackingLineStartStopEvent(line, _startDistance, _stopDistance));
         }
 
+        protected void AddTrackingLines(IList<LineString> trackingLines, IList<IGeometry> startPoints, IList<IGeometry> endPoints)
+        {
+            _trackingLines.Clear();
+            if (_startDistance == double.MinValue || _stopDistance == double.MinValue)
+                foreach (LineString line in trackingLines)
+                    _trackingLines.Add(new TrackingLine(line, false));
+            else
+                for (int i = 0; i < trackingLines.Count; i++)
+                    _trackingLines.Add(new TrackingLineStartStopEvent(trackingLines[i], _startDistance, _stopDistance));
+
+        }
+
+        #region IStateObjectImplementation
+
+        public override object StateObject
+        {
+            get
+            {
+                List<SimpleLine> trackingLines = new List<SimpleLine>();
+                foreach (TrackingLine trackingLine in _trackingLines)
+                    trackingLines.Add(new SimpleLine(new List<Coordinate>(trackingLine.Line.Coordinates)));
+                List<SimpleLine> trackingLinesHeadland = new List<SimpleLine>();
+                foreach (TrackingLine trackingLineHeadland in _trackingLinesHeadland)
+                    trackingLinesHeadland.Add(new SimpleLine(new List<Coordinate>(trackingLineHeadland.Line.Coordinates)));
+                return new PlowingModeState(trackingLines, trackingLinesHeadland, _startDistance, _stopDistance);
+            }
+        }
+
+        public override Type StateType
+        {
+            get { return typeof(PlowingModeState); }
+        }
+
+        public override void RestoreObject(object restoredState)
+        {
+            PlowingModeState plowingModeState = (PlowingModeState)restoredState;
+            _startDistance = plowingModeState.StartDistance;
+            _stopDistance = plowingModeState.StopDistance;
+            foreach (SimpleLine line in plowingModeState.TrackingLines)
+                _trackingLines.Add(new TrackingLineStartStopEvent(new LineString(line.Line), _startDistance, _stopDistance));
+            foreach (SimpleLine line in plowingModeState.TrackingLinesHeadLand)
+                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line), true));
+        }
+
+        #endregion
     }
 }

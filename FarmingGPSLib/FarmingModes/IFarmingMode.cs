@@ -18,8 +18,6 @@ namespace FarmingGPSLib.FarmingModes
 
         void CreateTrackingLines(TrackingLine trackingLine, Angle directionFromLine, double offset);
 
-        void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction);
-
         void UpdateEvents(ILineString positionEquipment, DotSpatial.Positioning.Azimuth direction);
 
         IList<TrackingLine> TrackingLinesHeadland

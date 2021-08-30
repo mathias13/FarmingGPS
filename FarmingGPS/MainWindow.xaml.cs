@@ -828,10 +828,7 @@ namespace FarmingGPS
             }
 
             if (_farmingMode != null && !_vechile.IsReversing)
-            {
-                _farmingMode.UpdateEvents(equipmentCoordinate, actualHeading);
                 _farmingMode.UpdateEvents(new LineString(new Coordinate[2] { leftTip, rightTip }), actualHeading);
-            }
             
             if (_fieldRateTracker != null)
                 _fieldRateTracker.UpdatePosition(leftTip, rightTip);

@@ -533,6 +533,9 @@ namespace FarmingGPS.Visualization
 
         private void UpdatePolygon(PolygonData polygonData, int polygonId)
         {
+            if (polygonData.Coordinates.Length < 1)
+                return;
+
             var geometry = new HelixToolkit.Wpf.SharpDX.MeshGeometry3D();
             var polygonPositions = new Vector3Collection();
             var polygonPoints = new List<Vector2>();

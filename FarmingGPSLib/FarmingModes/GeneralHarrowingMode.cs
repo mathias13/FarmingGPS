@@ -71,9 +71,6 @@ namespace FarmingGPSLib.FarmingModes
             this.CreateTrackingLines(trackingLine.MainLine.P0, newAngle);
         }
 
-        public override void UpdateEvents(Coordinate position, DotSpatial.Positioning.Azimuth direction)
-        {
-        }
         public override void UpdateEvents(ILineString positionEquipment, DotSpatial.Positioning.Azimuth direction)
         {
         }
