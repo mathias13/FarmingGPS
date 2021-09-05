@@ -827,7 +827,7 @@ namespace FarmingGPS.Visualization
                 _equipmentMesh.Geometry.Positions[i] = new Vector3(_equipmentMesh.Geometry.Positions[i].X, (float)widthDivided + (float)_equipmentOffset, _equipmentMesh.Geometry.Positions[i].Z);
 
             for (int i = 4; i < 8; i++)
-                _equipmentMesh.Geometry.Positions[i] = new Vector3(_equipmentMesh.Geometry.Positions[i].X, (float)widthDivided * -1.0f, _equipmentMesh.Geometry.Positions[i].Z);
+                _equipmentMesh.Geometry.Positions[i] = new Vector3(_equipmentMesh.Geometry.Positions[i].X, ((float)widthDivided * -1.0f) + (float)_equipmentOffset, _equipmentMesh.Geometry.Positions[i].Z);
 
             _equipmentMesh.Geometry.UpdateVertices();
         }
