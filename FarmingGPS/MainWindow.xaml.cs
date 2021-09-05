@@ -311,6 +311,7 @@ namespace FarmingGPS
                             if (_equipment is IEquipmentControl)
                                 SetIEquipmentControl();
 
+                            _stateRecovery.AddStateObject(_equipment);
                             _visualization.SetEquipmentWidth(_equipment.Width);
                         }
                         else if (recoveredObject.Key.IsSubclassOf(typeof(FarmingGPSLib.FarmingModes.FarmingModeBase)))
