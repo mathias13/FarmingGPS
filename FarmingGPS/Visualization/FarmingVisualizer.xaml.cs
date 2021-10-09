@@ -747,14 +747,14 @@ namespace FarmingGPS.Visualization
             var points = new Vector3Collection();
             for (int i = 0; i < trackingLine.Points.Count; i++)
             {
-                float x1 = (float)trackingLine.Points[i].X;
-                float y1 = (float)trackingLine.Points[i].Y;
+                double x1 = trackingLine.Points[i].X;
+                double y1 = trackingLine.Points[i].Y;
                 if (_minPoint != null)
                 {
-                    x1 -= (float)_minPoint.X;
-                    y1 -= (float)_minPoint.Y;
+                    x1 -= _minPoint.X;
+                    y1 -= _minPoint.Y;
                 }
-                points.Add(new Vector3(x1, y1, LINE_Z_INDEX));
+                points.Add(new Vector3((float)x1, (float)y1, LINE_Z_INDEX));
             }
             trackingLine.ActiveChanged += trackingLine_ActiveChanged;
             _trackingLines.Add(trackingLine, new MeshData() { Points = points  });
