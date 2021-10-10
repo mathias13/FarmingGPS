@@ -51,6 +51,8 @@ namespace FarmingGPSLib.Equipment
 
         protected bool _sideDependent = false;
 
+        protected bool _offsetToTheRight = false;
+
         protected bool _oppositeSide = false;
 
         protected Azimuth _fromDirectionOfTravel;
@@ -90,6 +92,7 @@ namespace FarmingGPSLib.Equipment
             equipmentPosition = equipmentPosition.TranslateTo(fromDirectionOfTravel, distanceFromVechile);
             var vechileLine = new Segment(vechilePos.TranslateTo(Azimuth.South, Distance.FromMeters(20.0)), vechilePos.TranslateTo(Azimuth.North, Distance.FromMeters(20.0)));
             _offsetFromVechile = vechileLine.DistanceTo(equipmentPosition);
+            _offsetToTheRight = !(equipmentPosition.BearingTo(vechilePos) > Azimuth.North && equipmentPosition.BearingTo(vechilePos) < Azimuth.South);
             HasChanged = true;
         }
 
@@ -184,6 +187,12 @@ namespace FarmingGPSLib.Equipment
         public virtual bool SideDependent
         {
             get { return _sideDependent; }
+        }
+
+        public virtual bool OffsetToTheRight
+        {
+            get { return _offsetToTheRight; }
+            set { _offsetToTheRight = value; }
         }
 
         public virtual bool OppositeSide

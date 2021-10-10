@@ -150,13 +150,13 @@ namespace FarmingGPSLib.FarmingModes
         {
             var negPosOffset = offset;
             var angleOffsetPoint = new DotSpatial.Topology.Angle(baseLine.Angle);
-            if (!EquipmentSideOutRight)
+            if (EquipmentSideOutRight)
+                angleOffsetPoint += new DotSpatial.Topology.Angle(HelperClassAngles.DEGREE_90_RAD);
+            else
             {
                 negPosOffset *= -1.0;
-                angleOffsetPoint += new DotSpatial.Topology.Angle(HelperClassAngles.DEGREE_90_RAD);
-            }
-            else
                 angleOffsetPoint -= new DotSpatial.Topology.Angle(HelperClassAngles.DEGREE_90_RAD);
+            }
 
             var newCoord = HelperClassCoordinate.ComputePoint(baseLine.P0, angleOffsetPoint.Radians, offset);
             var newLine = HelperClassLines.CreateLine(newCoord, new DotSpatial.Topology.Angle(baseLine.Angle), baseLine.Length);
@@ -175,16 +175,16 @@ namespace FarmingGPSLib.FarmingModes
                 new DotSpatial.Topology.Angle(HelperClassAngles.NormalizeRadian(left90 - HelperClassAngles.DEGREE_30_RAD)),
                 new DotSpatial.Topology.Angle(HelperClassAngles.NormalizeRadian(right90 - HelperClassAngles.DEGREE_30_RAD))
             };
-            double distanceFromShell = _equipment.CenterToTip.ToMeters().Value;
+            double distanceFromShell = 0;
             List<LineString> headlandTrackingLines = new List<LineString>();
             for (int i = 0; i < _headlandTurns; i++)
             {
-                headlandTrackingLines.AddRange(GetHeadlandLines(distanceFromShell + negPosOffset, leftConstraints, rightConstraints) );
+                headlandTrackingLines.AddRange(GetHeadlandLines(distanceFromShell + (_equipment.CenterToTip.Value + negPosOffset), leftConstraints, rightConstraints) );
                 distanceFromShell += _equipment.WidthOverlap.ToMeters().Value;
             }
 
             foreach (LineString line in headlandTrackingLines)
-                _trackingLinesHeadland.Add(new TrackingLine(line, false));
+                _trackingLinesHeadland.Add(new TrackingLine(line, true));
 
             IList<ILineString> headLandCoordinates = new List<ILineString>();
             List <Polygon> headLandToCheck = new List<Polygon>();

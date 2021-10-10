@@ -57,6 +57,11 @@ namespace FarmingGPSLib.Equipment
             get;
             set;
         }
+        bool OffsetToTheRight
+        {
+            get;
+            set;
+        }
 
         Distance OffsetFromVechile
         {

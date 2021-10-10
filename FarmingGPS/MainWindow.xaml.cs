@@ -843,7 +843,7 @@ namespace FarmingGPS
                     if (_equipment.SideDependent)
                     {
                         _equipment.OppositeSide = (!_farmingMode.EquipmentSideOutRight && !orientationToLine.TrackingBackwards) || (_farmingMode.EquipmentSideOutRight && orientationToLine.TrackingBackwards);
-                        _visualization.SetEquipmentOffset(_equipment.OffsetFromVechile, !_equipment.OppositeSide);
+                        _visualization.SetEquipmentOffset(_equipment.OffsetFromVechile, _equipment.OppositeSide);
                     }
                 }
 
@@ -988,7 +988,7 @@ namespace FarmingGPS
                 _visualization.DeleteLine(trackingLine);
 
             if (_equipment.SideDependent)
-                _farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadland[_selectedTrackingLine], headingFromLine, _equipment.OffsetFromVechile.ToMeters().Value);
+                _farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadland[_selectedTrackingLine], headingFromLine, _equipment.OffsetFromVechile.ToMeters().Value * (_equipment.OffsetToTheRight ? 1.0 : -1.0));
             else
                 _farmingMode.CreateTrackingLines(_farmingMode.TrackingLinesHeadland[_selectedTrackingLine], headingFromLine);
 
