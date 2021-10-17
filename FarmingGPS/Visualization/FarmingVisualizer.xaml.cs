@@ -533,42 +533,46 @@ namespace FarmingGPS.Visualization
 
         private void UpdatePolygon(PolygonData polygonData, int polygonId)
         {
-            if (polygonData.Coordinates.Length < 1)
-                return;
-
-            var geometry = new HelixToolkit.Wpf.SharpDX.MeshGeometry3D();
-            var polygonPositions = new Vector3Collection();
-            var polygonPoints = new List<Vector2>();
-            var normals = new Vector3Collection();
-            foreach (var coord in polygonData.Coordinates)
+            try
             {
-                polygonPositions.Add(new Vector3((float)coord.X, (float)coord.Y, (float)coord.Z));
-                polygonPoints.Add(new Vector2((float)coord.X, (float)coord.Y));
-                normals.Add(new Vector3(0, 0, 1));
+                var geometry = new HelixToolkit.Wpf.SharpDX.MeshGeometry3D();
+                var polygonPositions = new Vector3Collection();
+                var polygonPoints = new List<Vector2>();
+                var normals = new Vector3Collection();
+                foreach (var coord in polygonData.Coordinates)
+                {
+                    polygonPositions.Add(new Vector3((float)coord.X, (float)coord.Y, (float)coord.Z));
+                    polygonPoints.Add(new Vector2((float)coord.X, (float)coord.Y));
+                    normals.Add(new Vector3(0, 0, 1));
+                }
+
+                var meshData = new MeshData() { Points = polygonPositions, Indices = new IntCollection(CuttingEarsTriangulator.Triangulate(polygonPoints)), Normals = normals };
+                _trackMesh[polygonId] = meshData;
+
+                var offset = 0;
+                var newPositions = new Vector3Collection();
+                var newIndices = new IntCollection();
+                var newNormals = new Vector3Collection();
+                foreach (var mesh in _trackMesh.Values)
+                {
+                    foreach (var point in mesh.Points)
+                        newPositions.Add(new Vector3(point.X, point.Y, point.Z));
+                    foreach (var indice in mesh.Indices)
+                        newIndices.Add(indice + offset);
+                    foreach (var normal in mesh.Normals)
+                        newNormals.Add(normal);
+                    offset += mesh.Points.Count;
+                }
+
+                geometry.Positions = newPositions;
+                geometry.Indices = newIndices;
+                geometry.Normals = newNormals;
+                _fieldTrack.Geometry = geometry;
             }
-
-            var meshData = new MeshData() { Points = polygonPositions, Indices = new IntCollection(CuttingEarsTriangulator.Triangulate(polygonPoints)), Normals = normals };
-            _trackMesh[polygonId] = meshData;
-
-            var offset = 0;
-            var newPositions = new Vector3Collection();
-            var newIndices = new IntCollection();
-            var newNormals = new Vector3Collection();
-            foreach (var mesh in _trackMesh.Values)
+            catch(Exception e)
             {
-                foreach (var point in mesh.Points)
-                    newPositions.Add(new Vector3(point.X, point.Y, point.Z));
-                foreach (var indice in mesh.Indices)
-                    newIndices.Add(indice + offset);
-                foreach (var normal in mesh.Normals)
-                    newNormals.Add(normal);
-                offset += mesh.Points.Count;
+                Log.Error("Failed to update polygon", e);
             }
-
-            geometry.Positions = newPositions;
-            geometry.Indices = newIndices;
-            geometry.Normals = newNormals;
-            _fieldTrack.Geometry = geometry;
         }
         
         private void AddPolygon(PolygonData polygonData, int polygonId)
