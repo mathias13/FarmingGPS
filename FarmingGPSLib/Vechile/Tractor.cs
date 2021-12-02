@@ -14,6 +14,8 @@ namespace FarmingGPSLib.Vechile
 
         private Coordinate _startOfReverse = Coordinate.Empty;
 
+        private bool _reversing = false;
+
         private List<double> _headingChangeRate = new List<double>(3);
 
         private double _turnRate = 0.0;
@@ -45,22 +47,28 @@ namespace FarmingGPSLib.Vechile
                 _prevTime = DateTime.Now;
             }
             Azimuth heading = receiver.CurrentBearing;
-            Azimuth reverseHeading = _prevHeading.Mirror();
 
-            if (_startOfReverse.IsEmpty())
-            {
-                if (heading.IsBetween(reverseHeading.Subtract(45.0), reverseHeading.Add(45.0)))
-                {
-                    _startOfReverse = receiver.CurrentCoordinate;
-                    heading = heading.Mirror().Normalize();
-                }
-            }
+            if (receiver.MagnetometerBearing != Azimuth.Empty)
+                _reversing = !heading.IsBetween(receiver.MagnetometerBearing.Subtract(60), receiver.MagnetometerBearing.Add(60));
             else
             {
-                if (_startOfReverse.Distance(receiver.CurrentCoordinate) > 20.0 || heading.IsBetween(reverseHeading.Subtract(45.0), reverseHeading.Add(45.0)) || receiver.CurrentSpeed.ToKilometersPerHour().Value > 4.0 )
-                    _startOfReverse = Coordinate.Empty;
+                Azimuth reverseHeading = _prevHeading.Mirror();
+                if (_startOfReverse.IsEmpty())
+                {
+                    if (heading.IsBetween(reverseHeading.Subtract(45.0), reverseHeading.Add(45.0)))
+                    {
+                        _startOfReverse = receiver.CurrentCoordinate;
+                        heading = heading.Mirror().Normalize();
+                    }
+                }
                 else
-                    heading = heading.Mirror().Normalize();
+                {
+                    if (_startOfReverse.Distance(receiver.CurrentCoordinate) > 20.0 || heading.IsBetween(reverseHeading.Subtract(45.0), reverseHeading.Add(45.0)) || receiver.CurrentSpeed.ToKilometersPerHour().Value > 4.0)
+                        _startOfReverse = Coordinate.Empty;
+                    else
+                        heading = heading.Mirror().Normalize();
+                }
+                _reversing = !_startOfReverse.IsEmpty();
             }
 
             Vector rotatedVector = _vectorCenterRearAxle.RotateZ(heading.DecimalDegrees);
@@ -157,7 +165,7 @@ namespace FarmingGPSLib.Vechile
 
         public override bool IsReversing
         {
-            get { return !_startOfReverse.IsEmpty(); }
+            get { return _reversing; }
         }
 
         private void CalculateVector()
