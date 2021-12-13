@@ -48,14 +48,18 @@ namespace FarmingGPSLib.Vechile
             }
             Azimuth heading = receiver.CurrentBearing;
 
-            if (receiver.MagnetometerBearing != Azimuth.Empty)
-                _reversing = !heading.IsBetween(receiver.MagnetometerBearing.Subtract(60), receiver.MagnetometerBearing.Add(60));
+            if (receiver.MagnetometerBearing != Azimuth.Invalid)
+            {
+                _reversing = !heading.IsBetween(receiver.MagnetometerBearing.Subtract(80).Normalize(), receiver.MagnetometerBearing.Add(80).Normalize());
+                if(_reversing)
+                    heading = heading.Mirror().Normalize();
+            }
             else
             {
                 Azimuth reverseHeading = _prevHeading.Mirror();
                 if (_startOfReverse.IsEmpty())
                 {
-                    if (heading.IsBetween(reverseHeading.Subtract(45.0), reverseHeading.Add(45.0)))
+                    if (heading.IsBetween(reverseHeading.Subtract(45.0).Normalize(), reverseHeading.Add(45.0).Normalize()))
                     {
                         _startOfReverse = receiver.CurrentCoordinate;
                         heading = heading.Mirror().Normalize();
@@ -63,13 +67,14 @@ namespace FarmingGPSLib.Vechile
                 }
                 else
                 {
-                    if (_startOfReverse.Distance(receiver.CurrentCoordinate) > 20.0 || heading.IsBetween(reverseHeading.Subtract(45.0), reverseHeading.Add(45.0)) || receiver.CurrentSpeed.ToKilometersPerHour().Value > 4.0)
+                    if (_startOfReverse.Distance(receiver.CurrentCoordinate) > 20.0 || heading.IsBetween(reverseHeading.Subtract(45.0).Normalize(), reverseHeading.Add(45.0).Normalize()) || receiver.CurrentSpeed.ToKilometersPerHour().Value > 4.0)
                         _startOfReverse = Coordinate.Empty;
                     else
                         heading = heading.Mirror().Normalize();
                 }
                 _reversing = !_startOfReverse.IsEmpty();
             }
+
 
             Vector rotatedVector = _vectorCenterRearAxle.RotateZ(heading.DecimalDegrees);
             Coordinate position = receiver.CurrentCoordinate + rotatedVector;
