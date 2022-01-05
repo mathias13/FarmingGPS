@@ -326,6 +326,9 @@
     <Compile Include="Usercontrols\FarmingMode.xaml.cs">
       <DependentUpon>FarmingMode.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Usercontrols\FieldIndent.xaml.cs">
+      <DependentUpon>FieldIndent.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Usercontrols\GetEquipmentRate.xaml.cs">
       <DependentUpon>GetEquipmentRate.xaml</DependentUpon>
     </Compile>
@@ -334,6 +337,9 @@
     </Compile>
     <Compile Include="Usercontrols\GetField.xaml.cs">
       <DependentUpon>GetField.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Usercontrols\GoogleMaps\MarkerRedDot.xaml.cs">
+      <DependentUpon>MarkerRedDot.xaml</DependentUpon>
     </Compile>
     <Compile Include="Usercontrols\SettingsCollectionControl.xaml.cs">
       <DependentUpon>SettingsCollectionControl.xaml</DependentUpon>
@@ -412,6 +418,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Usercontrols\FieldIndent.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Usercontrols\GetEquipmentRate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -421,6 +431,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Usercontrols\GetField.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Usercontrols\GoogleMaps\MarkerRedDot.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -538,6 +552,7 @@
     <Content Include="Camera\RTSPClientSharp\RtspClientSharp.dll" />
     <Content Include="Camera\RTSPClientSharp\swresample-3.dll" />
     <Content Include="Camera\RTSPClientSharp\swscale-5.dll" />
+    <Resource Include="Usercontrols\GoogleMaps\red-dot.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -90,7 +90,6 @@ namespace FarmingGPS.Usercontrols
                 List<GpsCoordinate> coordinates = new List<GpsCoordinate>();
                 coordinates.AddRange(_database.GetCoordinatesForField(field.FieldId));
                 List<GMapPolygon> polygons = new List<GMapPolygon>();
-                List<GMapMarker> markers = new List<GMapMarker>();
                 List<FieldCut> fieldCuts = new List<FieldCut>();
                 foreach (object fieldCut in ListBoxIntersects.SelectedItems)
                     fieldCuts.Add(fieldCut as FieldCut);

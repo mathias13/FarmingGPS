@@ -621,7 +621,6 @@ namespace FarmingGPS
             _workedAreaBar.SetField(_field);
             _stateRecovery.AddStateObject(_field);
             _stateRecovery.AddStateObject(_fieldTracker);
-
             _fieldCreator.FieldCreated -= _fieldCreator_FieldCreated;
         }
 
@@ -1153,21 +1152,25 @@ namespace FarmingGPS
             (receiverGroup.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
             SettingGroup connectionGroup = new SettingGroup(connections.Name, new SettingGroup[] { ntripGroup, databaseGroup, receiverGroup}, new SettingsCollectionControl(connections));
 
-            SettingGroup field = new SettingGroup("Fält", null, new GetField());
+            SettingGroup fieldIndent = new SettingGroup("Kantzon", null, new FieldIndent());
+            (fieldIndent.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+
+            SettingGroup field = new SettingGroup("Fält", new SettingGroup[] { fieldIndent }, new GetField());
             (field.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+            (fieldIndent.SettingControl as ISettingsChanged).RegisterSettingEvent(field.SettingControl as ISettingsChanged);
 
             SettingGroup farmingMode = new SettingGroup("Bearbetningläge", null, new FarmingMode());
             (farmingMode.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
 
             SettingGroup equipmentRate = new SettingGroup("Redskapsstyrning", null, new GetEquipmentRate());
             (equipmentRate.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
-            (equipmentRate.SettingControl as ISettingsChanged).RegisterSettingEvent((field.SettingControl as ISettingsChanged));
+            (equipmentRate.SettingControl as ISettingsChanged).RegisterSettingEvent(field.SettingControl as ISettingsChanged);
 
-            SettingGroup redskap = new SettingGroup("Redskap", new SettingGroup[] { farmingMode, equipmentRate}, new GetVechileEquipment());
-            (redskap.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
-            (equipmentRate.SettingControl as ISettingsChanged).RegisterSettingEvent((redskap.SettingControl as ISettingsChanged));
+            SettingGroup equipment = new SettingGroup("Redskap", new SettingGroup[] { farmingMode, equipmentRate}, new GetVechileEquipment());
+            (equipment.SettingControl as ISettingsChanged).SettingChanged += SettingItem_SettingChanged;
+            (equipmentRate.SettingControl as ISettingsChanged).RegisterSettingEvent(equipment.SettingControl as ISettingsChanged);
 
-            SettingGroup settingRoot = new SettingGroup("Inställningar", new SettingGroup[] { connectionGroup, field, redskap, visualGroup, cameraGroup }, null);
+            SettingGroup settingRoot = new SettingGroup("Inställningar", new SettingGroup[] { connectionGroup, field, equipment, visualGroup, cameraGroup }, null);
             _settingsTree.ItemsSource = settingRoot;
         }
 
