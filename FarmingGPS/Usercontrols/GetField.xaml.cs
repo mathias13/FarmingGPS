@@ -150,7 +150,7 @@ namespace FarmingGPS.Usercontrols
                     SettingChanged.Invoke(this, FIELD_CHOOSEN);
         }
         
-        public List<Position> FieldChoosen
+        public IList<Position> FieldChoosen
         {
             get { return _fieldChoosen; }
         }

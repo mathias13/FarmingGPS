@@ -40,6 +40,8 @@ namespace FarmingGPS.Usercontrols
 
         private Position _positionEnd;
 
+        public const string FIELD_CHANGED = "FIELD_CHANGED";
+
         public FieldIndent()
         {
             InitializeComponent();
@@ -100,7 +102,7 @@ namespace FarmingGPS.Usercontrols
                 }
                 GMapPolygon polygon = new GMapPolygon(points);
                 Path path = new Path();
-                path.Fill = Brushes.Blue;
+                path.Fill = Brushes.Red;
                 path.Stroke = Brushes.Yellow;
                 path.Opacity = 0.5;
                 polygon.Shape = path;
@@ -166,7 +168,10 @@ namespace FarmingGPS.Usercontrols
                         i = -1;
                         continue;
                     }
-                    newCoords.Add(ringCoords[i]);
+                    if(newCoords.Count == 0)
+                        newCoords.Add(ringCoords[i]);
+                    else if (newCoords[newCoords.Count - 1] != ringCoords[i])
+                        newCoords.Add(ringCoords[i]);
                 }
                 newCoords.Add(ringCoords[endIndexRing]);
 
@@ -217,7 +222,6 @@ namespace FarmingGPS.Usercontrols
                 else
                     newCoords.Add(endCoord);
 
-                var testCoords = new List<Coordinate>();
                 for (int i = newEndIndex; i != newStartIndex; i++)
                 {
                     if (i > _fieldChoosen.Polygon.Shell.Coordinates.Count - 1)
@@ -226,12 +230,13 @@ namespace FarmingGPS.Usercontrols
                         continue;
                     }
 
-                    newCoords.Add(_fieldChoosen.Polygon.Shell.Coordinates[i]);
-                    testCoords.Add(_fieldChoosen.Polygon.Shell.Coordinates[i]);
+                    if (newCoords[newCoords.Count - 1] != _fieldChoosen.Polygon.Shell.Coordinates[i])
+                        newCoords.Add(_fieldChoosen.Polygon.Shell.Coordinates[i]);
                 }
                 newCoords.Add(_fieldChoosen.Polygon.Shell.Coordinates[newStartIndex]);
 
-                newCoords.Add(newCoords[0]);
+                if(newCoords[0] != newCoords[newCoords.Count - 1])
+                    newCoords.Add(newCoords[0]);
 
                 var ring = new LinearRing(newCoords);
                 ring.Reverse();
@@ -252,15 +257,26 @@ namespace FarmingGPS.Usercontrols
                 DotSpatial.Projections.Reproject.ReprojectPoints(xyArray, zArray, _fieldChoosen.Projection, DotSpatial.Projections.KnownCoordinateSystems.Geographic.World.WGS1984, 0, z.Count);
 
                 List<PointLatLng> points = new List<PointLatLng>();
+                List<Position> positions = new List<Position>();
                 for (int i = 0; i < zArray.Length; i++)
+                {
+                    positions.Add(new Position(new Latitude(xyArray[i * 2 + 1]), new Longitude(xyArray[i * 2])));
                     points.Add(new PointLatLng(xyArray[i * 2 + 1], xyArray[i * 2]));
+                }
 
                 GMapPolygon polygon = new GMapPolygon(points);
                 Path path = new Path();
-                path.Stroke = Brushes.Red;
+                path.Fill = Brushes.Green;
+                path.Stroke = Brushes.Yellow;
                 path.Opacity = 0.5;
                 polygon.Shape = path;
                 GMapControl.Markers.Add(polygon);
+
+                _newField = new Field(positions, _fieldChoosen.Projection);
+
+                if (_newField != null)
+                    if (SettingChanged != null)
+                        SettingChanged.Invoke(this, FIELD_CHANGED);
             }
         }
 
@@ -290,5 +306,9 @@ namespace FarmingGPS.Usercontrols
 
         #endregion
 
+        public IList<Position> FieldChoosen
+        {
+            get { return _newField.BoundaryPositions; }
+        }
     }
 }

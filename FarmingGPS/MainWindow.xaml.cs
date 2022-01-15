@@ -590,7 +590,7 @@ namespace FarmingGPS
 
         #region Field Events
 
-        private void FieldChoosen(List<Position> e)
+        private void FieldChoosen(IList<Position> e)
         {
             _stateRecovery.RemoveStateObject(_field);
             _stateRecovery.RemoveStateObject(_fieldTracker);
@@ -1191,7 +1191,9 @@ namespace FarmingGPS
         private void SettingItem_SettingChanged(object sender, string e)
         {
             if (sender is GetField)
-                GetFieldChanged((sender as GetField), e);
+                GetFieldChanged((sender as GetField).FieldChoosen, e);
+            else if(sender is FieldIndent)
+                GetFieldChanged((sender as FieldIndent).FieldChoosen, e);
             else if (sender is GetVechileEquipment)
                 SetVechileEquipment((sender as GetVechileEquipment));
             else if (sender is FarmingMode)
@@ -1444,12 +1446,16 @@ namespace FarmingGPS
             _farmingMode.FarmingEvent += FarmingEvent;
         }
 
-        private void GetFieldChanged(GetField userControl, string eventName)
+        private void GetFieldChanged(IList<Position> positions, string eventName)
         {
             switch (eventName)
             {
                 case GetField.FIELD_CHOOSEN:
-                    FieldChoosen(userControl.FieldChoosen);
+                    FieldChoosen(positions);
+                    break;
+
+                case FieldIndent.FIELD_CHANGED:
+                    FieldChoosen(positions);
                     break;
             }
         }

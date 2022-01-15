@@ -18,7 +18,7 @@ namespace FarmingGPSLib.FieldItems
 
         public Field() : base() { }
 
-        public Field(List<Position> positions, ProjectionInfo proj) : base(positions, proj) { }
+        public Field(IList<Position> positions, ProjectionInfo proj) : base(positions, proj) { }
 
         #endregion
 
