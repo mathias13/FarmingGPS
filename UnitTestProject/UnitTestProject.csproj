@@ -8,7 +8,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>UnitTestProject</RootNamespace>
     <AssemblyName>UnitTestProject</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -18,13 +18,14 @@
     <TestProjectType>UnitTest</TestProjectType>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>C:\Binaries\FarmingGPS\UnitTestProject\bin\Debug\</OutputPath>
-	<BaseIntermediateOutputPath>C:\Binaries\FarmingGPS\UnitTestProject\obj\Debug\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>C:\Binaries\FarmingGPS\UnitTestProject\obj\Debug\</BaseIntermediateOutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -33,7 +34,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>C:\Binaries\FarmingGPS\UnitTestProject\bin\Release\</OutputPath>
-	<BaseIntermediateOutputPath>C:\Binaries\FarmingGPS\UnitTestProject\obj\Release\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>C:\Binaries\FarmingGPS\UnitTestProject\obj\Release\</BaseIntermediateOutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -41,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugSIM|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>C:\Binaries\FarmingGPS\UnitTestProject\bin\Debug\</OutputPath>
-	<BaseIntermediateOutputPath>C:\Binaries\FarmingGPS\UnitTestProject\obj\Debug\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>C:\Binaries\FarmingGPS\UnitTestProject\obj\Debug\</BaseIntermediateOutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
