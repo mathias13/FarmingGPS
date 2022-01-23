@@ -34,7 +34,13 @@ namespace FarmingGPS.Usercontrols
 
         private IField _newField;
 
+        private GMapPolygon _fieldPolygon;
+
         private GMapMarker _selectedMarker;
+
+        private GMapMarker _startMarker;
+
+        private GMapMarker _endMarker;
 
         private Position _positionStart;
 
@@ -100,33 +106,55 @@ namespace FarmingGPS.Usercontrols
                     bottom = Math.Min(bottom, coord.Latitude.DecimalDegrees);
                     top = Math.Max(top, coord.Latitude.DecimalDegrees);
                 }
-                GMapPolygon polygon = new GMapPolygon(points);
+                _fieldPolygon = new GMapPolygon(points);
                 Path path = new Path();
-                path.Fill = Brushes.Red;
+                path.Fill = Brushes.Blue;
                 path.Stroke = Brushes.Yellow;
-                path.Opacity = 0.5;
-                polygon.Shape = path;
-                GMapControl.Markers.Add(polygon);
+                path.Opacity = 0.3;
+                _fieldPolygon.Shape = path;
+                GMapControl.Markers.Add(_fieldPolygon);
                 RectLatLng rect = RectLatLng.FromLTRB(left, top, right, bottom);
                 GMapControl.SetZoomToFitRect(rect);
 
                 _selectedMarker = new GMapMarker(new PointLatLng(_fieldChoosen.BoundaryPositions[0].Latitude.DecimalDegrees, _fieldChoosen.BoundaryPositions[0].Longitude.DecimalDegrees));
-                _selectedMarker.Shape = new MarkerRedDot(_selectedMarker);
+                _selectedMarker.Shape = new MarkerBlueDot(_selectedMarker);
                 _selectedMarker.Shape.Visibility = Visibility.Hidden;
+                _startMarker = new GMapMarker(new PointLatLng(_fieldChoosen.BoundaryPositions[0].Latitude.DecimalDegrees, _fieldChoosen.BoundaryPositions[0].Longitude.DecimalDegrees));
+                _startMarker.Shape = new MarkerGreenDot(_startMarker);
+                _startMarker.Shape.Visibility = Visibility.Hidden;
+                _endMarker = new GMapMarker(new PointLatLng(_fieldChoosen.BoundaryPositions[0].Latitude.DecimalDegrees, _fieldChoosen.BoundaryPositions[0].Longitude.DecimalDegrees));
+                _endMarker.Shape = new MarkerRedDot(_endMarker);
+                _endMarker.Shape.Visibility = Visibility.Hidden;
                 GMapControl.Markers.Add(_selectedMarker);
+                GMapControl.Markers.Add(_startMarker);
+                GMapControl.Markers.Add(_endMarker);
             }
         }
 
         private void ButtonChooseStart_Click(object sender, RoutedEventArgs e)
         {
             if (ListBoxPoints.SelectedItem != null)
+            {
+                Position selectedPoint = (Position)ListBoxPoints.SelectedItem;
+                _startMarker.Position = new PointLatLng(selectedPoint.Latitude.DecimalDegrees, selectedPoint.Longitude.DecimalDegrees);
+                _startMarker.Shape.Visibility = Visibility.Visible;
                 _positionStart = (Position)ListBoxPoints.SelectedItem;
+            }
+            else
+                _startMarker.Shape.Visibility = Visibility.Hidden;
         }
 
         private void ButtonChooseEnd_Click(object sender, RoutedEventArgs e)
         {
             if (ListBoxPoints.SelectedItem != null)
+            {
+                Position selectedPoint = (Position)ListBoxPoints.SelectedItem;
+                _endMarker.Position = new PointLatLng(selectedPoint.Latitude.DecimalDegrees, selectedPoint.Longitude.DecimalDegrees);
+                _endMarker.Shape.Visibility = Visibility.Visible;
                 _positionEnd = (Position)ListBoxPoints.SelectedItem;
+            }
+            else
+                _endMarker.Shape.Visibility = Visibility.Hidden;
         }
 
         private void ButtonFinished_Click(object sender, RoutedEventArgs e)
@@ -268,9 +296,11 @@ namespace FarmingGPS.Usercontrols
                 Path path = new Path();
                 path.Fill = Brushes.Green;
                 path.Stroke = Brushes.Yellow;
-                path.Opacity = 0.5;
+                path.Opacity = 0.7;
                 polygon.Shape = path;
                 GMapControl.Markers.Add(polygon);
+                ((Path)_fieldPolygon.Shape).Fill = Brushes.Red;
+                ((Path)_fieldPolygon.Shape).Opacity = 0.7;
 
                 _newField = new Field(positions, _fieldChoosen.Projection);
 

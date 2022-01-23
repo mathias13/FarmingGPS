@@ -602,7 +602,6 @@ namespace FarmingGPS
             _workedAreaBar.SetField(_field);
             _visualization.SetField(_field);
             
-            _settingsGrid.Visibility = Visibility.Hidden;
             _stateRecovery.AddStateObject(_field);
             _stateRecovery.AddStateObject(_fieldTracker);
         }
@@ -1319,6 +1318,7 @@ namespace FarmingGPS
                 _stateRecovery.AddStateObject(_equipment);
                 _visualization.SetEquipmentWidth(_equipment.Width);
             }
+            _settingsGrid.Visibility = Visibility.Hidden;
         }
 
         private void SetIEquipmentControl()
