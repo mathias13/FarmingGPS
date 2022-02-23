@@ -84,9 +84,9 @@ namespace FarmingGPSLib.FieldItems
 
         private IDictionary<int, int> _polygonSimplifierCount = new Dictionary<int, int>();
 
-        private Coordinate _prevLeftPoint = new Coordinate();
+        private Coordinate _prevLeftPoint = new Coordinate(double.NaN, double.NaN);
 
-        private Coordinate _prevRightPoint = new Coordinate();
+        private Coordinate _prevRightPoint = new Coordinate(double.NaN, double.NaN);
 
         private int _currentPolygonIndex = -1;
 
@@ -270,8 +270,8 @@ namespace FarmingGPSLib.FieldItems
         {
             lock (_syncObject)
             {
-                _prevLeftPoint = new Coordinate();
-                _prevRightPoint = new Coordinate();
+                _prevLeftPoint = new Coordinate(double.NaN, double.NaN);
+                _prevRightPoint = new Coordinate(double.NaN, double.NaN);
                 _currentPolygonIndex = -1;
             }
         }
@@ -281,8 +281,8 @@ namespace FarmingGPSLib.FieldItems
             lock (_syncObject)
             {
                 AddTrackPoints(new TrackPoint[1] { trackPoint });
-                _prevLeftPoint = new Coordinate();
-                _prevRightPoint = new Coordinate();
+                _prevLeftPoint = new Coordinate(double.NaN, double.NaN);
+                _prevRightPoint = new Coordinate(double.NaN, double.NaN);
                 _currentPolygonIndex = -1;
             }
         }
@@ -291,8 +291,8 @@ namespace FarmingGPSLib.FieldItems
         {
             lock(_syncObject)
             {
-                _prevLeftPoint = new Coordinate();
-                _prevRightPoint = new Coordinate();
+                _prevLeftPoint = new Coordinate(double.NaN, double.NaN);
+                _prevRightPoint = new Coordinate(double.NaN, double.NaN);
                 _currentPolygonIndex = -1;
                 foreach (KeyValuePair<int, Polygon> polygon in _polygons)
                     OnPolygonDeleted(polygon.Key);

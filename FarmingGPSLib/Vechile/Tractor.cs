@@ -13,7 +13,7 @@ namespace FarmingGPSLib.Vechile
     {
         private VechileModel _vechileModel;
 
-        private Coordinate _startOfReverse = new Coordinate();
+        private Coordinate _startOfReverse = new Coordinate(double.NaN, double.NaN);
 
         private List<double> _headingChangeRate = new List<double>(3);
 
@@ -59,7 +59,7 @@ namespace FarmingGPSLib.Vechile
             else
             {
                 if (_startOfReverse.Distance(receiver.CurrentCoordinate) > 20.0 || heading.IsBetween(reverseHeading.Subtract(45.0), reverseHeading.Add(45.0)) || receiver.CurrentSpeed.ToKilometersPerHour().Value > 4.0 )
-                    _startOfReverse = new Coordinate();
+                    _startOfReverse = new Coordinate(double.NaN, double.NaN);
                 else
                     heading = heading.Mirror().Normalize();
             }

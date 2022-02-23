@@ -64,8 +64,8 @@ namespace FarmingGPSLib.FarmingModes.Tools
 
         public OrientationToLine GetOrientationToLine(Coordinate point, DotSpatial.Positioning.Azimuth directionOfTravel)
         {
-            Coordinate p0 = new Coordinate();
-            Coordinate p1 = new Coordinate();
+            Coordinate p0 = new Coordinate(double.NaN, double.NaN);
+            Coordinate p1 = new Coordinate(double.NaN, double.NaN);
             bool trackingBackwards;
             double distance = double.MaxValue;
             if (_extendedLine != null  && !_headland)
