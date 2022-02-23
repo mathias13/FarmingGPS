@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using DotSpatial.Positioning;
 using DotSpatial.Projections;
-using DotSpatial.Positioning;
-using DotSpatial.Topology;
-using DotSpatial.Topology.Algorithm;
-using FarmingGPSLib.StateRecovery;
+using GeoAPI.Geometries;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.Algorithm;
+using System;
+using System.Collections.Generic;
 
 namespace FarmingGPSLib.FieldItems
 {
@@ -68,23 +68,23 @@ namespace FarmingGPSLib.FieldItems
                 _hasChanged = true;
                 if (_positions.Count > 2)
                 {
-                    IList<Coordinate> coords = ReprojectBoundary();
+                    var coords = ReprojectBoundary();
                     LineString lineString = new LineString(coords);
                     //Make sure we have a left hand orientation to make correct offsetcurves
-                    if (!CgAlgorithms.IsCounterClockwise(coords))
+                    if (!CGAlgorithms.IsCCW(coords))
                         lineString.Reverse();
                     if (!lineString.IsRing)
                         throw new InvalidOperationException("Field is selfintersecting or is not closed");
-                    _polygon = new Polygon(new LinearRing(lineString));
+                    _polygon = new Polygon(new LinearRing(lineString.Coordinates));
                 }
                 else
                     _polygon = null;
             }
         }
 
-        protected IList<Coordinate> ReprojectBoundary()
+        protected Coordinate[] ReprojectBoundary()
         {
-            IList<Coordinate> points = new List<Coordinate>();
+            List<Coordinate> points = new List<Coordinate>();
             List<double> xy = new List<double>();
             List<double> z = new List<double>();
             double[] xyArray;
@@ -104,7 +104,7 @@ namespace FarmingGPSLib.FieldItems
             Reproject.ReprojectPoints(xyArray, zArray, _projWGS84, _proj, 0, zArray.Length);
             for (int i = 0; i < zArray.Length; i++)
                 points.Add(new Coordinate(xyArray[i * 2], xyArray[i * 2 + 1]));
-            return points;
+            return points.ToArray();
         }
 
         #endregion
@@ -122,7 +122,7 @@ namespace FarmingGPSLib.FieldItems
                 if (_polygon == null)
                     return false;
                 else
-                    return SimplePointInAreaLocator.ContainsPointInPolygon(pointToCheck, _polygon);
+                    return _polygon.Contains(new Point(pointToCheck));
             }
         }
 

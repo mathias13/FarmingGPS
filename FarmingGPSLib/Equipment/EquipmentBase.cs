@@ -1,6 +1,6 @@
 ﻿using System;
 using DotSpatial.Positioning;
-using DotSpatial.Topology;
+using GeoAPI.Geometries;
 using FarmingGPSLib.FarmingModes;
 using FarmingGPSLib.Vechile;
 using GpsUtilities.HelperClasses;
@@ -205,7 +205,7 @@ namespace FarmingGPSLib.Equipment
         {
             get { return _offsetFromVechile; }
         }
-        public DotSpatial.Topology.Coordinate GetLeftTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel)
+        public Coordinate GetLeftTip(Coordinate attachedPosition, Azimuth directionOfTravel)
         {
             if (SideDependent && OppositeSide)
                 return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_oppositeSideBearingToLeftTip)).Radians, _oppositeSideDistanceToLeftTip.ToMeters().Value);
@@ -213,7 +213,7 @@ namespace FarmingGPSLib.Equipment
                 return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_bearingToLeftTip)).Radians, _distanceToLeftTip.ToMeters().Value);
         }
 
-        public DotSpatial.Topology.Coordinate GetRightTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel)
+        public Coordinate GetRightTip(Coordinate attachedPosition, Azimuth directionOfTravel)
         {
             if (SideDependent && OppositeSide)
                 return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_oppositeSideBearingToRightTip)).Radians, _oppositeSideDistanceToRightTip.ToMeters().Value);
@@ -221,7 +221,7 @@ namespace FarmingGPSLib.Equipment
                 return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(_bearingToRightTip)).Radians, _distanceToRightTip.ToMeters().Value);
         }
 
-        public DotSpatial.Topology.Coordinate GetCenter(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel)
+        public Coordinate GetCenter(Coordinate attachedPosition, Azimuth directionOfTravel)
         {
             return HelperClassCoordinate.ComputePoint(attachedPosition, HelperClassAngles.NormalizeAzimuthHeading(directionOfTravel.Add(FromDirectionOfTravel)).Radians, DistanceFromVechileToCenter.ToMeters().Value);
         }

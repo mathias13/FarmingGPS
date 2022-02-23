@@ -1,12 +1,10 @@
 ﻿using System;
-using DotSpatial.Topology;
-
 
 namespace FarmingGPS.GeometryUtilities
 {
     public static class Lines
     {
-        /*public static bool LinesIntersect(ILineSegment line1, ILineSegment line2)
+        /*public static bool LinesIntersect(LineSegment line1, LineSegment line2)
         {
             double A1 = line1.P1.Y - line1.P0.Y;
             double A2 = line2.P1.Y - line2.P0.Y;

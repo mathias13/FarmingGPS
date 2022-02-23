@@ -1,25 +1,27 @@
 ﻿using DotSpatial.Positioning;
-using DotSpatial.Topology;
 using FarmingGPS.Camera;
 using FarmingGPS.Dialogs;
 using FarmingGPS.Settings;
-using FarmingGPSLib.Settings;
-using FarmingGPSLib.Settings.Database;
-using FarmingGPSLib.Settings.NTRIP;
-using FarmingGPSLib.Settings.Receiver;
 using FarmingGPS.Usercontrols;
 using FarmingGPS.Usercontrols.Equipments;
+using FarmingGPS.Usercontrols.Events;
 using FarmingGPS.Visualization;
 using FarmingGPSLib.Equipment;
 using FarmingGPSLib.Equipment.BogBalle;
 using FarmingGPSLib.Equipment.Vaderstad;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
+using FarmingGPSLib.Settings;
+using FarmingGPSLib.Settings.Database;
+using FarmingGPSLib.Settings.NTRIP;
+using FarmingGPSLib.Settings.Receiver;
 using FarmingGPSLib.StateRecovery;
 using FarmingGPSLib.Vechile;
+using GeoAPI.Geometries;
 using GpsUtilities.Filter;
 using GpsUtilities.Reciever;
 using log4net;
+using NetTopologySuite.Geometries;
 using NTRIP;
 using NTRIP.Settings;
 using SwiftBinaryProtocol;
@@ -29,13 +31,12 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
-using FarmingGPS.Usercontrols.Events;
-using System.Threading;
 
 namespace FarmingGPS
 {
@@ -103,8 +104,6 @@ namespace FarmingGPS
         
         private Database.DatabaseHandler _database;
         
-        private string _cameraIp = String.Empty;
-
         private ClientService _ntripClient;
 
         private SBPReceiverSender _sbpReceiverSender;
@@ -988,7 +987,7 @@ namespace FarmingGPS
             if (valueChangeDialog.ShowDialog().Value)
                 heading = valueChangeDialog.Value;
 
-            DotSpatial.Topology.Angle headingFromLine = new DotSpatial.Topology.Angle
+            DotSpatial.NTSExtension.Angle headingFromLine = new DotSpatial.NTSExtension.Angle
             {
                 DegreesPos = heading
             };

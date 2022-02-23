@@ -1,11 +1,12 @@
 ﻿using DotSpatial.Positioning;
-using DotSpatial.Topology;
-using DotSpatial.Topology.Algorithm;
-using DotSpatial.Topology.GeometriesGraph;
 using FarmingGPSLib.Equipment;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
+using GeoAPI.Geometries;
 using GpsUtilities.HelperClasses;
+using NetTopologySuite.Algorithm;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.GeometriesGraph;
 using System;
 using System.Collections.Generic;
 
@@ -47,7 +48,7 @@ namespace FarmingGPSLib.FarmingModes
                 _trackingLinesHeadland.Add(new TrackingLine(line, true));
         }
 
-        public override void CreateTrackingLines(Coordinate aCoord, DotSpatial.Topology.Angle direction)
+        public override void CreateTrackingLines(Coordinate aCoord, DotSpatial.NTSExtension.Angle direction)
         {
             base.CreateTrackingLines(aCoord, direction);
             FillFieldWithTrackingLines(HelperClassLines.CreateLine(aCoord, direction, 5.0));
@@ -65,17 +66,17 @@ namespace FarmingGPSLib.FarmingModes
             FillFieldWithTrackingLines(headLine.MainLine);
         }
 
-        public override void CreateTrackingLines(TrackingLine trackingLine, DotSpatial.Topology.Angle directionFromLine)
+        public override void CreateTrackingLines(TrackingLine trackingLine, DotSpatial.NTSExtension.Angle directionFromLine)
         {
-            DotSpatial.Topology.Angle newAngle = new DotSpatial.Topology.Angle(trackingLine.MainLine.Angle + directionFromLine.Radians);
+            DotSpatial.NTSExtension.Angle newAngle = new DotSpatial.NTSExtension.Angle(trackingLine.MainLine.Angle + directionFromLine.Radians);
             this.CreateTrackingLines(trackingLine.MainLine.P0, newAngle);
         }
 
-        public override void UpdateEvents(ILineString positionEquipment, DotSpatial.Positioning.Azimuth direction)
+        public override void UpdateEvents(ILineString positionEquipment, Azimuth direction)
         {
         }
 
-        protected void FillFieldWithTrackingLines(ILineSegment baseLine)
+        protected void FillFieldWithTrackingLines(LineSegment baseLine)
         {
             double distanceFromShell = _equipment.CenterToTip.ToMeters().Value;
             for (int i = 1; i < _headlandTurns; i++)
@@ -89,42 +90,44 @@ namespace FarmingGPSLib.FarmingModes
             List<Polygon> headLandToCheck = new List<Polygon>();
             IList<ILineString> headLands = GetHeadLandCoordinates(distanceFromShell);
             foreach (ILineString headLand in headLands)
-                headLandToCheck.Add(new Polygon(headLand.Coordinates));
+                headLandToCheck.Add(new Polygon(new LinearRing(headLand.Coordinates)));
 
-            IEnvelope fieldEnvelope = _fieldPolygon.Envelope;
+            var fieldEnvelope = _fieldPolygon.EnvelopeInternal;
             //Get longest projection to make sure we cover the whole field
-            ILineSegment baseLineExtended1 = new LineSegment(baseLine.Project(fieldEnvelope.TopLeft()), baseLine.Project(fieldEnvelope.BottomRight()));
-            ILineSegment baseLineExtended2 = new LineSegment(baseLine.Project(fieldEnvelope.BottomLeft()), baseLine.Project(fieldEnvelope.TopRight()));
+            LineSegment baseLineExtended1 = new LineSegment(baseLine.Project(new Coordinate(fieldEnvelope.MinX, fieldEnvelope.MaxY)), baseLine.Project(new Coordinate(fieldEnvelope.MaxX, fieldEnvelope.MinY)));
+            LineSegment baseLineExtended2 = new LineSegment(baseLine.Project(new Coordinate(fieldEnvelope.MinX, fieldEnvelope.MinY)), baseLine.Project(new Coordinate(fieldEnvelope.MaxX, fieldEnvelope.MaxY)));
 
-            ILineSegment baseLineExtended = baseLineExtended1.Length > baseLineExtended2.Length ? baseLineExtended1 : baseLineExtended2;
+            LineSegment baseLineExtended = baseLineExtended1.Length > baseLineExtended2.Length ? baseLineExtended1 : baseLineExtended2;
 
-            List<ILineSegment> linesExtended = new List<ILineSegment>();
-            List<ILineSegment> linesInBetweenExtended = new List<ILineSegment>();
+            List<LineSegment> linesExtended = new List<LineSegment>();
+            List<LineSegment> linesInBetweenExtended = new List<LineSegment>();
             linesExtended.Add(baseLineExtended);
-            ILineSegment extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.WidthOverlap.ToMeters().Value);
+            LineSegment extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, Positions.Left, _equipment.WidthOverlap.ToMeters().Value);
             int lineIteriator = 2;
-            while (fieldEnvelope.Intersects(extendedLine))
+            var extendedLinestring = new LineString(new Coordinate[] { extendedLine.P0, extendedLine.P1 });
+            var envelopeLinearRing = new LinearRing(_fieldPolygon.Envelope.Coordinates);
+            while (envelopeLinearRing.Intersects(extendedLinestring))
             {
                 linesExtended.Insert(0, extendedLine);
-                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, _equipment.WidthOverlap.ToMeters().Value * lineIteriator);
+                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, Positions.Left, _equipment.WidthOverlap.ToMeters().Value * lineIteriator);
                 lineIteriator++;
             }
             double firstOffset = _equipment.WidthOverlap.ToMeters().Value / 2.0;
-            linesInBetweenExtended.Add(HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, firstOffset));
+            linesInBetweenExtended.Add(HelperClassLines.ComputeOffsetSegment(baseLineExtended, Positions.Left, firstOffset));
             for (int i = 1; i < lineIteriator - 1; i++)
-                linesInBetweenExtended.Insert(0, HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Left, firstOffset + (_equipment.WidthOverlap.ToMeters().Value * i)));
+                linesInBetweenExtended.Insert(0, HelperClassLines.ComputeOffsetSegment(baseLineExtended, Positions.Left, firstOffset + (_equipment.WidthOverlap.ToMeters().Value * i)));
 
-            extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.WidthOverlap.ToMeters().Value);
+            extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, Positions.Right, _equipment.WidthOverlap.ToMeters().Value);
             lineIteriator = 2;
-            while (fieldEnvelope.Intersects(extendedLine))
+            while (envelopeLinearRing.Intersects(extendedLinestring))
             {
                 linesExtended.Add(extendedLine);
-                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, _equipment.WidthOverlap.ToMeters().Value * lineIteriator);
+                extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, Positions.Right, _equipment.WidthOverlap.ToMeters().Value * lineIteriator);
                 lineIteriator++;
             }
-            linesInBetweenExtended.Add(HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, firstOffset));
+            linesInBetweenExtended.Add(HelperClassLines.ComputeOffsetSegment(baseLineExtended, Positions.Right, firstOffset));
             for (int i = 1; i < lineIteriator; i++)
-                linesInBetweenExtended.Add(HelperClassLines.ComputeOffsetSegment(baseLineExtended, PositionType.Right, firstOffset + (_equipment.WidthOverlap.ToMeters().Value * i)));
+                linesInBetweenExtended.Add(HelperClassLines.ComputeOffsetSegment(baseLineExtended, Positions.Right, firstOffset + (_equipment.WidthOverlap.ToMeters().Value * i)));
 
             List<LineString> trackingLines = new List<LineString>();
             List<IGeometry> startPoints = new List<IGeometry>();
@@ -144,7 +147,7 @@ namespace FarmingGPSLib.FarmingModes
                 {
                     bool remove = true;
                     foreach (Polygon polygonToCheck in headLandToCheck)
-                        if (CgAlgorithms.IsPointInRing(lineCoordinates[j], polygonToCheck.Coordinates))
+                        if (CGAlgorithms.IsPointInRing(lineCoordinates[j], polygonToCheck.Coordinates))
                             remove = false;
                     if (remove)
                     {
@@ -158,9 +161,9 @@ namespace FarmingGPSLib.FarmingModes
                     //Check angle so we dont reverse the line
                     var line = new LineSegment(lineCoordinates[0], lineCoordinates[1]);
                     if ((int)line.Angle != (int)baseLine.Angle)
-                        linesToAdd.Add(new LineString(new List<Coordinate>() { line.P1, line.P0 }));
+                        linesToAdd.Add(new LineString(new [] { line.P1, line.P0 }));
                     else
-                        linesToAdd.Add(new LineString(new List<Coordinate>() { line.P0, line.P1 }));
+                        linesToAdd.Add(new LineString(new [] { line.P0, line.P1 }));
                 }
                 else
                 {
@@ -182,9 +185,9 @@ namespace FarmingGPSLib.FarmingModes
                                 //Check angle so we dont reverse the line
                                 var line = new LineSegment(lineCoordinates[0], lineCoordinates[j]);
                                 if ((int)line.Angle != (int)baseLine.Angle)
-                                    linesToAdd.Add(new LineString(new List<Coordinate>() { line.P1, line.P0 }));
+                                    linesToAdd.Add(new LineString(new Coordinate[] { line.P1, line.P0 }));
                                 else
-                                    linesToAdd.Add(new LineString(new List<Coordinate>() { line.P0, line.P1 }));
+                                    linesToAdd.Add(new LineString(new Coordinate[] { line.P0, line.P1 }));
                                 lineCoordinates.RemoveAt(j);
                                 lineCoordinates.RemoveAt(0);
                                 j = 1;
@@ -199,7 +202,7 @@ namespace FarmingGPSLib.FarmingModes
                 if(linesToAdd.Count > 0)
                 {
                     var boxCoords = new Coordinate[] { linesInBetweenExtended[i + 1].P0, linesInBetweenExtended[i + 1].P1, linesInBetweenExtended[i].P1, linesInBetweenExtended[i].P0, linesInBetweenExtended[i + 1].P0 };
-                    var box = new Polygon(boxCoords);
+                    var box = new Polygon(new LinearRing(boxCoords));
                     var geometries = new List<IGeometry>();
                     foreach (var headland in headLandToCheck)
                         geometries.Add(box.Intersection(headland));
@@ -209,9 +212,9 @@ namespace FarmingGPSLib.FarmingModes
                     var angleToCompare = Math.Round(baseLineExtended.Angle, 3);
                     foreach (var geometry in geometries)
                     {
-                        for (int j = 0; j < geometry.Coordinates.Count; j++)
+                        for (int j = 0; j < geometry.Coordinates.Length; j++)
                         {
-                            if (j == geometry.Coordinates.Count - 1)
+                            if (j == geometry.Coordinates.Length - 1)
                             {
                                 if (coords.Count > 0)
                                 {

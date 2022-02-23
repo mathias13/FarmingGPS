@@ -1,7 +1,7 @@
-﻿using System;
-using DotSpatial.Positioning;
-using GpsUtilities.Reciever;
+﻿using DotSpatial.Positioning;
 using FarmingGPSLib.StateRecovery;
+using GeoAPI.Geometries;
+using GpsUtilities.Reciever;
 
 namespace FarmingGPSLib.Vechile
 {
@@ -17,13 +17,13 @@ namespace FarmingGPSLib.Vechile
 
         Distance AttachPointDistance { get; }
 
-        DotSpatial.Topology.Coordinate CenterRearAxle { get; }
+        Coordinate CenterRearAxle { get; }
 
-        DotSpatial.Topology.Coordinate AttachPoint { get; }
+        Coordinate AttachPoint { get; }
 
         Azimuth VechileDirection { get; }
 
-        DotSpatial.Topology.Coordinate UpdatePosition(IReceiver receiver);
+        Coordinate UpdatePosition(IReceiver receiver);
 
         bool IsReversing { get; }
     }

@@ -1,5 +1,4 @@
 ﻿using System;
-using DotSpatial.Topology;
 using DotSpatial.Positioning;
 
 namespace FarmingGPSLib.FieldItems

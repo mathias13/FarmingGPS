@@ -1,4 +1,5 @@
-﻿using DotSpatial.Topology;
+﻿using GeoAPI.Geometries;
+using NetTopologySuite.Geometries;
 using DotSpatial.Positioning;
 
 namespace FarmingGPSLib.FarmingModes.Tools
@@ -13,7 +14,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
 
         #endregion
 
-        public TrackingLineWithEvent(ILineString line, string eventMessage, double distanceToEvent, ILineSegment end1, ILineSegment end2): base(line, false)
+        public TrackingLineWithEvent(ILineString line, string eventMessage, double distanceToEvent, LineSegment end1, LineSegment end2): base(line, false)
         {
             _eventMessage = eventMessage;
             _distanceToEvent = distanceToEvent;       

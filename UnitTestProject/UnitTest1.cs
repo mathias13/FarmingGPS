@@ -1,6 +1,7 @@
 ﻿using DotSpatial.Positioning;
-using DotSpatial.Topology;
-using DotSpatial.Topology.Algorithm;
+using GeoAPI.Geometries;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.Algorithm;
 using GpsUtilities.HelperClasses;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -95,7 +96,7 @@ namespace UnitTestProject
             //AddCoords(coords, new Coordinate(2.0, 2.0), new Coordinate(6.0, 2.0));
 
             coords.Add(new Coordinate(coords[0].X, coords[0].Y));
-            LinearRing linearRing = new LinearRing(coords);
+            LinearRing linearRing = new LinearRing(coords.ToArray());
             Assert.IsTrue(linearRing.IsSimple);
             Assert.IsTrue(linearRing.IsRing);
             Polygon polygon = new Polygon(linearRing);
@@ -111,7 +112,7 @@ namespace UnitTestProject
             coords.Add(new Coordinate(0.0, 0.0));
             coords.Add(new Coordinate(0.0, 1.0));
             coords.Add(new Coordinate(1.0, 0.0));
-            LinearRing ring = new LinearRing(coords);
+            LinearRing ring = new LinearRing(coords.ToArray());
             Assert.IsTrue(ring.IsSimple);
         }
 
@@ -126,11 +127,11 @@ namespace UnitTestProject
         public void TestIntersection()
         {
             RobustLineIntersector intersector = new RobustLineIntersector();
-            IntersectionType intersectionType = intersector.ComputeIntersect(new Coordinate(2.0, 2.0),
+            var intersectionType = intersector.ComputeIntersect(new Coordinate(2.0, 2.0),
                                                                                 new Coordinate(2.0, 4.0),
                                                                                 new Coordinate(1.0, 3.0),
                                                                                 new Coordinate(3.0, 3, 0));
-            Assert.IsTrue(intersectionType == IntersectionType.PointIntersection);
+            Assert.IsTrue(intersectionType == LineIntersector.PointIntersection);
         }
 
         [TestMethod]
@@ -142,11 +143,11 @@ namespace UnitTestProject
             coords.Add(new Coordinate(5.0, 5.0));
             coords.Add(new Coordinate(0.0, 5.0));
             coords.Add(new Coordinate(0.0, 0.0));
-            ILinearRing ring = new LinearRing(coords);
+            ILinearRing ring = new LinearRing(coords.ToArray());
             ILineString line = new LineString(new Coordinate[] {new Coordinate(3.0, 6.0), new Coordinate(6.0, 3.0)});
             IGeometry result = ring.Intersection(line);
 
-            Assert.IsTrue(result.Coordinates.Count > 0);
+            Assert.IsTrue(result.Coordinates.Length > 0);
         }
 
         [TestMethod]
@@ -182,10 +183,10 @@ namespace UnitTestProject
             Polygon poly1 = new Polygon(ring);
             Polygon poly2 = new Polygon(ring1);
             IGeometry polyDiff = poly1.Difference(poly2);
-            Assert.IsTrue(polyDiff.FeatureType == FeatureType.Polygon);
+            Assert.IsTrue(polyDiff.GeometryType == "Polygon");
 
             IGeometry polyDiff1 = poly2.Difference(poly1);
-                                              Assert.IsTrue(polyDiff1.FeatureType == FeatureType.Polygon);
+                                              Assert.IsTrue(polyDiff1.GeometryType == "Polygon");
         }
 
     }

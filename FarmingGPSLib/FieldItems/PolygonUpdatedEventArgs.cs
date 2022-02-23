@@ -1,4 +1,4 @@
-﻿using DotSpatial.Topology;
+﻿using GeoAPI.Geometries;
 using System;
 
 namespace FarmingGPSLib.FieldItems

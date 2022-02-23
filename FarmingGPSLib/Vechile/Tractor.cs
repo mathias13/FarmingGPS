@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using DotSpatial.Positioning;
-using DotSpatial.Topology;
+using GeoAPI.Geometries;
+using DotSpatial.NTSExtension;
 using GpsUtilities.Reciever;
 using GpsUtilities.HelperClasses;
 using GpsUtilities.Filter;
@@ -12,7 +13,7 @@ namespace FarmingGPSLib.Vechile
     {
         private VechileModel _vechileModel;
 
-        private Coordinate _startOfReverse = Coordinate.Empty;
+        private Coordinate _startOfReverse = new Coordinate();
 
         private List<double> _headingChangeRate = new List<double>(3);
 
@@ -58,13 +59,13 @@ namespace FarmingGPSLib.Vechile
             else
             {
                 if (_startOfReverse.Distance(receiver.CurrentCoordinate) > 20.0 || heading.IsBetween(reverseHeading.Subtract(45.0), reverseHeading.Add(45.0)) || receiver.CurrentSpeed.ToKilometersPerHour().Value > 4.0 )
-                    _startOfReverse = Coordinate.Empty;
+                    _startOfReverse = new Coordinate();
                 else
                     heading = heading.Mirror().Normalize();
             }
 
             Vector rotatedVector = _vectorCenterRearAxle.RotateZ(heading.DecimalDegrees);
-            Coordinate position = receiver.CurrentCoordinate + rotatedVector;
+            Coordinate position = new Vector(receiver.CurrentCoordinate) + rotatedVector;
 
             if (_vechileModel != null)
             {

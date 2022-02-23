@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using DotSpatial.Topology;
+using GeoAPI.Geometries;
+using NetTopologySuite.Geometries;
 using FarmingGPSLib.FieldItems;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.Equipment;
@@ -118,7 +119,7 @@ namespace FarmingGPSLib.FarmingModes
             _stopDistance = seedingModeState.StopDistance;
             List<LineString> trackingLines = new List<LineString>();
             foreach (SimpleLine line in seedingModeState.TrackingLines)
-                trackingLines.Add(new LineString(line.Line));
+                trackingLines.Add(new LineString(line.Line.ToArray()));
 
             List<IGeometry> startLines = new List<IGeometry>();
             foreach (SimpleLine line in seedingModeState.StartLines)
@@ -126,7 +127,7 @@ namespace FarmingGPSLib.FarmingModes
                 if (line.Line.Count == 1)
                     startLines.Add(new Point(line.Line[0]));
                 else
-                    startLines.Add(new LineString(line.Line));
+                    startLines.Add(new LineString(line.Line.ToArray()));
             }
 
             List<IGeometry> endLines = new List<IGeometry>();
@@ -135,12 +136,12 @@ namespace FarmingGPSLib.FarmingModes
                 if (line.Line.Count == 1)
                     endLines.Add(new Point(line.Line[0]));
                 else
-                    endLines.Add(new LineString(line.Line));
+                    endLines.Add(new LineString(line.Line.ToArray()));
             }
 
             AddTrackingLines(trackingLines, startLines, endLines);
             foreach (SimpleLine line in seedingModeState.TrackingLinesHeadLand)
-                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line), true));
+                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line.ToArray()), true));
         }
 
         #endregion

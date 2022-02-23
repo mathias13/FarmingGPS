@@ -1,29 +1,24 @@
 ﻿using DotSpatial.Positioning;
-using DotSpatial.Topology;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
-using HelixToolkit.Wpf.SharpDX;
-using HelixToolkit.Wpf.SharpDX.Shaders;
+using GeoAPI.Geometries;
 using HelixToolkit.Wpf;
+using HelixToolkit.Wpf.SharpDX;
 using log4net;
 using SharpDX;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
-using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
 using System.Windows.Media.Media3D;
-using System.Runtime.InteropServices;
 
 namespace FarmingGPS.Visualization
 {
     /// <summary>
     /// Interaction logic for FarmingVisualizer.xaml
     /// </summary>
+    // compile with: /reference:CuttingEarsTriangulator=HelixToolkit.Wpf.SharpDX.dll  
     public partial class FarmingVisualizer : UserControl
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -100,7 +95,7 @@ namespace FarmingGPS.Visualization
 
         private double _equipmentOffset = 0.0;
 
-        private DotSpatial.Topology.Coordinate _minPoint;
+        private Coordinate _minPoint;
 
         private IDictionary<TrackingLine, MeshData> _trackingLines = new Dictionary<TrackingLine, MeshData>();
 
@@ -165,7 +160,7 @@ namespace FarmingGPS.Visualization
                 Dispatcher.BeginInvoke(new Action<System.Windows.Point,double>(UpdatePosition), System.Windows.Threading.DispatcherPriority.Render, position, angle);
         }
 
-        public void UpdatePosition(DotSpatial.Topology.Coordinate coord, Azimuth bearing)
+        public void UpdatePosition(Coordinate coord, Azimuth bearing)
         {
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
             {
@@ -189,7 +184,7 @@ namespace FarmingGPS.Visualization
                 UpdateCamera();
             }
             else
-                Dispatcher.BeginInvoke(new Action<DotSpatial.Topology.Coordinate, Azimuth>(UpdatePosition), System.Windows.Threading.DispatcherPriority.Render, coord, bearing);
+                Dispatcher.BeginInvoke(new Action<Coordinate, Azimuth>(UpdatePosition), System.Windows.Threading.DispatcherPriority.Render, coord, bearing);
         }
        
         public void FocusTrackingLine(TrackingLine trackingLine)
@@ -257,7 +252,7 @@ namespace FarmingGPS.Visualization
             }
         }
 
-        public void AddPoint(DotSpatial.Topology.Coordinate coord, SharpDX.Color color)
+        public void AddPoint(Coordinate coord, Color color)
         {
             //if (!Dispatcher.Thread.Equals(Thread.CurrentThread))
             //    Dispatcher.Invoke(new Action<DotSpatial.Topology.Coordinate, SharpDX.Color>(AddPoint), System.Windows.Threading.DispatcherPriority.Normal, coord, color);
@@ -345,7 +340,7 @@ namespace FarmingGPS.Visualization
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
             {
                 if (_minPoint == null)
-                    _minPoint = field.Polygon.Envelope.Minimum;
+                    _minPoint = field.Polygon.EnvelopeInternal.Minimum;
                 DrawOutline(field.Polygon.Coordinates);
                 DrawFieldMesh(field.Polygon.Coordinates);
             }
@@ -363,7 +358,7 @@ namespace FarmingGPS.Visualization
         {
             fieldCreator.FieldBoundaryUpdated += FieldCreator_FieldBoundaryUpdated;
             fieldCreator.FieldCreated += FieldCreator_FieldCreated;
-            _minPoint = fieldCreator.GetField().Polygon.Envelope.Minimum;
+            _minPoint = fieldCreator.GetField().Polygon.EnvelopeInternal.Minimum;
         }
 
         public void ZoomOut()
@@ -486,7 +481,7 @@ namespace FarmingGPS.Visualization
             }
         }
 
-        private PolygonData GetPolygonData(IList<DotSpatial.Topology.Coordinate> coordinates, double zIndex)
+        private PolygonData GetPolygonData(IList<Coordinate> coordinates, double zIndex)
         {
             PolygonData data = new PolygonData();
             List<Coordinate> newCoordinates = new List<Coordinate>();
@@ -513,7 +508,7 @@ namespace FarmingGPS.Visualization
                 _trackSumsHoles.Add(e.ID, new List<ulong>());
 
                 bool redrawHoles = false;
-                foreach (DotSpatial.Topology.ILinearRing hole in e.Polygon.Holes)
+                foreach (ILinearRing hole in e.Polygon.Holes)
                 {
                     PolygonData holePolygonData = GetPolygonData(hole.Coordinates, FIELD_TRACK_HOLES_Z_INDEX);
                     Dispatcher.Invoke(new Action<PolygonData, int>(AddPolygonHole), System.Windows.Threading.DispatcherPriority.Render, holePolygonData, e.ID);
@@ -727,7 +722,7 @@ namespace FarmingGPS.Visualization
             if (Dispatcher.Thread.Equals(Thread.CurrentThread))
             {
                 FieldCreator fieldCreator = sender as FieldCreator;
-                _minPoint = fieldCreator.GetField().Polygon.Envelope.Minimum;
+                _minPoint = fieldCreator.GetField().Polygon.EnvelopeInternal.Minimum;
                 DrawOutline(e.Boundary);
             }
             else
@@ -836,7 +831,7 @@ namespace FarmingGPS.Visualization
             _equipmentMesh.Geometry.UpdateVertices();
         }
 
-        private void DrawOutline(IList<DotSpatial.Topology.Coordinate> coordinates)
+        private void DrawOutline(IList<Coordinate> coordinates)
         {
             LineBuilder builder = new LineBuilder();
 
@@ -848,7 +843,7 @@ namespace FarmingGPS.Visualization
             _fieldOutline.Geometry = builder.ToLineGeometry3D();
         }
 
-        private void DrawFieldMesh(IList<DotSpatial.Topology.Coordinate> coordinates)
+        private void DrawFieldMesh(IList<Coordinate> coordinates)
         {
             var geometry = new HelixToolkit.Wpf.SharpDX.MeshGeometry3D();
             var points3D = new Vector3Collection(coordinates.Count - 1);

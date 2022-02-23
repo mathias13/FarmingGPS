@@ -119,6 +119,9 @@
     <Reference Include="DotSpatial.NetTopologySuite, Version=1.14.4.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
       <HintPath>..\packages\DotSpatial.NetTopologySuite.1.14.4\lib\net40-client\DotSpatial.NetTopologySuite.dll</HintPath>
     </Reference>
+    <Reference Include="DotSpatial.NTSExtension, Version=2.0.0.0, Culture=neutral, PublicKeyToken=928fbfe39f52ea75, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotSpatial.NTSExtension.2.0.1.2\lib\net452\DotSpatial.NTSExtension.dll</HintPath>
+    </Reference>
     <Reference Include="DotSpatial.Positioning, Version=2.0.0.0, Culture=neutral, PublicKeyToken=f6f66d1554473068, processorArchitecture=MSIL">
       <HintPath>..\packages\DotSpatial.Positioning.2.0.1.2\lib\net452\DotSpatial.Positioning.dll</HintPath>
     </Reference>
@@ -138,9 +141,6 @@
     </Reference>
     <Reference Include="HelixToolkit, Version=2.20.2.0, Culture=neutral, PublicKeyToken=52aa3500039caf0d, processorArchitecture=MSIL">
       <HintPath>..\packages\HelixToolkit.2.20.2\lib\netstandard1.1\HelixToolkit.dll</HintPath>
-    </Reference>
-    <Reference Include="HelixToolkit.Wpf, Version=2.20.2.0, Culture=neutral, PublicKeyToken=52aa3500039caf0d, processorArchitecture=MSIL">
-      <HintPath>..\packages\HelixToolkit.Wpf.2.20.2\lib\net45\HelixToolkit.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="HelixToolkit.Wpf.SharpDX, Version=2.20.2.0, Culture=neutral, PublicKeyToken=52aa3500039caf0d, processorArchitecture=MSIL">
       <HintPath>..\packages\HelixToolkit.Wpf.SharpDX.2.20.2\lib\net45\HelixToolkit.Wpf.SharpDX.dll</HintPath>

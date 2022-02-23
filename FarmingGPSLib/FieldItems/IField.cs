@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using DotSpatial.Positioning;
-using DotSpatial.Topology;
+﻿using DotSpatial.Positioning;
 using DotSpatial.Projections;
 using FarmingGPSLib.StateRecovery;
+using GeoAPI.Geometries;
+using NetTopologySuite.Geometries;
+using System.Collections.Generic;
 
 namespace FarmingGPSLib.FieldItems
 {
