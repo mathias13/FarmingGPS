@@ -293,6 +293,8 @@ namespace FarmingGPS
                             _visualization.SetField(_field);
                             _stateRecovery.AddStateObject(_field);
                             _visualization.AddFieldTracker(_fieldTracker);
+                            if(!_stateRecovery.ObjectsRecovered.ContainsKey(typeof(FieldTracker)))
+                                _stateRecovery.AddStateObject(_fieldTracker);
                         }
                         else if (recoveredObject.Key == typeof(FieldTracker))
                         {
@@ -304,6 +306,7 @@ namespace FarmingGPS
                         {
                             _vechile = Activator.CreateInstance(recoveredObject.Key) as IVechile;
                             _vechile.RestoreObject(recoveredObject.Value);
+                            _stateRecovery.AddStateObject(_vechile);
                         }
                         else if (recoveredObject.Key.IsSubclassOf(typeof(EquipmentBase)))
                         {
@@ -340,21 +343,25 @@ namespace FarmingGPS
                         if (_equipment is IEquipmentControl)
                             _fieldRateTracker.RegisterEquipmentControl(_equipment as IEquipmentControl);
 #if SIM
+
                     if (_receiver != null)
                         _receiver.Dispose();
-                    _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0),
-                        new Longitude(13.6234063), new Latitude(58.531409)),
-                        //new Longitude(13.855149568), new Latitude(58.5125995962)),
-                        false,
-                        _vechile.OffsetDirection,
-                        _vechile.OffsetDistance,
-                        _vechile.WheelAxesDistance);
-                    _receiver.BearingUpdate += _receiver_BearingUpdate;
-                    _receiver.PositionUpdate += _receiver_PositionUpdate;
-                    _receiver.CoordinateUpdate += _receiver_CoordinateUpdate;
-                    _receiver.SpeedUpdate += _receiver_SpeedUpdate;
-                    _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
-                    _receiver.ProjectionInfo = _field.Projection;
+
+                    if (_vechile != null)
+                    {
+                        _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0),
+                            new Longitude(13.855149568), new Latitude(58.5125995962)),
+                            false,
+                            _vechile.OffsetDirection,
+                            _vechile.OffsetDistance,
+                            _vechile.WheelAxesDistance);
+                        _receiver.BearingUpdate += _receiver_BearingUpdate;
+                        _receiver.PositionUpdate += _receiver_PositionUpdate;
+                        _receiver.CoordinateUpdate += _receiver_CoordinateUpdate;
+                        _receiver.SpeedUpdate += _receiver_SpeedUpdate;
+                        _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
+                        _receiver.ProjectionInfo = _field.Projection;
+                    }
 #endif
                 }
                 else

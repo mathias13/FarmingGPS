@@ -196,7 +196,8 @@ namespace FarmingGPSLib.FieldItems
         {
             get
             {
-                lock(_syncObject)
+                _hasChanged = false;
+                lock (_syncObject)
                     return new FieldState(new List<Position>(_positions), _proj.ToProj4String());
             }
         }

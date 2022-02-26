@@ -21,9 +21,9 @@ namespace FarmingGPSLib.FieldItems
         {
             public int PolygonIndex;
             
-            public List<Coordinate> Coordinates;
+            public Coordinate[] Coordinates;
 
-            public SimpleCoordinateArray(int polygonIndex, List<Coordinate> coordinates)
+            public SimpleCoordinateArray(int polygonIndex, Coordinate[] coordinates)
             {
                 PolygonIndex = polygonIndex;
                 Coordinates = coordinates;
@@ -34,12 +34,12 @@ namespace FarmingGPSLib.FieldItems
         [Serializable]
         public struct FieldTrackerState
         {
-            public List<SimpleCoordinateArray> Polygons;
+            public SimpleCoordinateArray[] Polygons;
             
-            public List<SimpleCoordinateArray> Holes;
+            public SimpleCoordinateArray[] Holes;
             
 
-            public FieldTrackerState(List<SimpleCoordinateArray> polygons, List<SimpleCoordinateArray> holes)
+            public FieldTrackerState(SimpleCoordinateArray[] polygons, SimpleCoordinateArray[] holes)
             {
                 Polygons = polygons;
                 Holes = holes;
@@ -451,8 +451,8 @@ namespace FarmingGPSLib.FieldItems
                     List<ILinearRing> holes = new List<ILinearRing>();
                     foreach (SimpleCoordinateArray hole in state.Holes)
                         if (hole.PolygonIndex == polygon.PolygonIndex)
-                            holes.Add(new LinearRing(hole.Coordinates.ToArray()));
-                    Polygon newPolygon = new Polygon(new LinearRing(polygon.Coordinates.ToArray()), holes.ToArray());
+                            holes.Add(new LinearRing(hole.Coordinates));
+                    Polygon newPolygon = new Polygon(new LinearRing(polygon.Coordinates), holes.ToArray());
                     _polygons.Add(polygon.PolygonIndex, newPolygon);
                 }
                 foreach (int index in _polygons.Keys)
@@ -480,16 +480,16 @@ namespace FarmingGPSLib.FieldItems
                     if (simplifiedPolygon.Value is IPolygon)
                     {
                         IPolygon polygon = simplifiedPolygon.Value as IPolygon;
-                        polygons.Add(new SimpleCoordinateArray(simplifiedPolygon.Key, new List<Coordinate>(polygon.Shell.Coordinates)));
+                        polygons.Add(new SimpleCoordinateArray(simplifiedPolygon.Key, polygon.Shell.Coordinates));
 
                         foreach (ILinearRing hole in polygon.Holes)
                         {
-                            holes.Add(new SimpleCoordinateArray(simplifiedPolygon.Key, new List<Coordinate>(hole.Coordinates)));
+                            holes.Add(new SimpleCoordinateArray(simplifiedPolygon.Key, hole.Coordinates));
                         }
                     }
                 }
 
-                FieldTrackerState state = new FieldTrackerState(polygons, holes);
+                FieldTrackerState state = new FieldTrackerState(polygons.ToArray(), holes.ToArray());
                 return state;
             }
         }
