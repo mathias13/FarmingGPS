@@ -15,18 +15,44 @@ namespace FarmingGPSLib.FieldItems
     public class FieldTracker: IStateObject
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        
+
+        //TODO: Delete this if it's possible to serialize Coordinate
+        [Serializable]
+        public struct SimpleCoordinate
+        {
+            public double X;
+
+            public double Y;
+
+            public double Z;
+        }
+
         [Serializable]
         public struct SimpleCoordinateArray
         {
             public int PolygonIndex;
-            
-            public Coordinate[] Coordinates;
 
+            public SimpleCoordinate[] Coordinates;
+
+            [System.Xml.Serialization.XmlIgnore]
+            public Coordinate[] CoordinateArray
+            {
+                get
+                {
+                    var coords = new List<Coordinate>();
+                    foreach (var coord in Coordinates)
+                        coords.Add(new Coordinate(coord.X, coord.Y, coord.Z));
+                    return coords.ToArray();
+                }
+            }
+               
             public SimpleCoordinateArray(int polygonIndex, Coordinate[] coordinates)
             {
                 PolygonIndex = polygonIndex;
-                Coordinates = coordinates;
+                var coords = new List<SimpleCoordinate>();
+                foreach(var coord in coordinates)
+                    coords.Add(new SimpleCoordinate() { X = coord.X, Y = coord.Y, Z = coord.Z });
+                Coordinates = coords.ToArray();
             }
 
         }
@@ -38,7 +64,6 @@ namespace FarmingGPSLib.FieldItems
             
             public SimpleCoordinateArray[] Holes;
             
-
             public FieldTrackerState(SimpleCoordinateArray[] polygons, SimpleCoordinateArray[] holes)
             {
                 Polygons = polygons;
@@ -451,8 +476,8 @@ namespace FarmingGPSLib.FieldItems
                     List<ILinearRing> holes = new List<ILinearRing>();
                     foreach (SimpleCoordinateArray hole in state.Holes)
                         if (hole.PolygonIndex == polygon.PolygonIndex)
-                            holes.Add(new LinearRing(hole.Coordinates));
-                    Polygon newPolygon = new Polygon(new LinearRing(polygon.Coordinates), holes.ToArray());
+                            holes.Add(new LinearRing(hole.CoordinateArray));
+                    Polygon newPolygon = new Polygon(new LinearRing(polygon.CoordinateArray), holes.ToArray());
                     _polygons.Add(polygon.PolygonIndex, newPolygon);
                 }
                 foreach (int index in _polygons.Keys)

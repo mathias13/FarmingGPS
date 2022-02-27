@@ -216,6 +216,7 @@ namespace FarmingGPSLib.FarmingModes
             {
                 linesExtended.Add(extendedLine);
                 extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, Positions.Left, _equipment.WidthOverlap.ToMeters().Value * lineIteriator);
+                extendedLinestring = new LineString(new Coordinate[] { extendedLine.P0, extendedLine.P1 });
                 lineIteriator++;
             }
 
@@ -225,6 +226,7 @@ namespace FarmingGPSLib.FarmingModes
             {
                 linesExtended.Add(extendedLine);
                 extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, Positions.Right, _equipment.WidthOverlap.ToMeters().Value * lineIteriator);
+                extendedLinestring = new LineString(new Coordinate[] { extendedLine.P0, extendedLine.P1 });
                 lineIteriator++;
             }
 
@@ -325,10 +327,10 @@ namespace FarmingGPSLib.FarmingModes
             {
                 List<SimpleLine> trackingLines = new List<SimpleLine>();
                 foreach (TrackingLine trackingLine in _trackingLines)
-                    trackingLines.Add(new SimpleLine(new List<Coordinate>(trackingLine.Line.Coordinates)));
+                    trackingLines.Add(new SimpleLine(trackingLine.Line.Coordinates));
                 List<SimpleLine> trackingLinesHeadland = new List<SimpleLine>();
                 foreach (TrackingLine trackingLineHeadland in _trackingLinesHeadland)
-                    trackingLinesHeadland.Add(new SimpleLine(new List<Coordinate>(trackingLineHeadland.Line.Coordinates)));
+                    trackingLinesHeadland.Add(new SimpleLine(trackingLineHeadland.Line.Coordinates));
                 return new PlowingModeState(trackingLines, trackingLinesHeadland, _startDistance, _stopDistance);
             }
         }
@@ -344,9 +346,9 @@ namespace FarmingGPSLib.FarmingModes
             _startDistance = plowingModeState.StartDistance;
             _stopDistance = plowingModeState.StopDistance;
             foreach (SimpleLine line in plowingModeState.TrackingLines)
-                _trackingLines.Add(new TrackingLineStartStopEvent(new LineString(line.Line.ToArray()), _startDistance, _stopDistance));
+                _trackingLines.Add(new TrackingLineStartStopEvent(new LineString(line.LineCoordinateArray), _startDistance, _stopDistance));
             foreach (SimpleLine line in plowingModeState.TrackingLinesHeadLand)
-                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line.ToArray()), true));
+                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.LineCoordinateArray), true));
         }
 
         #endregion

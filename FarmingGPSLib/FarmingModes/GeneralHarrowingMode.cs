@@ -110,6 +110,7 @@ namespace FarmingGPSLib.FarmingModes
             {
                 linesExtended.Insert(0, extendedLine);
                 extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, Positions.Left, _equipment.WidthOverlap.ToMeters().Value * lineIteriator);
+                extendedLinestring = new LineString(new Coordinate[] { extendedLine.P0, extendedLine.P1 });
                 lineIteriator++;
             }
             double firstOffset = _equipment.WidthOverlap.ToMeters().Value / 2.0;
@@ -123,6 +124,7 @@ namespace FarmingGPSLib.FarmingModes
             {
                 linesExtended.Add(extendedLine);
                 extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, Positions.Right, _equipment.WidthOverlap.ToMeters().Value * lineIteriator);
+                extendedLinestring = new LineString(new Coordinate[] { extendedLine.P0, extendedLine.P1 });
                 lineIteriator++;
             }
             linesInBetweenExtended.Add(HelperClassLines.ComputeOffsetSegment(baseLineExtended, Positions.Right, firstOffset));

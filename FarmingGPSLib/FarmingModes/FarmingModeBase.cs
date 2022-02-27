@@ -24,14 +24,40 @@ namespace FarmingGPSLib.FarmingModes
 
     public abstract class FarmingModeBase : IFarmingMode
     {
+        //TODO: Delete this struct if it's possible to serialize Coordinate
+        [Serializable]
+        public struct SimpleCoordinate
+        {
+            public double X;
+
+            public double Y;
+
+            public double Z;
+        }
+
         [Serializable]
         public struct SimpleLine
         {
-            public List<Coordinate> Line;
+            public SimpleCoordinate[] Line;
 
-            public SimpleLine(List<Coordinate> line)
+            [System.Xml.Serialization.XmlIgnore]
+            public Coordinate[] LineCoordinateArray
             {
-                Line = line;
+                get
+                {
+                    var coords = new List<Coordinate>();
+                    foreach (var coord in Line)
+                        coords.Add(new Coordinate(coord.X, coord.Y, coord.Z));
+                    return coords.ToArray();
+                }
+            }
+
+            public SimpleLine(Coordinate[] line)
+            {
+                var coords = new List<SimpleCoordinate>();
+                foreach (var coord in line)
+                    coords.Add(new SimpleCoordinate() { X = coord.X, Y = coord.Y, Z = coord.Z });
+                Line = coords.ToArray();
             }
         }
 
@@ -385,10 +411,10 @@ namespace FarmingGPSLib.FarmingModes
             {
                 List<SimpleLine> trackingLines = new List<SimpleLine>();
                 foreach (TrackingLine trackingLine in _trackingLines)
-                    trackingLines.Add(new SimpleLine(new List<Coordinate>(trackingLine.Line.Coordinates)));
+                    trackingLines.Add(new SimpleLine(trackingLine.Line.Coordinates));
                 List<SimpleLine> trackingLinesHeadland = new List<SimpleLine>();
                 foreach (TrackingLine trackingLineHeadland in _trackingLinesHeadland)
-                    trackingLinesHeadland.Add(new SimpleLine(new List<Coordinate>(trackingLineHeadland.Line.Coordinates)));
+                    trackingLinesHeadland.Add(new SimpleLine(trackingLineHeadland.Line.Coordinates));
                 return new FarmingModeState(trackingLines, trackingLinesHeadland, _trackingLineBackwards);
             }
         }
@@ -407,9 +433,9 @@ namespace FarmingGPSLib.FarmingModes
         {
             FarmingModeState farmingModeState = (FarmingModeState)restoredState;
             foreach (SimpleLine line in farmingModeState.TrackingLines)
-                _trackingLines.Add(new TrackingLine(new LineString(line.Line.ToArray()), false));
+                _trackingLines.Add(new TrackingLine(new LineString(line.LineCoordinateArray), false));
             foreach (SimpleLine line in farmingModeState.TrackingLinesHeadLand)
-                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line.ToArray()), true));
+                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.LineCoordinateArray), true));
             _trackingLineBackwards = farmingModeState.TrackingLineBackwards;
         }
 
