@@ -1,11 +1,11 @@
-﻿using DotSpatial.Topology;
-using DotSpatial.Positioning;
+﻿using DotSpatial.Positioning;
 using DotSpatial.Projections;
+using GeoAPI.Geometries;
+using GpsUtilities.Filter;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.Simplify;
 using System;
 using System.Collections.Generic;
-using GpsUtilities.Reciever;
-using FarmingGPSLib.Equipment;
-using GpsUtilities.Filter;
 
 namespace FarmingGPSLib.FieldItems
 {
@@ -96,7 +96,7 @@ namespace FarmingGPSLib.FieldItems
                     double[] xyArray = new double[2];
                     double[] zArray = new double[1];
                     List<Position> coordinates = new List<Position>();
-                    var polygon = (Polygon)DotSpatial.Topology.Simplify.TopologyPreservingSimplifier.Simplify(new Polygon(new LinearRing(_track)), 0.5);
+                    var polygon = (Polygon)TopologyPreservingSimplifier.Simplify(new Polygon(new LinearRing(_track.ToArray())), 0.5);
                     foreach (Coordinate coord in polygon.Coordinates)
                     {
                         xyArray[0] = coord.X;

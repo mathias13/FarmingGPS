@@ -1,6 +1,5 @@
-﻿using System;
-using DotSpatial.Topology;
-using DotSpatial.Positioning;
+﻿using DotSpatial.Positioning;
+using GeoAPI.Geometries;
 
 namespace FarmingGPSLib.FarmingModes.Tools
 {

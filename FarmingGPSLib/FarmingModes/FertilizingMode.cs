@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using DotSpatial.Topology;
-using FarmingGPSLib.FieldItems;
+﻿using FarmingGPSLib.Equipment;
 using FarmingGPSLib.FarmingModes.Tools;
-using FarmingGPSLib.Equipment;
+using FarmingGPSLib.FieldItems;
+using GeoAPI.Geometries;
+using NetTopologySuite.Geometries;
+using System;
+using System.Collections.Generic;
 
 
 namespace FarmingGPSLib.FarmingModes
@@ -83,10 +84,10 @@ namespace FarmingGPSLib.FarmingModes
             {
                 List<SimpleLine> trackingLines = new List<SimpleLine>();
                 foreach (TrackingLine trackingLine in _trackingLines)
-                    trackingLines.Add(new SimpleLine(new List<Coordinate>(trackingLine.Line.Coordinates)));
+                    trackingLines.Add(new SimpleLine(trackingLine.Line.Coordinates));
                 List<SimpleLine> trackingLinesHeadland = new List<SimpleLine>();
                 foreach (TrackingLine trackingLineHeadland in _trackingLinesHeadland)
-                    trackingLinesHeadland.Add(new SimpleLine(new List<Coordinate>(trackingLineHeadland.Line.Coordinates)));
+                    trackingLinesHeadland.Add(new SimpleLine(trackingLineHeadland.Line.Coordinates));
                 return new FertilizingModeState(trackingLines, trackingLinesHeadland, _startDistance, _stopDistance);
             }
         }
@@ -103,10 +104,10 @@ namespace FarmingGPSLib.FarmingModes
             _stopDistance = fertilizingModeState.StopDistance;
             List<LineString> trackingLines = new List<LineString>();
             foreach (SimpleLine line in fertilizingModeState.TrackingLines)
-                trackingLines.Add(new LineString(line.Line));
+                trackingLines.Add(new LineString(line.LineCoordinateArray));
             AddTrackingLines(trackingLines, new List<IGeometry>(), new List<IGeometry>());
             foreach (SimpleLine line in fertilizingModeState.TrackingLinesHeadLand)
-                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line), true));
+                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.LineCoordinateArray), true));
         }
 
         #endregion

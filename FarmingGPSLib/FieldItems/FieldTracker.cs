@@ -1,30 +1,58 @@
-﻿using DotSpatial.Topology;
-using DotSpatial.Topology.Algorithm;
-using FarmingGPSLib.FarmingModes.Tools;
+﻿using FarmingGPSLib.FarmingModes.Tools;
+using FarmingGPSLib.StateRecovery;
+using GeoAPI.Geometries;
 using GpsUtilities.HelperClasses;
 using log4net;
+using DotSpatial.NTSExtension;
+using NetTopologySuite.Algorithm;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.Simplify;
 using System;
 using System.Collections.Generic;
-using FarmingGPSLib.StateRecovery;
-using System.Xml.Serialization;
 
 namespace FarmingGPSLib.FieldItems
 {
     public class FieldTracker: IStateObject
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        
+
+        //TODO: Delete this if it's possible to serialize Coordinate
+        [Serializable]
+        public struct SimpleCoordinate
+        {
+            public double X;
+
+            public double Y;
+
+            public double Z;
+        }
+
         [Serializable]
         public struct SimpleCoordinateArray
         {
             public int PolygonIndex;
-            
-            public List<Coordinate> Coordinates;
 
-            public SimpleCoordinateArray(int polygonIndex, List<Coordinate> coordinates)
+            public SimpleCoordinate[] Coordinates;
+
+            [System.Xml.Serialization.XmlIgnore]
+            public Coordinate[] CoordinateArray
+            {
+                get
+                {
+                    var coords = new List<Coordinate>();
+                    foreach (var coord in Coordinates)
+                        coords.Add(new Coordinate(coord.X, coord.Y, coord.Z));
+                    return coords.ToArray();
+                }
+            }
+               
+            public SimpleCoordinateArray(int polygonIndex, Coordinate[] coordinates)
             {
                 PolygonIndex = polygonIndex;
-                Coordinates = coordinates;
+                var coords = new List<SimpleCoordinate>();
+                foreach(var coord in coordinates)
+                    coords.Add(new SimpleCoordinate() { X = coord.X, Y = coord.Y, Z = coord.Z });
+                Coordinates = coords.ToArray();
             }
 
         }
@@ -32,12 +60,11 @@ namespace FarmingGPSLib.FieldItems
         [Serializable]
         public struct FieldTrackerState
         {
-            public List<SimpleCoordinateArray> Polygons;
+            public SimpleCoordinateArray[] Polygons;
             
-            public List<SimpleCoordinateArray> Holes;
+            public SimpleCoordinateArray[] Holes;
             
-
-            public FieldTrackerState(List<SimpleCoordinateArray> polygons, List<SimpleCoordinateArray> holes)
+            public FieldTrackerState(SimpleCoordinateArray[] polygons, SimpleCoordinateArray[] holes)
             {
                 Polygons = polygons;
                 Holes = holes;
@@ -82,9 +109,9 @@ namespace FarmingGPSLib.FieldItems
 
         private IDictionary<int, int> _polygonSimplifierCount = new Dictionary<int, int>();
 
-        private Coordinate _prevLeftPoint = Coordinate.Empty;
+        private Coordinate _prevLeftPoint = new Coordinate(double.NaN, double.NaN);
 
-        private Coordinate _prevRightPoint = Coordinate.Empty;
+        private Coordinate _prevRightPoint = new Coordinate(double.NaN, double.NaN);
 
         private int _currentPolygonIndex = -1;
 
@@ -123,34 +150,34 @@ namespace FarmingGPSLib.FieldItems
                             newCoords.Add(trackPoint.RightPoint);
                             newCoords.Add(trackPoint.LeftPoint);
                             newCoords.Add(_prevLeftPoint);
-                            LineString newCoordinates = new LineString(newCoords);
+                            LineString newCoordinates = new LineString(newCoords.ToArray());
                             List<Coordinate> newRectangleCoords = new List<Coordinate>(newCoords);
                             newRectangleCoords.Add(_prevRightPoint);
-                            ILineString rectangle = new LineString(newRectangleCoords);
+                            ILineString rectangle = new LineString(newRectangleCoords.ToArray());
 
-                            IGeometry rectPolygon = new Polygon(rectangle.Coordinates);
+                            IGeometry rectPolygon = new Polygon(new LinearRing(rectangle.Coordinates));
 
                             RobustLineIntersector lineIntersector = new RobustLineIntersector();
                             lineIntersector.ComputeIntersection(trackPoint.RightPoint, trackPoint.LeftPoint, _prevLeftPoint, _prevRightPoint);
                             if (lineIntersector.HasIntersection)
                             {
-                                List<Coordinate> leftTriangle = new List<Coordinate>(new Coordinate[] { _prevLeftPoint, lineIntersector.IntersectionPoints[0], trackPoint.LeftPoint, _prevLeftPoint });
+                                List<Coordinate> leftTriangle = new List<Coordinate>(new Coordinate[] { _prevLeftPoint, lineIntersector.GetIntersection(0), trackPoint.LeftPoint, _prevLeftPoint });
 
-                                List<Coordinate> rightTriangle = new List<Coordinate>(new Coordinate[] { _prevRightPoint, trackPoint.RightPoint, lineIntersector.IntersectionPoints[0], _prevRightPoint });
+                                List<Coordinate> rightTriangle = new List<Coordinate>(new Coordinate[] { _prevRightPoint, trackPoint.RightPoint, lineIntersector.GetIntersection(0), _prevRightPoint });
 
-                                if (CgAlgorithms.IsCounterClockwise(leftTriangle))
+                                if (CGAlgorithms.IsCCW(leftTriangle.ToArray()))
                                 {
                                     newCoords = new List<Coordinate>(leftTriangle);
                                     newCoords.RemoveAt(0);
-                                    newCoordinates = new LineString(newCoords);
-                                    rectPolygon = new Polygon(new Coordinate[] { _prevLeftPoint, trackPoint.RightPoint, trackPoint.LeftPoint, _prevLeftPoint });
+                                    newCoordinates = new LineString(newCoords.ToArray());
+                                    rectPolygon = new Polygon(new LinearRing(new Coordinate[] { _prevLeftPoint, trackPoint.RightPoint, trackPoint.LeftPoint, _prevLeftPoint }));
                                 }
-                                else if (CgAlgorithms.IsCounterClockwise(rightTriangle))
+                                else if (CGAlgorithms.IsCCW(rightTriangle.ToArray()))
                                 {
                                     newCoords = new List<Coordinate>(rightTriangle);
                                     newCoords.RemoveAt(0);
-                                    newCoordinates = new LineString(newCoords);
-                                    rectPolygon = new Polygon(new Coordinate[] { _prevRightPoint, trackPoint.RightPoint, trackPoint.LeftPoint, _prevRightPoint });
+                                    newCoordinates = new LineString(newCoords.ToArray());
+                                    rectPolygon = new Polygon(new LinearRing(new Coordinate[] { _prevRightPoint, trackPoint.RightPoint, trackPoint.LeftPoint, _prevRightPoint }));
                                 }
                                 else
                                     throw new Exception("Intersection found but can't decide triangle");
@@ -169,15 +196,15 @@ namespace FarmingGPSLib.FieldItems
                                     i--;
                                 }
                             }
-                            _polygons[_currentPolygonIndex].Holes = holes.ToArray();
+                            _polygons[_currentPolygonIndex] = new Polygon(_polygons[_currentPolygonIndex].Shell, holes.ToArray());
 
-                            if (_polygons[_currentPolygonIndex].Coordinates.Count > _polygonSimplifierCount[_currentPolygonIndex])
+                            if (_polygons[_currentPolygonIndex].Coordinates.Length > _polygonSimplifierCount[_currentPolygonIndex])
                             {
-                                IGeometry geometry = DotSpatial.Topology.Simplify.TopologyPreservingSimplifier.Simplify(_polygons[_currentPolygonIndex], 0.04);
+                                IGeometry geometry = TopologyPreservingSimplifier.Simplify(_polygons[_currentPolygonIndex], 0.04);
                                 if (geometry is Polygon)
                                 {
                                     _polygons[_currentPolygonIndex] = geometry as Polygon;
-                                    _polygonSimplifierCount[_currentPolygonIndex] = geometry.Coordinates.Count + SIMPLIFIER_COUNT_LIMIT;
+                                    _polygonSimplifierCount[_currentPolygonIndex] = geometry.Coordinates.Length + SIMPLIFIER_COUNT_LIMIT;
                                 }
                             }
 
@@ -214,9 +241,9 @@ namespace FarmingGPSLib.FieldItems
                             coords.Add(trackPoint.LeftPoint);
                             coords.Add(_prevLeftPoint);
                             coords.Add(_prevRightPoint);
-                            LinearRing ring = new LinearRing(coords);
+                            LinearRing ring = new LinearRing(coords.ToArray());
                             Polygon polygon = new Polygon(ring);
-                            if (ring.IsSimple && CgAlgorithms.IsCounterClockwise(polygon.Coordinates))
+                            if (ring.IsSimple && CGAlgorithms.IsCCW(polygon.Coordinates))
                             {
                                 int id = 0;
                                 while (_polygons.Keys.Contains(id))
@@ -268,8 +295,8 @@ namespace FarmingGPSLib.FieldItems
         {
             lock (_syncObject)
             {
-                _prevLeftPoint = Coordinate.Empty;
-                _prevRightPoint = Coordinate.Empty;
+                _prevLeftPoint = new Coordinate(double.NaN, double.NaN);
+                _prevRightPoint = new Coordinate(double.NaN, double.NaN);
                 _currentPolygonIndex = -1;
             }
         }
@@ -279,8 +306,8 @@ namespace FarmingGPSLib.FieldItems
             lock (_syncObject)
             {
                 AddTrackPoints(new TrackPoint[1] { trackPoint });
-                _prevLeftPoint = Coordinate.Empty;
-                _prevRightPoint = Coordinate.Empty;
+                _prevLeftPoint = new Coordinate(double.NaN, double.NaN);
+                _prevRightPoint = new Coordinate(double.NaN, double.NaN);
                 _currentPolygonIndex = -1;
             }
         }
@@ -289,8 +316,8 @@ namespace FarmingGPSLib.FieldItems
         {
             lock(_syncObject)
             {
-                _prevLeftPoint = Coordinate.Empty;
-                _prevRightPoint = Coordinate.Empty;
+                _prevLeftPoint = new Coordinate(double.NaN, double.NaN);
+                _prevRightPoint = new Coordinate(double.NaN, double.NaN);
                 _currentPolygonIndex = -1;
                 foreach (KeyValuePair<int, Polygon> polygon in _polygons)
                     OnPolygonDeleted(polygon.Key);
@@ -304,14 +331,14 @@ namespace FarmingGPSLib.FieldItems
         {
             lock(_syncObject)
             {
-                IMultiLineString remainsOfLine = new MultiLineString(new IBasicLineString[1] { trackingLine.Line });
+                IMultiLineString remainsOfLine = new MultiLineString(new LineString[1] { new LineString(trackingLine.Line.Coordinates) });
                 foreach(Polygon polygon in _polygons.Values)
                 {
                     IGeometry remains = remainsOfLine.Difference(polygon);
                     if (remains is MultiLineString)
                         remainsOfLine = (MultiLineString)remains;
                     else if (remains is LineString)
-                        remainsOfLine = new MultiLineString(new IBasicLineString[1] { (LineString)remains });
+                        remainsOfLine = new MultiLineString(new LineString[1] { (LineString)remains });
                     else if (remains.IsEmpty)
                     {
                         remainsOfLine = MultiLineString.Empty;
@@ -420,7 +447,7 @@ namespace FarmingGPSLib.FieldItems
 
         private bool CheckHoleValidity(ILinearRing hole)
         {
-            double area = Math.Abs(CgAlgorithms.SignedArea(hole.Coordinates));
+            double area = Math.Abs(CGAlgorithms.SignedArea(hole.Coordinates));
             if (area < 4.0)
                 return false;
 
@@ -432,7 +459,7 @@ namespace FarmingGPSLib.FieldItems
             List<Coordinate> coords = new List<Coordinate>();
             foreach (Coordinate coord in ring.Coordinates)
                 coords.Add(HelperClassCoordinate.CoordinateRoundedmm(coord));
-            return new LinearRing(coords);
+            return new LinearRing(coords.ToArray());
         }
 
         #endregion
@@ -449,8 +476,8 @@ namespace FarmingGPSLib.FieldItems
                     List<ILinearRing> holes = new List<ILinearRing>();
                     foreach (SimpleCoordinateArray hole in state.Holes)
                         if (hole.PolygonIndex == polygon.PolygonIndex)
-                            holes.Add(new LinearRing(hole.Coordinates));
-                    Polygon newPolygon = new Polygon(new LinearRing(polygon.Coordinates), holes.ToArray());
+                            holes.Add(new LinearRing(hole.CoordinateArray));
+                    Polygon newPolygon = new Polygon(new LinearRing(polygon.CoordinateArray), holes.ToArray());
                     _polygons.Add(polygon.PolygonIndex, newPolygon);
                 }
                 foreach (int index in _polygons.Keys)
@@ -470,7 +497,7 @@ namespace FarmingGPSLib.FieldItems
                 lock (_syncObject)
                 {
                     foreach (KeyValuePair<int, Polygon> polygon in _polygons)
-                        simplifiedPolygons.Add(polygon.Key, DotSpatial.Topology.Simplify.TopologyPreservingSimplifier.Simplify(polygon.Value, 0.04));
+                        simplifiedPolygons.Add(polygon.Key, TopologyPreservingSimplifier.Simplify(polygon.Value, 0.04));
                 }
 
                 foreach (KeyValuePair<int, IGeometry> simplifiedPolygon in simplifiedPolygons)
@@ -478,16 +505,16 @@ namespace FarmingGPSLib.FieldItems
                     if (simplifiedPolygon.Value is IPolygon)
                     {
                         IPolygon polygon = simplifiedPolygon.Value as IPolygon;
-                        polygons.Add(new SimpleCoordinateArray(simplifiedPolygon.Key, new List<Coordinate>(polygon.Shell.Coordinates)));
+                        polygons.Add(new SimpleCoordinateArray(simplifiedPolygon.Key, polygon.Shell.Coordinates));
 
                         foreach (ILinearRing hole in polygon.Holes)
                         {
-                            holes.Add(new SimpleCoordinateArray(simplifiedPolygon.Key, new List<Coordinate>(hole.Coordinates)));
+                            holes.Add(new SimpleCoordinateArray(simplifiedPolygon.Key, hole.Coordinates));
                         }
                     }
                 }
 
-                FieldTrackerState state = new FieldTrackerState(polygons, holes);
+                FieldTrackerState state = new FieldTrackerState(polygons.ToArray(), holes.ToArray());
                 return state;
             }
         }

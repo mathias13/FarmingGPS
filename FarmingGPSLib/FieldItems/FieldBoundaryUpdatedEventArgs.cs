@@ -1,7 +1,6 @@
-﻿using DotSpatial.Positioning;
-using DotSpatial.Topology;
-using System.Collections.Generic;
+﻿using GeoAPI.Geometries;
 using System;
+using System.Collections.Generic;
 
 namespace FarmingGPSLib.FieldItems
 {

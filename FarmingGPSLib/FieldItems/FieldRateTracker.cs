@@ -1,11 +1,10 @@
 ﻿using DotSpatial.Data;
-using DotSpatial.Topology;
 using FarmingGPSLib.Equipment;
-using FarmingGPSLib.FieldItems;
 using FarmingGPSLib.StateRecovery;
+using GeoAPI.Geometries;
+using NetTopologySuite.Geometries;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace FarmingGPSLib.FieldItems
 {
@@ -83,9 +82,9 @@ namespace FarmingGPSLib.FieldItems
             List<double> rates = new List<double>();
             foreach (var feature in _shapeFile.Features)
             {
-                if (feature.FeatureType == FeatureType.Polygon && feature.BasicGeometry is IPolygon)
+                if (feature.FeatureType == FeatureType.Polygon && feature.Geometry is IPolygon)
                 {
-                    IPolygon poly = (IPolygon)feature.BasicGeometry;
+                    IPolygon poly = (IPolygon)feature.Geometry;
                     if (line.Intersects(poly))
                         rates.Add((double)feature.DataRow[_rateColumn]);
                 }

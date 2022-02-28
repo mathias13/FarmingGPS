@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using DotSpatial.Topology;
+using GeoAPI.Geometries;
+using NetTopologySuite.Geometries;
 using FarmingGPSLib.FieldItems;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.Equipment;
@@ -94,13 +95,13 @@ namespace FarmingGPSLib.FarmingModes
                 List<SimpleLine> endLines = new List<SimpleLine>();
                 foreach (TrackingLine trackingLine in _trackingLines)
                 {
-                    trackingLines.Add(new SimpleLine(new List<Coordinate>(trackingLine.Line.Coordinates)));
-                    startLines.Add(new SimpleLine(new List<Coordinate>(trackingLine.StartPoint.Coordinates)));
-                    endLines.Add(new SimpleLine(new List<Coordinate>(trackingLine.EndPoint.Coordinates)));
+                    trackingLines.Add(new SimpleLine(trackingLine.Line.Coordinates));
+                    startLines.Add(new SimpleLine(trackingLine.StartPoint.Coordinates));
+                    endLines.Add(new SimpleLine(trackingLine.EndPoint.Coordinates));
                 }                
                 List<SimpleLine> trackingLinesHeadland = new List<SimpleLine>();
                 foreach (TrackingLine trackingLineHeadland in _trackingLinesHeadland)
-                    trackingLinesHeadland.Add(new SimpleLine(new List<Coordinate>(trackingLineHeadland.Line.Coordinates)));
+                    trackingLinesHeadland.Add(new SimpleLine(trackingLineHeadland.Line.Coordinates));
 
                 return new SeedingModeState(trackingLines, startLines, endLines, trackingLinesHeadland, _startDistance, _stopDistance);
             }
@@ -118,29 +119,29 @@ namespace FarmingGPSLib.FarmingModes
             _stopDistance = seedingModeState.StopDistance;
             List<LineString> trackingLines = new List<LineString>();
             foreach (SimpleLine line in seedingModeState.TrackingLines)
-                trackingLines.Add(new LineString(line.Line));
+                trackingLines.Add(new LineString(line.LineCoordinateArray));
 
             List<IGeometry> startLines = new List<IGeometry>();
             foreach (SimpleLine line in seedingModeState.StartLines)
             {
-                if (line.Line.Count == 1)
-                    startLines.Add(new Point(line.Line[0]));
+                if (line.Line.Length == 1)
+                    startLines.Add(new Point(line.LineCoordinateArray[0]));
                 else
-                    startLines.Add(new LineString(line.Line));
+                    startLines.Add(new LineString(line.LineCoordinateArray));
             }
 
             List<IGeometry> endLines = new List<IGeometry>();
             foreach (SimpleLine line in seedingModeState.EndLines)
             {
-                if (line.Line.Count == 1)
-                    endLines.Add(new Point(line.Line[0]));
+                if (line.Line.Length == 1)
+                    endLines.Add(new Point(line.LineCoordinateArray[0]));
                 else
-                    endLines.Add(new LineString(line.Line));
+                    endLines.Add(new LineString(line.LineCoordinateArray));
             }
 
             AddTrackingLines(trackingLines, startLines, endLines);
             foreach (SimpleLine line in seedingModeState.TrackingLinesHeadLand)
-                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line), true));
+                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.LineCoordinateArray), true));
         }
 
         #endregion

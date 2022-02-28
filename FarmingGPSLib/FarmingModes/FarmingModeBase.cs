@@ -1,16 +1,16 @@
-﻿using DotSpatial.Topology;
-using DotSpatial.Positioning;
-using DotSpatial.Topology.Algorithm;
-using DotSpatial.Topology.GeometriesGraph;
-using DotSpatial.Topology.Operation.Buffer;
+﻿using DotSpatial.Positioning;
+using FarmingGPSLib.Equipment;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
-using FarmingGPSLib.Equipment;
+using GeoAPI.Geometries;
 using GpsUtilities.HelperClasses;
+using NetTopologySuite.Algorithm;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.GeometriesGraph;
+using NetTopologySuite.Operation.Buffer;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using FarmingGPSLib.StateRecovery;
 
 namespace FarmingGPSLib.FarmingModes
 {
@@ -24,14 +24,40 @@ namespace FarmingGPSLib.FarmingModes
 
     public abstract class FarmingModeBase : IFarmingMode
     {
+        //TODO: Delete this struct if it's possible to serialize Coordinate
+        [Serializable]
+        public struct SimpleCoordinate
+        {
+            public double X;
+
+            public double Y;
+
+            public double Z;
+        }
+
         [Serializable]
         public struct SimpleLine
         {
-            public List<Coordinate> Line;
+            public SimpleCoordinate[] Line;
 
-            public SimpleLine(List<Coordinate> line)
+            [System.Xml.Serialization.XmlIgnore]
+            public Coordinate[] LineCoordinateArray
             {
-                Line = line;
+                get
+                {
+                    var coords = new List<Coordinate>();
+                    foreach (var coord in Line)
+                        coords.Add(new Coordinate(coord.X, coord.Y, coord.Z));
+                    return coords.ToArray();
+                }
+            }
+
+            public SimpleLine(Coordinate[] line)
+            {
+                var coords = new List<SimpleCoordinate>();
+                foreach (var coord in line)
+                    coords.Add(new SimpleCoordinate() { X = coord.X, Y = coord.Y, Z = coord.Z });
+                Line = coords.ToArray();
             }
         }
 
@@ -111,11 +137,11 @@ namespace FarmingGPSLib.FarmingModes
                 _trackingLines.Add(new TrackingLine(line, true));
         }
 
-        protected IList<ILineString> GetHeadLandCoordinates(double distance, IList<Coordinate> ring)
+        protected IList<ILineString> GetHeadLandCoordinates(double distance, Coordinate[] ring)
         {
-            OffsetCurveBuilder curveBuilder = new OffsetCurveBuilder(new PrecisionModel(PrecisionModelType.Floating));
-            IList list = curveBuilder.GetRingCurve(ring, PositionType.Left, distance);
-            LineString newRing = new LineString((IList<Coordinate>)list[0]);
+            OffsetCurveBuilder curveBuilder = new OffsetCurveBuilder(new PrecisionModel(PrecisionModels.Floating), new BufferParameters());
+            Coordinate[] coords = curveBuilder.GetRingCurve(ring, Positions.Left, distance);
+            LineString newRing = new LineString(coords);
 
             IList<ILineString> rings = TestRing(newRing);
 
@@ -127,12 +153,12 @@ namespace FarmingGPSLib.FarmingModes
             return GetHeadLandCoordinates(distance, _fieldPolygon.Shell.Coordinates);
         }
 
-        protected IList<ILineString> GetHeadLandCoordinates(double distance, DotSpatial.Topology.Angle[] angleConstraintsLeft, DotSpatial.Topology.Angle[] angleConstraintRight)
+        protected IList<ILineString> GetHeadLandCoordinates(double distance, DotSpatial.NTSExtension.Angle[] angleConstraintsLeft, DotSpatial.NTSExtension.Angle[] angleConstraintRight)
         {
             return GetHeadLandCoordinates(distance, _fieldPolygon.Shell.Coordinates, angleConstraintsLeft, angleConstraintRight);
         }
 
-        protected IList<ILineString> GetHeadLandCoordinates(double distance, IList<Coordinate> ring, DotSpatial.Topology.Angle[] angleConstraintsLeft, DotSpatial.Topology.Angle[] angleConstraintRight)
+        protected IList<ILineString> GetHeadLandCoordinates(double distance, IList<Coordinate> ring, DotSpatial.NTSExtension.Angle[] angleConstraintsLeft, DotSpatial.NTSExtension.Angle[] angleConstraintRight)
         {
             var newCoords = new List<Coordinate>();
             var lines = HelperClassLines.CreateLines(ring);
@@ -142,9 +168,9 @@ namespace FarmingGPSLib.FarmingModes
                 bool offSegment = false;
                 for (int i = 0; i < angleConstraintsLeft.Length; i++)
                 {
-                    if (HelperClassAngles.AngleBetween(new DotSpatial.Topology.Angle(line.Angle), angleConstraintsLeft[i], angleConstraintRight[i]))
+                    if (HelperClassAngles.AngleBetween(new DotSpatial.NTSExtension.Angle(line.Angle), angleConstraintsLeft[i], angleConstraintRight[i]))
                     {
-                        var newLine = HelperClassLines.ComputeOffsetSegment(line, PositionType.Left, distance);
+                        var newLine = HelperClassLines.ComputeOffsetSegment(line, Positions.Left, distance);
                         newCoords.Add(newLine.P0);
                         newCoords.Add(newLine.P1);
                         offSegment = true;
@@ -163,7 +189,7 @@ namespace FarmingGPSLib.FarmingModes
                 newCoords.Add(newCoords[0]);
 
             
-            return TestRing(new LineString(newCoords));
+            return TestRing(new LineString(newCoords.ToArray()));
         }
 
         protected IList<LineString> GetHeadlandLines(double distance)
@@ -174,27 +200,27 @@ namespace FarmingGPSLib.FarmingModes
             foreach (ILineString ring in newRing)
             {
                 IList<LineSegment> lineSegments = HelperClassLines.CreateLines(ring.Coordinates);
-                IList<Coordinate> coordinates = new List<Coordinate>();
+                List<Coordinate> coordinates = new List<Coordinate>();
                 foreach(LineSegment segment in lineSegments)
                 {
                     coordinates.Add(segment.P0);
                     if (segment.Length < 10.0)
                         continue;
                     coordinates.Add(segment.P1);
-                    lines.Add(new LineString(coordinates.CloneList()));
+                    lines.Add(new LineString(coordinates.ToArray()));
                     coordinates.Clear();
                 }
                 if(coordinates.Count > 0)
                 {
                     coordinates.Add(lineSegments[lineSegments.Count - 1].P1);
-                    lines.Add(new LineString(coordinates.CloneList()));
+                    lines.Add(new LineString(coordinates.ToArray()));
                 }
             }
             
             return lines;
         }
 
-        protected IList<LineString> GetHeadlandLines(double distance, DotSpatial.Topology.Angle[] angleConstraintsLeft, DotSpatial.Topology.Angle[] angleConstraintRight)
+        protected IList<LineString> GetHeadlandLines(double distance, DotSpatial.NTSExtension.Angle[] angleConstraintsLeft, DotSpatial.NTSExtension.Angle[] angleConstraintRight)
         {
             IList<ILineString> newRing = GetHeadLandCoordinates(distance, angleConstraintsLeft, angleConstraintRight);
             List<LineString> lines = new List<LineString>();
@@ -202,12 +228,12 @@ namespace FarmingGPSLib.FarmingModes
             foreach (ILineString ring in newRing)
             {
                 IList<LineSegment> lineSegments = HelperClassLines.CreateLines(ring.Coordinates);
-                IList<Coordinate> coordinates = new List<Coordinate>();
+                List<Coordinate> coordinates = new List<Coordinate>();
                 foreach (LineSegment segment in lineSegments)
                 {
                     bool angleOK = false;
                     for (int i = 0; i < angleConstraintsLeft.Length && !angleOK; i++)
-                        angleOK = HelperClassAngles.AngleBetween(new DotSpatial.Topology.Angle(segment.Angle), angleConstraintsLeft[i], angleConstraintRight[i]);
+                        angleOK = HelperClassAngles.AngleBetween(new DotSpatial.NTSExtension.Angle(segment.Angle), angleConstraintsLeft[i], angleConstraintRight[i]);
 
                     if (angleOK)
                     {
@@ -215,20 +241,20 @@ namespace FarmingGPSLib.FarmingModes
                         if (segment.Length < 10.0)
                             continue;
                         coordinates.Add(segment.P1);
-                        lines.Add(new LineString(coordinates.CloneList()));
+                        lines.Add(new LineString(coordinates.ToArray()));
                         coordinates.Clear();
                     }
                     else if(coordinates.Count > 0)
                     {
                         coordinates.Add(segment.P0);
-                        lines.Add(new LineString(coordinates.CloneList()));
+                        lines.Add(new LineString(coordinates.ToArray()));
                         coordinates.Clear();
                     }
                 }
                 if (coordinates.Count > 0)
                 {
                     coordinates.Add(lineSegments[lineSegments.Count - 1].P1);
-                    lines.Add(new LineString(coordinates.CloneList()));
+                    lines.Add(new LineString(coordinates.ToArray()));
                 }
             }
 
@@ -238,7 +264,7 @@ namespace FarmingGPSLib.FarmingModes
         protected IList<ILineString> TestRing(LineString ring)
         {
             List<ILineString> rings = new List<ILineString>();
-            if (ring.IsSimple && CgAlgorithms.IsCounterClockwise(ring.Coordinates))
+            if (ring.IsSimple && CGAlgorithms.IsCCW(ring.Coordinates))
                 rings.Add(ring);
             else
             {
@@ -264,16 +290,16 @@ namespace FarmingGPSLib.FarmingModes
                             for (int l = first; l < second; l++)
                                 ring1.Add(ring.Coordinates[l]);
                             ring1.Add(intersection);
-                            rings.AddRange(TestRing(new LineString(ring1)));
+                            rings.AddRange(TestRing(new LineString(ring1.ToArray())));
 
-                            for (int l = 0; l < ring.Coordinates.Count; l++)
+                            for (int l = 0; l < ring.Coordinates.Length; l++)
                             {
                                 if (l < first || l >= second)
                                     ring2.Add(ring.Coordinates[l]);
                                 else if (l == first)
                                     ring2.Add(intersection);
                             }
-                            rings.AddRange(TestRing(new LineString(ring2)));
+                            rings.AddRange(TestRing(new LineString(ring2.ToArray())));
 
                             return rings;
                         }
@@ -343,7 +369,7 @@ namespace FarmingGPSLib.FarmingModes
             return closestLine;
         }
 
-        public virtual void CreateTrackingLines(Coordinate aCoord, DotSpatial.Topology.Angle direction)
+        public virtual void CreateTrackingLines(Coordinate aCoord, DotSpatial.NTSExtension.Angle direction)
         {
             _hasChanged = true;
         }
@@ -358,12 +384,12 @@ namespace FarmingGPSLib.FarmingModes
             _hasChanged = true;
         }
 
-        public virtual void CreateTrackingLines(TrackingLine trackingLine, DotSpatial.Topology.Angle directionFromLine)
+        public virtual void CreateTrackingLines(TrackingLine trackingLine, DotSpatial.NTSExtension.Angle directionFromLine)
         {
             _hasChanged = true;
         }
 
-        public virtual void CreateTrackingLines(TrackingLine trackingLine, DotSpatial.Topology.Angle directionFromLine, double offset)
+        public virtual void CreateTrackingLines(TrackingLine trackingLine, DotSpatial.NTSExtension.Angle directionFromLine, double offset)
         {
             _hasChanged = true;
         }
@@ -385,10 +411,10 @@ namespace FarmingGPSLib.FarmingModes
             {
                 List<SimpleLine> trackingLines = new List<SimpleLine>();
                 foreach (TrackingLine trackingLine in _trackingLines)
-                    trackingLines.Add(new SimpleLine(new List<Coordinate>(trackingLine.Line.Coordinates)));
+                    trackingLines.Add(new SimpleLine(trackingLine.Line.Coordinates));
                 List<SimpleLine> trackingLinesHeadland = new List<SimpleLine>();
                 foreach (TrackingLine trackingLineHeadland in _trackingLinesHeadland)
-                    trackingLinesHeadland.Add(new SimpleLine(new List<Coordinate>(trackingLineHeadland.Line.Coordinates)));
+                    trackingLinesHeadland.Add(new SimpleLine(trackingLineHeadland.Line.Coordinates));
                 return new FarmingModeState(trackingLines, trackingLinesHeadland, _trackingLineBackwards);
             }
         }
@@ -407,9 +433,9 @@ namespace FarmingGPSLib.FarmingModes
         {
             FarmingModeState farmingModeState = (FarmingModeState)restoredState;
             foreach (SimpleLine line in farmingModeState.TrackingLines)
-                _trackingLines.Add(new TrackingLine(new LineString(line.Line), false));
+                _trackingLines.Add(new TrackingLine(new LineString(line.LineCoordinateArray), false));
             foreach (SimpleLine line in farmingModeState.TrackingLinesHeadLand)
-                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.Line), true));
+                _trackingLinesHeadland.Add(new TrackingLine(new LineString(line.LineCoordinateArray), true));
             _trackingLineBackwards = farmingModeState.TrackingLineBackwards;
         }
 

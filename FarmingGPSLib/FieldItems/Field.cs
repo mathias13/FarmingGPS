@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using DotSpatial.Positioning;
 using DotSpatial.Projections;
-using DotSpatial.Positioning;
-using DotSpatial.Topology;
-using DotSpatial.Topology.Algorithm;
-
+using System;
+using System.Collections.Generic;
 
 namespace FarmingGPSLib.FieldItems
 {

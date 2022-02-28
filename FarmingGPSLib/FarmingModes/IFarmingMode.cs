@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using DotSpatial.Topology;
+using GeoAPI.Geometries;
+using DotSpatial.NTSExtension;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.StateRecovery;
 

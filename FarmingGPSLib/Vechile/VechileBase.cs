@@ -1,9 +1,8 @@
-﻿using System;
-using DotSpatial.Positioning;
-using DotSpatial.Topology;
-using GpsUtilities.Reciever;
+﻿using DotSpatial.Positioning;
+using GeoAPI.Geometries;
 using GpsUtilities.HelperClasses;
-using DotSpatial.Topology.Utilities;
+using GpsUtilities.Reciever;
+using System;
 
 namespace FarmingGPSLib.Vechile
 {

@@ -1,25 +1,27 @@
 ﻿using DotSpatial.Positioning;
-using DotSpatial.Topology;
 using FarmingGPS.Camera;
 using FarmingGPS.Dialogs;
 using FarmingGPS.Settings;
-using FarmingGPSLib.Settings;
-using FarmingGPSLib.Settings.Database;
-using FarmingGPSLib.Settings.NTRIP;
-using FarmingGPSLib.Settings.Receiver;
 using FarmingGPS.Usercontrols;
 using FarmingGPS.Usercontrols.Equipments;
+using FarmingGPS.Usercontrols.Events;
 using FarmingGPS.Visualization;
 using FarmingGPSLib.Equipment;
 using FarmingGPSLib.Equipment.BogBalle;
 using FarmingGPSLib.Equipment.Vaderstad;
 using FarmingGPSLib.FarmingModes.Tools;
 using FarmingGPSLib.FieldItems;
+using FarmingGPSLib.Settings;
+using FarmingGPSLib.Settings.Database;
+using FarmingGPSLib.Settings.NTRIP;
+using FarmingGPSLib.Settings.Receiver;
 using FarmingGPSLib.StateRecovery;
 using FarmingGPSLib.Vechile;
+using GeoAPI.Geometries;
 using GpsUtilities.Filter;
 using GpsUtilities.Reciever;
 using log4net;
+using NetTopologySuite.Geometries;
 using NTRIP;
 using NTRIP.Settings;
 using SwiftBinaryProtocol;
@@ -29,13 +31,12 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
-using FarmingGPS.Usercontrols.Events;
-using System.Threading;
 
 namespace FarmingGPS
 {
@@ -103,8 +104,6 @@ namespace FarmingGPS
         
         private Database.DatabaseHandler _database;
         
-        private string _cameraIp = String.Empty;
-
         private ClientService _ntripClient;
 
         private SBPReceiverSender _sbpReceiverSender;
@@ -294,6 +293,8 @@ namespace FarmingGPS
                             _visualization.SetField(_field);
                             _stateRecovery.AddStateObject(_field);
                             _visualization.AddFieldTracker(_fieldTracker);
+                            if(!_stateRecovery.ObjectsRecovered.ContainsKey(typeof(FieldTracker)))
+                                _stateRecovery.AddStateObject(_fieldTracker);
                         }
                         else if (recoveredObject.Key == typeof(FieldTracker))
                         {
@@ -305,6 +306,7 @@ namespace FarmingGPS
                         {
                             _vechile = Activator.CreateInstance(recoveredObject.Key) as IVechile;
                             _vechile.RestoreObject(recoveredObject.Value);
+                            _stateRecovery.AddStateObject(_vechile);
                         }
                         else if (recoveredObject.Key.IsSubclassOf(typeof(EquipmentBase)))
                         {
@@ -341,21 +343,25 @@ namespace FarmingGPS
                         if (_equipment is IEquipmentControl)
                             _fieldRateTracker.RegisterEquipmentControl(_equipment as IEquipmentControl);
 #if SIM
+
                     if (_receiver != null)
                         _receiver.Dispose();
-                    _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0),
-                        new Longitude(13.6234063), new Latitude(58.531409)),
-                        //new Longitude(13.855149568), new Latitude(58.5125995962)),
-                        false,
-                        _vechile.OffsetDirection,
-                        _vechile.OffsetDistance,
-                        _vechile.WheelAxesDistance);
-                    _receiver.BearingUpdate += _receiver_BearingUpdate;
-                    _receiver.PositionUpdate += _receiver_PositionUpdate;
-                    _receiver.CoordinateUpdate += _receiver_CoordinateUpdate;
-                    _receiver.SpeedUpdate += _receiver_SpeedUpdate;
-                    _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
-                    _receiver.ProjectionInfo = _field.Projection;
+
+                    if (_vechile != null)
+                    {
+                        _receiver = new KeyboardSimulator(this, new Position3D(Distance.FromMeters(0.0),
+                            new Longitude(13.855149568), new Latitude(58.5125995962)),
+                            false,
+                            _vechile.OffsetDirection,
+                            _vechile.OffsetDistance,
+                            _vechile.WheelAxesDistance);
+                        _receiver.BearingUpdate += _receiver_BearingUpdate;
+                        _receiver.PositionUpdate += _receiver_PositionUpdate;
+                        _receiver.CoordinateUpdate += _receiver_CoordinateUpdate;
+                        _receiver.SpeedUpdate += _receiver_SpeedUpdate;
+                        _receiver.FixQualityUpdate += _receiver_FixQualityUpdate;
+                        _receiver.ProjectionInfo = _field.Projection;
+                    }
 #endif
                 }
                 else
@@ -986,7 +992,7 @@ namespace FarmingGPS
             if (valueChangeDialog.ShowDialog().Value)
                 heading = valueChangeDialog.Value;
 
-            DotSpatial.Topology.Angle headingFromLine = new DotSpatial.Topology.Angle
+            DotSpatial.NTSExtension.Angle headingFromLine = new DotSpatial.NTSExtension.Angle
             {
                 DegreesPos = heading
             };

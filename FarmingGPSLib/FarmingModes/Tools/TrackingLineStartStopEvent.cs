@@ -1,6 +1,7 @@
-﻿using DotSpatial.Topology;
-using DotSpatial.Topology.Algorithm;
+﻿using DotSpatial.NTSExtension;
+using GeoAPI.Geometries;
 using GpsUtilities.HelperClasses;
+using NetTopologySuite.Geometries;
 using System;
 
 namespace FarmingGPSLib.FarmingModes.Tools
@@ -11,7 +12,6 @@ namespace FarmingGPSLib.FarmingModes.Tools
         {
             public Angle Left;
             public Angle Right;
-            //public LineSegment LineToCross;
             public IGeometry LineToCross;
             public double LastDistance;
             public bool ToBeTriggered;
@@ -63,7 +63,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
 
             _events[0].Left = new Angle(MainLine.Angle + (Math.PI / 3.0));
             _events[0].Right = new Angle(MainLine.Angle - (Math.PI / 3.0));
-            if (startPoint.FeatureType == FeatureType.Point)
+            if (startPoint.GeometryType == "Point")
             {
                 var coord = HelperClassCoordinate.ComputePoint(startPoint.Coordinates[0], MainLine.Angle, startEventDistance);
                 _events[0].LineToCross = new LineString(new Coordinate[2] { HelperClassCoordinate.ComputePoint(coord, angleLeft.Radians, 2.5), HelperClassCoordinate.ComputePoint(coord, angleRight.Radians, 2.5) });
@@ -76,7 +76,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
 
             _events[1].Left = _events[0].Left.Copy();
             _events[1].Right = _events[0].Right.Copy();
-            if (endPoint.FeatureType == FeatureType.Point)
+            if (endPoint.GeometryType == "Point")
             {
                 var coord = HelperClassCoordinate.ComputePoint(endPoint.Coordinates[0], MainLine.Angle, stopEventDistance * -1.0);
                 _events[1].LineToCross = new LineString(new Coordinate[2] { HelperClassCoordinate.ComputePoint(coord, angleLeft.Radians, 2.5), HelperClassCoordinate.ComputePoint(coord, angleRight.Radians, 2.5) });
@@ -88,7 +88,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
 
             _events[2].Left = new Angle(MainLine.Angle - (Math.PI / 1.5));
             _events[2].Right = new Angle(MainLine.Angle + (Math.PI / 1.5));
-            if (endPoint.FeatureType == FeatureType.Point)
+            if (endPoint.GeometryType == "Point")
             {
                 var coord = HelperClassCoordinate.ComputePoint(startPoint.Coordinates[0], MainLine.Angle, stopEventDistance);
                 _events[2].LineToCross = new LineString(new Coordinate[2] { HelperClassCoordinate.ComputePoint(coord, angleLeft.Radians, 2.5), HelperClassCoordinate.ComputePoint(coord, angleRight.Radians, 2.5) });
@@ -101,7 +101,7 @@ namespace FarmingGPSLib.FarmingModes.Tools
 
             _events[3].Left = _events[2].Left.Copy();
             _events[3].Right = _events[2].Right.Copy();
-            if (endPoint.FeatureType == FeatureType.Point)
+            if (endPoint.GeometryType == "Point")
             {
                 var coord = HelperClassCoordinate.ComputePoint(endPoint.Coordinates[0], MainLine.Angle, startEventDistance * -1.0);
                 _events[3].LineToCross = new LineString(new Coordinate[2] { HelperClassCoordinate.ComputePoint(coord, angleLeft.Radians, 2.5), HelperClassCoordinate.ComputePoint(coord, angleRight.Radians, 2.5) });

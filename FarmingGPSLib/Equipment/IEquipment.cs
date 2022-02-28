@@ -1,5 +1,6 @@
 ﻿using System;
 using DotSpatial.Positioning;
+using GeoAPI.Geometries;
 using FarmingGPSLib.StateRecovery;
 
 namespace FarmingGPSLib.Equipment
@@ -68,10 +69,10 @@ namespace FarmingGPSLib.Equipment
             get;
         }
 
-        DotSpatial.Topology.Coordinate GetLeftTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel);
+        Coordinate GetLeftTip(Coordinate attachedPosition, Azimuth directionOfTravel);
 
-        DotSpatial.Topology.Coordinate GetRightTip(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel);
+        Coordinate GetRightTip(Coordinate attachedPosition, Azimuth directionOfTravel);
 
-        DotSpatial.Topology.Coordinate GetCenter(DotSpatial.Topology.Coordinate attachedPosition, Azimuth directionOfTravel);
+        Coordinate GetCenter(Coordinate attachedPosition, Azimuth directionOfTravel);
     }
 }
