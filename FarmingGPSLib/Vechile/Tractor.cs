@@ -69,7 +69,7 @@ namespace FarmingGPSLib.Vechile
                 else
                 {
                     if (_startOfReverse.Distance(receiver.CurrentCoordinate) > 20.0 || heading.IsBetween(reverseHeading.Subtract(45.0).Normalize(), reverseHeading.Add(45.0).Normalize()) || receiver.CurrentSpeed.ToKilometersPerHour().Value > 4.0)
-                        _startOfReverse = Coordinate.Empty;
+                        _startOfReverse = new Coordinate(double.NaN, double.NaN);
                     else
                         heading = heading.Mirror().Normalize();
                 }

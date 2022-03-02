@@ -22,6 +22,7 @@ using GpsUtilities.Filter;
 using GpsUtilities.Reciever;
 using log4net;
 using NetTopologySuite.Geometries;
+using DotSpatial.NTSExtension;
 using NTRIP;
 using NTRIP.Settings;
 using SwiftBinaryProtocol;
@@ -807,7 +808,7 @@ namespace FarmingGPS
             _sbpReceiverSender.ReadExceptionEvent += _sbpReceiverSender_ReadExceptionEvent;
             if (_receiver != null)
                 _receiver.Dispose();
-            _receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(1000),new DotSpatial.Topology.Vector(0.0,0.0,1.0), new DotSpatial.Topology.Vector(0.0,1.0,0.0), new DotSpatial.Topology.Vector(-1.0,0.0,0.0))
+            _receiver = new Piksi(_sbpReceiverSender, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(1000),new DotSpatial.NTSExtension.Vector(0.0,0.0,1.0), new DotSpatial.NTSExtension.Vector(0.0,1.0,0.0), new DotSpatial.NTSExtension.Vector(-1.0,0.0,0.0))
             {
                 MinimumSpeedLockHeading = Speed.FromKilometersPerHour(1.0)
             };

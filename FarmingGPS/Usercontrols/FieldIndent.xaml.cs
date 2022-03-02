@@ -1,27 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using DotSpatial.Positioning;
+using FarmingGPS.Usercontrols.GoogleMaps;
+using FarmingGPSLib.FieldItems;
+using FarmingGPSLib.Settings;
+using GeoAPI.Geometries;
 using GMap.NET;
 using GMap.NET.MapProviders;
 using GMap.NET.WindowsPresentation;
-using FarmingGPSLib.FieldItems;
-using FarmingGPSLib.Settings;
-using DotSpatial.Positioning;
-using DotSpatial.Topology;
-using DotSpatial.Topology.Operation.Buffer;
-using FarmingGPS.Usercontrols.GoogleMaps;
 using GpsUtilities.HelperClasses;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.Operation.Buffer;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace FarmingGPS.Usercontrols
 {
@@ -168,8 +162,8 @@ namespace FarmingGPS.Usercontrols
                 var lastDistanceStartCoord = double.MaxValue;
                 var lastDistanceEndCoord = double.MaxValue;
 
-                var curveBuilder = new OffsetCurveBuilder(new PrecisionModel(PrecisionModelType.Floating));
-                var list = curveBuilder.GetRingCurve(_fieldChoosen.Polygon.Coordinates, DotSpatial.Topology.GeometriesGraph.PositionType.Left, NumericDistance.Value.Value);
+                var curveBuilder = new OffsetCurveBuilder(new PrecisionModel(PrecisionModels.Floating), new BufferParameters());
+                var list = curveBuilder.GetRingCurve(_fieldChoosen.Polygon.Coordinates, NetTopologySuite.GeometriesGraph.Positions.Left, NumericDistance.Value.Value);
 
                 var startIndexRing = 0;
                 var endIndexRing = 0;
@@ -203,11 +197,11 @@ namespace FarmingGPS.Usercontrols
                 }
                 newCoords.Add(ringCoords[endIndexRing]);
 
-                var startSegment = new DotSpatial.Topology.LineSegment(newCoords[1], newCoords[0]);
-                var endSegment = new DotSpatial.Topology.LineSegment(newCoords[newCoords.Count - 2], newCoords[newCoords.Count - 1]);
+                var startSegment = new NetTopologySuite.Geometries.LineSegment(newCoords[1], newCoords[0]);
+                var endSegment = new NetTopologySuite.Geometries.LineSegment(newCoords[newCoords.Count - 2], newCoords[newCoords.Count - 1]);
 
-                startSegment = new DotSpatial.Topology.LineSegment(HelperClassCoordinate.ComputePoint(startSegment.P1, startSegment.Angle, NumericDistance.Value.Value * 2.0), startSegment.P1);
-                endSegment = new DotSpatial.Topology.LineSegment(endSegment.P1, HelperClassCoordinate.ComputePoint(endSegment.P1, endSegment.Angle, NumericDistance.Value.Value * 2.0));
+                startSegment = new NetTopologySuite.Geometries.LineSegment(HelperClassCoordinate.ComputePoint(startSegment.P1, startSegment.Angle, NumericDistance.Value.Value * 2.0), startSegment.P1);
+                endSegment = new NetTopologySuite.Geometries.LineSegment(endSegment.P1, HelperClassCoordinate.ComputePoint(endSegment.P1, endSegment.Angle, NumericDistance.Value.Value * 2.0));
 
                 var newStartIndex = startIndex;
                 var newEndIndex = endIndex;
@@ -215,26 +209,26 @@ namespace FarmingGPS.Usercontrols
                 Coordinate endIntersection = null;
                 for (int i = endIndex; i != startIndex; i++)
                 {
-                    if (i > _fieldChoosen.Polygon.Shell.Coordinates.Count - 2)
+                    if (i > _fieldChoosen.Polygon.Shell.Coordinates.Length - 2)
                     {
                         i = -1;
                         continue;
                     }
                     
                     var p1Index = i + 1;
-                    if (p1Index > _fieldChoosen.Polygon.Shell.Coordinates.Count - 2)
+                    if (p1Index > _fieldChoosen.Polygon.Shell.Coordinates.Length - 2)
                         p1Index = 0;
 
                     if (startIntersection == null)
                     {
-                        startIntersection = startSegment.Intersection(new DotSpatial.Topology.LineSegment(_fieldChoosen.Polygon.Coordinates[i], _fieldChoosen.Polygon.Coordinates[p1Index]));
+                        startIntersection = startSegment.Intersection(new NetTopologySuite.Geometries.LineSegment(_fieldChoosen.Polygon.Coordinates[i], _fieldChoosen.Polygon.Coordinates[p1Index]));
                         if (startIntersection != null)
                             newStartIndex = i;
                     }
 
                     if (endIntersection == null)
                     {
-                        endIntersection = endSegment.Intersection(new DotSpatial.Topology.LineSegment(_fieldChoosen.Polygon.Coordinates[i], _fieldChoosen.Polygon.Coordinates[p1Index]));
+                        endIntersection = endSegment.Intersection(new NetTopologySuite.Geometries.LineSegment(_fieldChoosen.Polygon.Coordinates[i], _fieldChoosen.Polygon.Coordinates[p1Index]));
                         if (endIntersection != null)
                             newEndIndex = p1Index;
                     }
@@ -252,7 +246,7 @@ namespace FarmingGPS.Usercontrols
 
                 for (int i = newEndIndex; i != newStartIndex; i++)
                 {
-                    if (i > _fieldChoosen.Polygon.Shell.Coordinates.Count - 1)
+                    if (i > _fieldChoosen.Polygon.Shell.Coordinates.Length - 1)
                     {
                         i = -1;
                         continue;
@@ -266,10 +260,10 @@ namespace FarmingGPS.Usercontrols
                 if(newCoords[0] != newCoords[newCoords.Count - 1])
                     newCoords.Add(newCoords[0]);
 
-                var ring = new LinearRing(newCoords);
+                var ring = new LinearRing(newCoords.ToArray());
                 ring.Reverse();
 
-                var newPolygon = new DotSpatial.Topology.Polygon(ring.Coordinates);
+                var newPolygon = new NetTopologySuite.Geometries.Polygon(new LinearRing(ring.Coordinates));
 
                 List<double> xy = new List<double>();
                 List<double> z = new List<double>();
