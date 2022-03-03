@@ -222,6 +222,7 @@ namespace FarmingGPSLib.FarmingModes
 
             extendedLine = HelperClassLines.ComputeOffsetSegment(baseLineExtended, Positions.Right, _equipment.WidthOverlap.ToMeters().Value);
             lineIteriator = 2;
+            extendedLinestring = new LineString(new Coordinate[] { extendedLine.P0, extendedLine.P1 });
             while (envelopeLinearRing.Intersects(extendedLinestring))
             {
                 linesExtended.Add(extendedLine);
