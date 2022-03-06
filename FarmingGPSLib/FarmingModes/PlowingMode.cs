@@ -25,12 +25,15 @@ namespace FarmingGPSLib.FarmingModes
 
             public double StopDistance;
 
-            public PlowingModeState(List<SimpleLine> trackingLines, List<SimpleLine> trackingLinesHeadLand, double startDistance, double stopDistance)
+            public bool TrackingLineBackwards;
+
+            public PlowingModeState(List<SimpleLine> trackingLines, List<SimpleLine> trackingLinesHeadLand, double startDistance, double stopDistance, bool trackingLineBackwards)
             {
                 TrackingLines = trackingLines;
                 TrackingLinesHeadLand = trackingLinesHeadLand;
                 StartDistance = startDistance;
                 StopDistance = stopDistance;
+                TrackingLineBackwards = trackingLineBackwards;
             }
         }
 
@@ -332,7 +335,7 @@ namespace FarmingGPSLib.FarmingModes
                 List<SimpleLine> trackingLinesHeadland = new List<SimpleLine>();
                 foreach (TrackingLine trackingLineHeadland in _trackingLinesHeadland)
                     trackingLinesHeadland.Add(new SimpleLine(trackingLineHeadland.Line.Coordinates));
-                return new PlowingModeState(trackingLines, trackingLinesHeadland, _startDistance, _stopDistance);
+                return new PlowingModeState(trackingLines, trackingLinesHeadland, _startDistance, _stopDistance, _trackingLineBackwards);
             }
         }
 
@@ -346,6 +349,7 @@ namespace FarmingGPSLib.FarmingModes
             PlowingModeState plowingModeState = (PlowingModeState)restoredState;
             _startDistance = plowingModeState.StartDistance;
             _stopDistance = plowingModeState.StopDistance;
+            _trackingLineBackwards = plowingModeState.TrackingLineBackwards;
             foreach (SimpleLine line in plowingModeState.TrackingLines)
                 _trackingLines.Add(new TrackingLineStartStopEvent(new LineString(line.LineCoordinateArray), _startDistance, _stopDistance));
             foreach (SimpleLine line in plowingModeState.TrackingLinesHeadLand)
