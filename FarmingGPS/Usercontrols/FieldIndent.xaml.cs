@@ -163,11 +163,10 @@ namespace FarmingGPS.Usercontrols
                 var lastDistanceEndCoord = double.MaxValue;
 
                 var curveBuilder = new OffsetCurveBuilder(new PrecisionModel(PrecisionModels.Floating), new BufferParameters());
-                var list = curveBuilder.GetRingCurve(_fieldChoosen.Polygon.Coordinates, NetTopologySuite.GeometriesGraph.Positions.Left, NumericDistance.Value.Value);
+                var ringCoords = curveBuilder.GetRingCurve(_fieldChoosen.Polygon.Coordinates, NetTopologySuite.GeometriesGraph.Positions.Left, NumericDistance.Value.Value);
 
                 var startIndexRing = 0;
                 var endIndexRing = 0;
-                var ringCoords = ((IEnumerable<Coordinate>)list[0]).ToArray();
                 for (int i = 1; i < ringCoords.Length; i++)
                 {
                     if(ringCoords[i].Distance(endCoord) < lastDistanceEndCoord)
