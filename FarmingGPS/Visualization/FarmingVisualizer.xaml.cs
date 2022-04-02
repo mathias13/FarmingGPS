@@ -440,7 +440,7 @@ namespace FarmingGPS.Visualization
                     PolygonData polygonData = GetPolygonData(e.Polygon.Shell.Coordinates, FIELD_TRACK_Z_INDEX);
                     if (polygonData.PolygonSum != _trackSums[e.ID])
                     {
-                        Dispatcher.Invoke(new Action<PolygonData, int>(UpdatePolygon), System.Windows.Threading.DispatcherPriority.Render, polygonData, e.ID);
+                        Dispatcher.Invoke(new Action<PolygonData, int>(UpdatePolygon), System.Windows.Threading.DispatcherPriority.Normal, polygonData, e.ID);
                         _trackSums[e.ID] = polygonData.PolygonSum;
                     }
 
@@ -455,7 +455,7 @@ namespace FarmingGPS.Visualization
                         else
                         {
                             _trackSumsHoles[e.ID].Add(holePolygonData.PolygonSum);
-                            Dispatcher.Invoke(new Action<PolygonData, int>(AddPolygonHole), System.Windows.Threading.DispatcherPriority.Render, holePolygonData, e.ID);
+                            Dispatcher.Invoke(new Action<PolygonData, int>(AddPolygonHole), System.Windows.Threading.DispatcherPriority.Normal, holePolygonData, e.ID);
                             redrawHoles = true;
                         }
                     }
@@ -463,13 +463,13 @@ namespace FarmingGPS.Visualization
                     foreach (ulong holePolygonSum in holePolygonSums)
                     {
                         int holeIndex = _trackSumsHoles[e.ID].IndexOf(holePolygonSum);
-                        Dispatcher.Invoke(new Action<int, int>(RemovePolygonHole), System.Windows.Threading.DispatcherPriority.Render, e.ID, holeIndex);
+                        Dispatcher.Invoke(new Action<int, int>(RemovePolygonHole), System.Windows.Threading.DispatcherPriority.Normal, e.ID, holeIndex);
                         _trackSumsHoles[e.ID].RemoveAt(holeIndex);
                         redrawHoles = true;
                     }
 
                     if (redrawHoles)
-                        Dispatcher.Invoke(new Action(RedrawHoles), System.Windows.Threading.DispatcherPriority.Render);
+                        Dispatcher.Invoke(new Action(RedrawHoles), System.Windows.Threading.DispatcherPriority.Normal);
                 }
                 else
                     AddCompletePolygon(e);
@@ -503,7 +503,7 @@ namespace FarmingGPS.Visualization
             try
             {
                 PolygonData polygonData = GetPolygonData(e.Polygon.Shell.Coordinates, FIELD_TRACK_Z_INDEX);
-                Dispatcher.Invoke(new Action<PolygonData, int>(AddPolygon), System.Windows.Threading.DispatcherPriority.Render, polygonData, e.ID);
+                Dispatcher.Invoke(new Action<PolygonData, int>(AddPolygon), System.Windows.Threading.DispatcherPriority.Normal, polygonData, e.ID);
                 _trackSums.Add(e.ID, polygonData.PolygonSum);
                 _trackSumsHoles.Add(e.ID, new List<ulong>());
 
@@ -511,13 +511,13 @@ namespace FarmingGPS.Visualization
                 foreach (ILinearRing hole in e.Polygon.Holes)
                 {
                     PolygonData holePolygonData = GetPolygonData(hole.Coordinates, FIELD_TRACK_HOLES_Z_INDEX);
-                    Dispatcher.Invoke(new Action<PolygonData, int>(AddPolygonHole), System.Windows.Threading.DispatcherPriority.Render, holePolygonData, e.ID);
+                    Dispatcher.Invoke(new Action<PolygonData, int>(AddPolygonHole), System.Windows.Threading.DispatcherPriority.Normal, holePolygonData, e.ID);
                     _trackSumsHoles[e.ID].Add(holePolygonData.PolygonSum);
                     redrawHoles = true;
                 }
 
                 if (redrawHoles)
-                    Dispatcher.Invoke(new Action(RedrawHoles), System.Windows.Threading.DispatcherPriority.Render);
+                    Dispatcher.Invoke(new Action(RedrawHoles), System.Windows.Threading.DispatcherPriority.Normal);
 
             }
             catch(Exception e1)
@@ -698,17 +698,17 @@ namespace FarmingGPS.Visualization
             if (_trackMesh.ContainsKey(e.ID))
             {
                 _trackSums.Remove(e.ID);
-                Dispatcher.Invoke(new Action<int>(RemovePolygon), System.Windows.Threading.DispatcherPriority.Render, e.ID);
+                Dispatcher.Invoke(new Action<int>(RemovePolygon), System.Windows.Threading.DispatcherPriority.Normal, e.ID);
             }
 
             if (_trackMeshHoles.ContainsKey(e.ID))
             {
                 bool redrawHoles = _trackSumsHoles[e.ID].Count > 0;
-                Dispatcher.Invoke(new Action<int>(RemovePolygonHoles), System.Windows.Threading.DispatcherPriority.Render, e.ID);
+                Dispatcher.Invoke(new Action<int>(RemovePolygonHoles), System.Windows.Threading.DispatcherPriority.Normal, e.ID);
                 _trackSumsHoles.Remove(e.ID);
 
                 if (redrawHoles)
-                    Dispatcher.Invoke(new Action(RedrawHoles), System.Windows.Threading.DispatcherPriority.Render);
+                    Dispatcher.Invoke(new Action(RedrawHoles), System.Windows.Threading.DispatcherPriority.Normal);
             }
             
         }
