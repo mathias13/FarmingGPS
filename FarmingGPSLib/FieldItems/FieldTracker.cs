@@ -198,19 +198,9 @@ namespace FarmingGPSLib.FieldItems
                             }
                             _polygons[_currentPolygonIndex] = new Polygon(_polygons[_currentPolygonIndex].Shell, holes.ToArray());
 
-                            if (_polygons[_currentPolygonIndex].Coordinates.Length > _polygonSimplifierCount[_currentPolygonIndex])
+                            foreach (int i in _polygons.Keys)
                             {
-                                IGeometry geometry = TopologyPreservingSimplifier.Simplify(_polygons[_currentPolygonIndex], 0.04);
-                                if (geometry is Polygon)
-                                {
-                                    _polygons[_currentPolygonIndex] = geometry as Polygon;
-                                    _polygonSimplifierCount[_currentPolygonIndex] = geometry.Coordinates.Length + SIMPLIFIER_COUNT_LIMIT;
-                                }
-                            }
-
-                            for (int i = 0; i < _polygons.Count; i++)
-                            {
-                                if (i == _currentPolygonIndex || !_polygons.ContainsKey(i))
+                                if (i == _currentPolygonIndex)
                                     continue;
                                 if (_polygons[_currentPolygonIndex].Overlaps(_polygons[i]))
                                 {
