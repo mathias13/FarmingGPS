@@ -1,27 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using DotSpatial.Positioning;
+using FarmingGPSLib.StateRecovery;
+using System;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using DotSpatial.Positioning;
 
 namespace FarmingGPS.Visualization
 {
     /// <summary>
     /// Interaction logic for LightBar.xaml
     /// </summary>
-    public partial class LightBar : UserControl
+    public partial class LightBar : UserControl, IStateObject
     {
+        [Serializable]
+        public struct LightBarState
+        {
+            public double Tolerance;
+        }
+
         public enum Direction
         {
             Left,
@@ -184,7 +180,10 @@ namespace FarmingGPS.Visualization
             set
             {
                 if (!value.IsEmpty && !value.IsInfinity && !value.IsInvalid)
+                {
                     _tolerance = value;
+                    HasChanged = true;
+                }
             }
         }
 
@@ -233,6 +232,37 @@ namespace FarmingGPS.Visualization
         protected static readonly DependencyProperty IsRight8Property = DependencyProperty.RegisterAttached("IsRight8", typeof(Boolean), typeof(LightBar));
 
         protected static readonly DependencyProperty IsRight9Property = DependencyProperty.RegisterAttached("IsRight9", typeof(Boolean), typeof(LightBar));
+
+        #endregion
+
+
+
+        #region IStateObject
+
+        public object StateObject
+        {
+            get
+            {
+                HasChanged = false;
+                return new LightBarState()
+                {
+                    Tolerance = Tolerance.ToMeters().Value
+                };
+            }
+        }
+
+        public bool HasChanged { get; private set; } = false;
+
+        public Type StateType
+        {
+            get { return typeof(LightBarState); }
+        }
+
+        public virtual void RestoreObject(object restoredState)
+        {
+            LightBarState lightBarState = (LightBarState)restoredState;
+            Tolerance = Distance.FromMeters(lightBarState.Tolerance);
+        }
 
         #endregion
     }

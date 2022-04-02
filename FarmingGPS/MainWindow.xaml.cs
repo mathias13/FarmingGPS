@@ -294,7 +294,7 @@ namespace FarmingGPS
                             _visualization.SetField(_field);
                             _stateRecovery.AddStateObject(_field);
                             _visualization.AddFieldTracker(_fieldTracker);
-                            if(!_stateRecovery.ObjectsRecovered.ContainsKey(typeof(FieldTracker)))
+                            if (!_stateRecovery.ObjectsRecovered.ContainsKey(typeof(FieldTracker)))
                                 _stateRecovery.AddStateObject(_fieldTracker);
                         }
                         else if (recoveredObject.Key == typeof(FieldTracker))
@@ -303,7 +303,7 @@ namespace FarmingGPS
                             _stateRecovery.AddStateObject(_fieldTracker);
                             _visualization.AddFieldTracker(_fieldTracker);
                         }
-                        else if(recoveredObject.Key.IsSubclassOf(typeof(VechileBase)))
+                        else if (recoveredObject.Key.IsSubclassOf(typeof(VechileBase)))
                         {
                             _vechile = Activator.CreateInstance(recoveredObject.Key) as IVechile;
                             _vechile.RestoreObject(recoveredObject.Value);
@@ -325,22 +325,24 @@ namespace FarmingGPS
                             _farmingMode.RestoreObject(recoveredObject.Value);
                             _farmingMode.FarmingEvent += FarmingEvent;
                         }
-                        else if(recoveredObject.Key == typeof(FieldRateTracker))
+                        else if (recoveredObject.Key == typeof(FieldRateTracker))
                         {
                             _fieldRateTracker = new FieldRateTracker();
                             BTN_RATE_AUTO.Visibility = Visibility.Visible;
                             _fieldRateTracker.RestoreObject(recoveredObject.Value);
                         }
+                        else if (recoveredObject.Key == typeof(LightBar))
+                            _lightBar.RestoreObject(recoveredObject.Value);
                     }
 
-                    if(_farmingMode != null)
+                    if (_farmingMode != null)
                     {
                         _visualization.AddLines(_farmingMode.TrackingLinesHeadland.ToArray());
                         _visualization.AddLines(_farmingMode.TrackingLines.ToArray());
 
                         CheckAllTrackingLines();
                     }
-                    if(_equipment != null && _fieldRateTracker != null)
+                    if (_equipment != null && _fieldRateTracker != null)
                         if (_equipment is IEquipmentControl)
                             _fieldRateTracker.RegisterEquipmentControl(_equipment as IEquipmentControl);
 #if SIM
@@ -368,6 +370,8 @@ namespace FarmingGPS
                 else
                     _stateRecovery.Clear();
             }
+            else
+                _stateRecovery.AddStateObject(_lightBar);
 
             _cameraImage.SizeChanged += _cameraImage_SizeChanged;
         }
@@ -442,7 +446,7 @@ namespace FarmingGPS
                         _trackingLineEvaluationTimeout = DateTime.Now.AddSeconds(3.0);
                     }
                     if (coordinates[coordinates.Length - 1].Reversing)
-                        _fieldTracker.StopTrack();
+                        _fieldTracker.StopTrack(new FieldTracker.TrackPoint(coordinates[coordinates.Length - 1].LeftTip, coordinates[coordinates.Length - 1].RightTip));
                     if (_fieldTracker.IsTracking && !_fieldTrackerActive)
                     {
                         if (coordinates.Length > 1)
@@ -482,7 +486,7 @@ namespace FarmingGPS
                             _database.AddRock(obstacle.Coordinate);
                     }
                 }
-                System.Threading.Thread.Sleep(250);
+                Thread.Sleep(1000);
             }
         }
 

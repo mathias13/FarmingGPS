@@ -60,7 +60,8 @@ namespace FarmingGPSLib.StateRecovery
                 foreach(var fileToUse in filesToUse)
                 {
                     FileInfo fileInfo = new FileInfo(fileToUse);
-                    Type restoredType = Type.GetType(fileInfo.Name.Remove(fileInfo.Name.Length - 4, 4));
+                    var assemblyName = fileInfo.Name.Remove(fileInfo.Name.Length - 4, 4).Split('_');
+                    Type restoredType = Type.GetType(String.Format("{0}, {1}", assemblyName[1], assemblyName[0]));
                     IStateObject stateObject = Activator.CreateInstance(restoredType) as IStateObject;
                     XmlSerializer serializer = new XmlSerializer(stateObject.StateType);
                     using (var reader = new StreamReader(_folderPath + fileInfo.Name))
@@ -149,7 +150,9 @@ namespace FarmingGPSLib.StateRecovery
             {
                 if (!stateObject.HasChanged)
                     continue;
-                string objectName = stateObject.GetType().FullName;
+                var assemblyQualifiedName = stateObject.GetType().AssemblyQualifiedName.Split(',');
+                string objectName = string.Format("{0}_{1}", assemblyQualifiedName[1].Trim(), assemblyQualifiedName[0].Trim());
+
                 TextWriter writer = null;
                 try
                 {
