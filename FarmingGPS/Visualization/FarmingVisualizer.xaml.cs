@@ -59,13 +59,13 @@ namespace FarmingGPS.Visualization
 
         private readonly double VIEW_TOP_FAR_PLANE = 35.0;
 
-        private readonly Vector3D VIEW_BEHIND_POSITION = new Vector3D(-30.0, 0.0, 14.0);
+        private readonly Vector3D VIEW_BEHIND_POSITION = new Vector3D(-20.0, 0.0, 8.0);
 
         private readonly Vector3D VIEW_BEHIND_ZOOM_VECTOR = new Vector3D(-3.0, 0.0, 1.4);
 
         private readonly Vector3D VIEW_BEHIND_LOOK_DIRECTION = new Vector3D(4.7, 0.0, -1.5);
 
-        private readonly double VIEW_BEHIND_NEAR_PLANE = 20.0;
+        private readonly double VIEW_BEHIND_NEAR_PLANE = 10.0;
 
         private readonly double VIEW_BEHIND_FAR_PLANE = 200.0;
 
@@ -77,11 +77,11 @@ namespace FarmingGPS.Visualization
 
         private readonly double VIEW_TRACKLINE_FAR_PLANE = 1200.0;
 
-        private const double VIEW_ZOOM_INCREMENT = 1;
+        private const double VIEW_ZOOM_INCREMENT = 1.2;
 
         private const double VIEW_ZOOM_MIN = 0.0;
 
-        private const double VIEW_ZOOM_MAX = 15.0;
+        private const double VIEW_ZOOM_MAX = 20.0;
 
         #endregion
 
