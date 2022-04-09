@@ -51,7 +51,7 @@ namespace FarmingGPSLib.Vechile
 
             if (receiver.MagnetometerBearing != Azimuth.Invalid)
             {
-                _reversing = !heading.IsBetween(receiver.MagnetometerBearing.Subtract(80).Normalize(), receiver.MagnetometerBearing.Add(80).Normalize());
+                _reversing = !heading.IsBetween(receiver.MagnetometerBearing.Subtract(120).Normalize(), receiver.MagnetometerBearing.Add(120).Normalize());
                 if(_reversing)
                     heading = heading.Mirror().Normalize();
             }
