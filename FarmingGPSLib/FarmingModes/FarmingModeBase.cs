@@ -158,7 +158,7 @@ namespace FarmingGPSLib.FarmingModes
             return GetHeadLandCoordinates(distance, _fieldPolygon.Shell.Coordinates, angleConstraintsLeft, angleConstraintRight);
         }
 
-        protected IList<ILineString> GetHeadLandCoordinates(double distance, IList<Coordinate> ring, DotSpatial.NTSExtension.Angle[] angleConstraintsLeft, DotSpatial.NTSExtension.Angle[] angleConstraintRight)
+        protected IList<ILineString> GetHeadLandCoordinates(double distance, Coordinate[] ring, DotSpatial.NTSExtension.Angle[] angleConstraintsLeft, DotSpatial.NTSExtension.Angle[] angleConstraintRight)
         {
             var newCoords = new List<Coordinate>();
             var lines = HelperClassLines.CreateLines(ring);
@@ -278,7 +278,7 @@ namespace FarmingGPSLib.FarmingModes
 
                         Coordinate intersection = newLines[i].Intersection(newLines[k]);
                         
-                        if (intersection != null)
+                        if (intersection != null && !Double.IsNaN(intersection.X) && !Double.IsNaN(intersection.Y))
                         {
                             List<Coordinate> ring1 = new List<Coordinate>();
                             List<Coordinate> ring2 = new List<Coordinate>();

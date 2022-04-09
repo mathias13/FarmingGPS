@@ -34,7 +34,7 @@ namespace FarmingGPS.Visualization
         {
             public Vector3Collection Points { get; set; }
 
-            public IntCollection Indices { get; set; }
+            public List<int> Indices { get; set; }
 
             public Vector3Collection Normals { get; set; }
         }
@@ -541,7 +541,10 @@ namespace FarmingGPS.Visualization
                     normals.Add(new Vector3(0, 0, 1));
                 }
 
-                var meshData = new MeshData() { Points = polygonPositions, Indices = new IntCollection(CuttingEarsTriangulator.Triangulate(polygonPoints)), Normals = normals };
+                var indices = CuttingEarsTriangulator.Triangulate(polygonPoints);
+                if (indices == null)
+                    indices = SweepLinePolygonTriangulator.Triangulate(polygonPoints);
+                var meshData = new MeshData() { Points = polygonPositions, Indices = indices, Normals = normals };
                 _trackMesh[polygonId] = meshData;
 
                 var offset = 0;
@@ -583,7 +586,10 @@ namespace FarmingGPS.Visualization
                 normals.Add(new Vector3(0, 0, 1));
             }
 
-            var meshData = new MeshData() { Points = polygonPositions, Indices = new IntCollection(CuttingEarsTriangulator.Triangulate(polygonPoints)), Normals = normals };
+            var indices = CuttingEarsTriangulator.Triangulate(polygonPoints);
+            if (indices == null)
+                indices = SweepLinePolygonTriangulator.Triangulate(polygonPoints);
+            var meshData = new MeshData() { Points = polygonPositions, Indices = indices, Normals = normals };
             _trackMesh.Add(polygonId, meshData);
             _trackMeshHoles.Add(polygonId, new List<MeshData>());
 
@@ -620,7 +626,10 @@ namespace FarmingGPS.Visualization
                 normals.Add(new Vector3(0, 0, 1));
             }
 
-            var meshData = new MeshData() { Points = polygonPositions, Indices = new IntCollection(CuttingEarsTriangulator.Triangulate(polygonPoints)), Normals = normals };
+            var indices = CuttingEarsTriangulator.Triangulate(polygonPoints);
+            if (indices == null)
+                indices = SweepLinePolygonTriangulator.Triangulate(polygonPoints);
+            var meshData = new MeshData() { Points = polygonPositions, Indices = indices, Normals = normals };
             _trackMeshHoles[polygonId].Add(meshData);
         }
 
@@ -858,6 +867,8 @@ namespace FarmingGPS.Visualization
             }
 
             var indices = CuttingEarsTriangulator.Triangulate(points2D);
+            if(indices == null)
+                indices = SweepLinePolygonTriangulator.Triangulate(points2D);
             geometry.Positions = points3D;
             geometry.Indices = new IntCollection(indices);
             _fieldMesh.Geometry = geometry;

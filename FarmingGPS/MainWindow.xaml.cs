@@ -428,17 +428,20 @@ namespace FarmingGPS
                             if (distanceToTrackingLine > 1.0)
                             {
                                 TrackingLine newTrackingLine = _farmingMode.GetClosestLine(coordinates[coordinates.Length - 1].Center, coordinates[coordinates.Length - 1].Heading);
-                                if (_activeTrackingLine == null)
-                                    _activeTrackingLine = newTrackingLine;
-                                else if (!_activeTrackingLine.Equals(newTrackingLine))
+                                if (newTrackingLine != null)
                                 {
-                                    if (_fieldTracker.GetTrackingLineCoverage(_activeTrackingLine) > TRACKINGLINE_COVERAGE_DEPLETED)
-                                        _activeTrackingLine.Depleted = true;
-                                    else
-                                        _activeTrackingLine.Active = false;
+                                    if (_activeTrackingLine == null)
+                                        _activeTrackingLine = newTrackingLine;
+                                    else if (!_activeTrackingLine.Equals(newTrackingLine))
+                                    {
+                                        if (_fieldTracker.GetTrackingLineCoverage(_activeTrackingLine) > TRACKINGLINE_COVERAGE_DEPLETED)
+                                            _activeTrackingLine.Depleted = true;
+                                        else
+                                            _activeTrackingLine.Active = false;
 
-                                    newTrackingLine.Active = true;
-                                    _activeTrackingLine = newTrackingLine;
+                                        newTrackingLine.Active = true;
+                                        _activeTrackingLine = newTrackingLine;
+                                    }
                                 }
                             }
                         }
