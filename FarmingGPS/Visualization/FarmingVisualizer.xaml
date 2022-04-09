@@ -85,6 +85,15 @@
                             <hx:DiffuseMaterial DiffuseColor="Brown" />
                         </hx:MeshGeometryModel3D.Material>
                     </hx:MeshGeometryModel3D>
+                    <hx:MeshGeometryModel3D>
+                        <hx:MeshGeometryModel3D.Geometry>
+                            <hx:MeshGeometry3D Positions="-0.01 0.07 0   -0.02 0.07 0.31  -0.02 -0.07 0.31   -0.02 -0.07 0  0.3 0.07 0.31   0.3 -0.07 0.31"
+                                                TriangleIndices="0 1 2  2 3 0   1 4 5   1 2 5"/>
+                        </hx:MeshGeometryModel3D.Geometry>
+                        <hx:MeshGeometryModel3D.Material>
+                            <hx:DiffuseMaterial DiffuseColor="#e6e600" />
+                        </hx:MeshGeometryModel3D.Material>
+                    </hx:MeshGeometryModel3D>
                 </hx:GroupModel3D.Children>
             </hx:GroupModel3D>
             <hx:GroupModel3D>
