@@ -139,6 +139,8 @@ namespace FarmingGPSLib.FieldItems
             {
                 List<int> polygonsUpdated = new List<int>();
                 List<int> polygonsDeleted = new List<int>();
+                var polygonIDs = new int[_polygons.Keys.Count];
+                _polygons.Keys.CopyTo(polygonIDs, 0);
                 try
                 {
                     foreach (var trackPoint in trackPoints)
@@ -198,7 +200,7 @@ namespace FarmingGPSLib.FieldItems
                             }
                             _polygons[_currentPolygonIndex] = new Polygon(_polygons[_currentPolygonIndex].Shell, holes.ToArray());
 
-                            foreach (int i in _polygons.Keys)
+                            foreach (int i in polygonIDs)
                             {
                                 if (i == _currentPolygonIndex)
                                     continue;
