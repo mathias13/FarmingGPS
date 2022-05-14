@@ -257,7 +257,7 @@ namespace FarmingGPS.Usercontrols
                             continue;
                         }
 
-                        if (newCoords[newCoords.Count - 1] != _fieldChoosen.Polygon.Shell.Coordinates[i])
+                        if (!newCoords[newCoords.Count - 1].Equals2D(_fieldChoosen.Polygon.Shell.Coordinates[i]))
                             newCoords.Add(_fieldChoosen.Polygon.Shell.Coordinates[i]);
                     }
                     newCoords.Add(_fieldChoosen.Polygon.Shell.Coordinates[newStartIndex]);
