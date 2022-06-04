@@ -424,6 +424,7 @@ namespace FarmingGPS.Database
                 {
                     var queryResult = from equipmentRate in _databaseContext.EquipmentRateFiles
                                       where equipmentRate.FieldId == fieldId && equipmentRate.EquipmentId == equipmentId
+                                      orderby equipmentRate.Added descending
                                       select equipmentRate;
 
                     return queryResult.ToArray();
