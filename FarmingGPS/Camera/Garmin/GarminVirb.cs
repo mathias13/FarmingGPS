@@ -48,7 +48,8 @@ namespace FarmingGPS.Camera.Garmin
         public GarminVirb(string address)
         {
             ChangeVideoFrameSize(720);
-            Connect(address);
+            var action = new Action<string>(Connect);
+            action.BeginInvoke(address, new AsyncCallback(ConnectCallback), null);
         }
 
         public override void ChangeVideoFrameSize(int maxHeight)
@@ -123,8 +124,12 @@ namespace FarmingGPS.Camera.Garmin
 
         private void _serviceBrowser_ServiceAdded(object sender, ServiceAnnouncementEventArgs e)
         {
-            Connect(e.Announcement.Addresses[0].ToString());
+            var action = new Action<string>(Connect);
+            action.BeginInvoke(e.Announcement.Addresses[0].ToString(), new AsyncCallback(ConnectCallback), null);
         }
+
+        private void ConnectCallback(IAsyncResult result)
+        { }
 
         private async void Connect(string address)
         {
