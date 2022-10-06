@@ -149,12 +149,12 @@ namespace FarmingGPS
 
         private bool _startStopAuto = false;
 
-        private System.Threading.Thread _secondaryTasksThread;
+        private Thread _secondaryTasksThread;
 
         private bool _secondaryTasksThreadStop = false;
                
         private DispatcherTimer _dispatcherTimer;
-                
+
         private Queue<LightBarUpdateStruct> _lightBarQueue = new Queue<LightBarUpdateStruct>();
 
         private Queue<CoordinateUpdateStruct> _coordinateUpdateStructQueueSecondaryTasks = new Queue<CoordinateUpdateStruct>();
@@ -164,8 +164,6 @@ namespace FarmingGPS
         private bool _addRock = false;
 
         private Queue<AddObstacleStruct> _obstacleQueue = new Queue<AddObstacleStruct>();
-
-        private object _syncObject = new object();
 
         #endregion
 
@@ -187,7 +185,7 @@ namespace FarmingGPS
             ContentRendered += MainWindow_ContentRendered;
             Closing += MainWindow_Closing;
 
-            //Dispatcher timer so that receiver thread is not occupied 
+            //Dispatcher timer so that receiver thread is not occupied
             _dispatcherTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(200.0), DispatcherPriority.Render, new EventHandler(_dispatcherTimer_Tick), Dispatcher);
             _dispatcherTimer.Start();
 
@@ -375,7 +373,7 @@ namespace FarmingGPS
 
             _cameraImage.SizeChanged += _cameraImage_SizeChanged;
         }
-
+        
         private void _dispatcherTimer_Tick(object sender, EventArgs e)
         {
             CoordinateUpdateStruct? newCoord = null;
@@ -969,10 +967,10 @@ namespace FarmingGPS
 
         private void BTN_SETTINGS_Click(object sender, RoutedEventArgs e)
         {
-            if (_settingsGrid.Visibility == System.Windows.Visibility.Hidden)
-                _settingsGrid.Visibility = System.Windows.Visibility.Visible;
+            if (_settingsGrid.Visibility == Visibility.Hidden)
+                _settingsGrid.Visibility = Visibility.Visible;
             else
-                _settingsGrid.Visibility = System.Windows.Visibility.Hidden;
+                _settingsGrid.Visibility = Visibility.Hidden;
         }
 
         private void BTN_CHOOSE_TRACKLINE_Click(object sender, RoutedEventArgs e)
