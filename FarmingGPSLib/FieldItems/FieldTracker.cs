@@ -97,8 +97,6 @@ namespace FarmingGPSLib.FieldItems
 
         #region Consts
 
-        private const int SIMPLIFIER_COUNT_LIMIT = 200;
-
         #endregion
 
         #region Private Variables
@@ -106,8 +104,6 @@ namespace FarmingGPSLib.FieldItems
         private IField _fieldToCalculateAreaWithin = null;
         
         private IDictionary<int, Polygon> _polygons = new Dictionary<int, Polygon>();
-
-        private IDictionary<int, int> _polygonSimplifierCount = new Dictionary<int, int>();
 
         private Coordinate _prevLeftPoint = new Coordinate(double.NaN, double.NaN);
 
@@ -208,7 +204,6 @@ namespace FarmingGPSLib.FieldItems
                                 {
                                     _polygons[_currentPolygonIndex] = (Polygon)_polygons[_currentPolygonIndex].Union(_polygons[i]);
                                     _polygons.Remove(i);
-                                    _polygonSimplifierCount.Remove(i);
                                     if (!polygonsDeleted.Contains(i))
                                         polygonsDeleted.Add(i);
                                 }
@@ -242,7 +237,6 @@ namespace FarmingGPSLib.FieldItems
                                     id++;
                                 _polygons.Add(id, polygon);
                                 _currentPolygonIndex = id;
-                                _polygonSimplifierCount.Add(id, SIMPLIFIER_COUNT_LIMIT);
                                 if (!polygonsUpdated.Contains(_currentPolygonIndex))
                                     polygonsUpdated.Add(_currentPolygonIndex);
                                 OnAreaChanged();
@@ -315,7 +309,6 @@ namespace FarmingGPSLib.FieldItems
                     OnPolygonDeleted(polygon.Key);
 
                 _polygons.Clear();
-                _polygonSimplifierCount.Clear();
             }
         }
 
