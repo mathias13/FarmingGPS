@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FarmingGPS.Dialogs"
         mc:Ignorable="d"
-        Title="ComPortDialog" Height="300" Width="300"
+        Title="ComPortDialog" Height="300" Width="300" MaxHeight="300" MaxWidth="300"
         WindowStyle="None"
         WindowStartupLocation="CenterScreen"
         Background="Transparent">

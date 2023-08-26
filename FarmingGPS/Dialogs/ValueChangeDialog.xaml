@@ -6,7 +6,7 @@
         xmlns:extended="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
         xmlns:local="clr-namespace:FarmingGPS.Dialogs"
         mc:Ignorable="d"
-        Title="OKDialog" MaxWidth="300"
+        Title="OKDialog" MaxWidth="300" MaxHeight="200"
         WindowStyle="None"
         WindowStartupLocation="CenterScreen"
         Background="Transparent" SizeToContent="WidthAndHeight">
