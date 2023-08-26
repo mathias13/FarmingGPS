@@ -45,7 +45,10 @@
         <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Vertical" Grid.Row="1">
             <visualization:SpeedBar Width="Auto" Height="Auto" MinWidth="150" x:FieldModifier="private" x:Name="_speedBar"/>
             <visualization:WorkedAreaBar Width="Auto" Height="Auto" MinWidth="150" x:FieldModifier="private" x:Name="_workedAreaBar"/>
-            <visualization:EquipmentLevelBar Width="Auto" Height="Auto" MinWidth="150" x:FieldModifier="private" Visibility="Hidden" x:Name="_equipmentLevelBar"/>
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                <visualization:EquipmentLevelBar Width="Auto" Height="Auto" MinWidth="150" x:FieldModifier="private" x:Name="_equipmentLevelBar" Visibility="Collapsed"/>
+                <visualization:EquipmentStatusBar Width="Auto" Height="Auto" MinWidth="150" x:FieldModifier="private" x:Name="_equipmentStatusBar" Visibility="Collapsed"/>
+            </StackPanel>
             <Button x:Name="BTN_SETTINGS" Style="{StaticResource BUTTON_TOOLS}" Width="60" Height="60" Margin="10,10,10,10" HorizontalAlignment="Left" Click="BTN_SETTINGS_Click"/>
             <Button x:Name="BTN_START_FIELD" Style="{StaticResource BUTTON_CREATE_FIELD}" Width="60" Height="60" Margin="10,10,10,10" HorizontalAlignment="Left" Click="BTN_START_FIELD_Click"/>
             <Button x:Name="BTN_MARKER" Style="{StaticResource BUTTON_MARKER}" Width="60" Height="60" Margin="10,10,10,10" HorizontalAlignment="Left" Click="BTN_MARKER_Click"/>

@@ -15,6 +15,8 @@ namespace FarmingGPSLib.Equipment
 
         bool Running { get; }
 
+        bool Connected { get; }
+
         double StartDistance
         {
             get;
@@ -36,5 +38,7 @@ namespace FarmingGPSLib.Equipment
         }
         
         object RegisterController(object settings);
+
+        event EventHandler StatusUpdate;
     }
 }

@@ -8,7 +8,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
 {
     public class L2Plus : EquipmentBase, IEquipmentControl, IEquipmentStat, IDisposable
     {
-        private readonly double[,] STOP_START_DISTANCES = new double[2, 3] { { 12, 1, 8 }, { 24, -5, 8 } };
+        private readonly double[,] STOP_START_DISTANCES = new double[2, 3] { { 12, 1, 6 }, { 24, -5, 6 } };
 
         private static double FULL_CONTENT = 1500.0;
 
@@ -63,6 +63,15 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
             if (StatUpdated != null)
                 StatUpdated.Invoke(this, new EventArgs());
+
+            if (StatusUpdate != null)
+                StatusUpdate.Invoke(this, new EventArgs());
+        }
+
+        private void _calibrator_IsConnectedChanged(object sender, bool e)
+        {
+            if (StatusUpdate != null)
+                StatusUpdate.Invoke(this, new EventArgs());
         }
 
         #region IDisposable interface
@@ -76,6 +85,8 @@ namespace FarmingGPSLib.Equipment.BogBalle
         #endregion
 
         #region IEquipmentControl interface
+
+        public event EventHandler StatusUpdate;
 
         public double StartDistance
         {
@@ -113,6 +124,14 @@ namespace FarmingGPSLib.Equipment.BogBalle
             }
         }
 
+        public bool Connected
+        {
+            get
+            {
+                return _calibrator.IsConnected;
+            }
+        }
+
         public Type ControllerSettingsType
         {
             get { return typeof(Settings.BogBalle.Calibrator); }
@@ -133,6 +152,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                 _calibrator = new Calibrator(calibratorSettings.COMPort, calibratorSettings.ReadInterval);
                 _calibrator.ChangeWidth((float)Width.ToMeters().Value);
                 _calibrator.ValuesUpdated += _calibrator_ValuesUpdated;
+                _calibrator.IsConnectedChanged += _calibrator_IsConnectedChanged;
                 return _calibrator;
             }
             else

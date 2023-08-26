@@ -228,6 +228,7 @@ namespace FarmingGPS
 
         protected static readonly DependencyProperty DBState = DependencyProperty.Register("DBState", typeof(bool), typeof(MainWindow));
 
+
         #endregion
 
         void Current_Exit(object sender, ExitEventArgs e)
@@ -1377,10 +1378,16 @@ namespace FarmingGPS
                     _equipmentStatGrid.Children.Add(new EquipmentStat((IEquipmentStat)_equipment));
                     _equipmentLevelBar.Visibility = Visibility.Visible;
                     _equipmentLevelBar.RegisterEquipmentStat((IEquipmentStat)_equipment);
+                    if (_equipment is IEquipmentControl)
+                    {
+                        _equipmentStatusBar.Visibility = Visibility.Visible;
+                        _equipmentStatusBar.RegisterEquipmentControl((IEquipmentControl)_equipment);
+                    }
                 }
                 else
                 {
-                    _equipmentLevelBar.Visibility = Visibility.Hidden;
+                    _equipmentLevelBar.Visibility = Visibility.Collapsed;
+                    _equipmentStatusBar.Visibility = Visibility.Collapsed;
                     _equipmentStatGrid.Visibility = Visibility.Hidden;
                 }
             }

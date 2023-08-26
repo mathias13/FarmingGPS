@@ -106,6 +106,9 @@
   <PropertyGroup>
     <StartupObject>FarmingGPS.Program</StartupObject>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Visualization\tractor_icon.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Cyotek.Drawing.BitmapFont, Version=1.0.0.0, Culture=neutral, PublicKeyToken=58daa28b0b2de221, processorArchitecture=MSIL">
       <HintPath>..\packages\Cyotek.Drawing.BitmapFont.2.0.4\lib\net48\Cyotek.Drawing.BitmapFont.dll</HintPath>
@@ -358,6 +361,9 @@
     <Compile Include="Usercontrols\SettingsCollectionControl.xaml.cs">
       <DependentUpon>SettingsCollectionControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Visualization\EquipmentStatusBar.xaml.cs">
+      <DependentUpon>EquipmentStatusBar.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Visualization\FarmingVisualizer.xaml.cs">
       <DependentUpon>FarmingVisualizer.xaml</DependentUpon>
     </Compile>
@@ -468,6 +474,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Visualization\EquipmentStatusBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Visualization\FarmingVisualizer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -574,6 +584,7 @@
     <Content Include="Camera\RTSPClientSharp\RtspClientSharp.dll" />
     <Content Include="Camera\RTSPClientSharp\swresample-3.dll" />
     <Content Include="Camera\RTSPClientSharp\swscale-5.dll" />
+    <Resource Include="Visualization\tractor_icon.ico" />
     <Resource Include="Usercontrols\GoogleMaps\blue-dot.png" />
     <Resource Include="Usercontrols\GoogleMaps\green-dot.png" />
     <Resource Include="Usercontrols\GoogleMaps\red-dot.png" />

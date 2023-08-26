@@ -1,9 +1,8 @@
-﻿using DotSpatial.Positioning;
+﻿using FarmingGPSLib.Equipment;
 using System;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using FarmingGPSLib.Equipment;
 
 namespace FarmingGPS.Visualization
 {

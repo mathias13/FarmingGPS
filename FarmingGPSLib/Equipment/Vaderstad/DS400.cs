@@ -44,6 +44,15 @@ namespace FarmingGPSLib.Equipment.Vaderstad
 
             if (StatUpdated != null)
                 StatUpdated.Invoke(this, new EventArgs());
+
+            if (StatusUpdate != null)
+                StatusUpdate.Invoke(this, new EventArgs());
+        }
+
+        private void _controller_IsConnectedChanged(object sender, bool e)
+        {
+            if (StatusUpdate != null)
+                StatusUpdate.Invoke(this, new EventArgs());
         }
 
         #region IDisposable interface
@@ -57,6 +66,8 @@ namespace FarmingGPSLib.Equipment.Vaderstad
         #endregion
 
         #region IEquipmentControl interface
+
+        public event EventHandler StatusUpdate;
 
         public double StartDistance
         {
@@ -94,6 +105,14 @@ namespace FarmingGPSLib.Equipment.Vaderstad
             }
         }
 
+        public bool Connected
+        {
+            get
+            {
+                return _controller.IsConnected;
+            }
+        }
+
         public Type ControllerSettingsType
         {
             get { return typeof(Settings.Vaderstad.Controller); }
@@ -113,6 +132,7 @@ namespace FarmingGPSLib.Equipment.Vaderstad
                     _controller.Dispose();
                 _controller = new Controller(controllerSettings.COMPort, controllerSettings.ReadInterval);
                 _controller.ValuesUpdated += _controller_ValuesUpdated;
+                _controller.IsConnectedChanged += _controller_IsConnectedChanged;
                 return _controller;
             }
             else

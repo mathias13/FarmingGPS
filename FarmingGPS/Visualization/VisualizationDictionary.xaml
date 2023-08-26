@@ -509,7 +509,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="Control">
                     <Grid>
-                        <Popup x:Name="Popup" Placement="Right" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                        <Popup x:Name="Popup" Placement="Right" VerticalOffset="-40" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
                             <Grid x:Name="DropDown" SnapsToDevicePixels="True" MinWidth="50" MinHeight="80" Height="{Binding ActualHeight, ElementName=PART_TextBox}">
                                 <local:ButtonSpinner x:Name="PART_Spinner"
                                     IsTabStop="False"
