@@ -30,7 +30,7 @@
                     </Viewbox>
                 </Grid>
                 <TextBlock HorizontalAlignment="Center" Style="{StaticResource SETTING_HEADER}">Grund giva</TextBlock>
-                <extended:DoubleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="360" Value="200" AllowSpin="True" Increment="1" FormatString="0kg" x:FieldModifier="private" x:Name="NumericDefaultValue" Style="{StaticResource DOUBLEUPDOWN}"/>
+                <extended:DoubleUpDown HorizontalAlignment="Center" Minimum="0" Maximum="500" Value="200" AllowSpin="True" Increment="1" FormatString="0kg" x:FieldModifier="private" x:Name="NumericDefaultValue" Style="{StaticResource DOUBLEUPDOWN}"/>
                 <Button HorizontalAlignment="Center" Height="60" x:FieldModifier="private" x:Name="ButtonChoose" Click="ButtonChoose_Click" Style="{StaticResource GENERAL_BUTTON}">Välj</Button>
             </StackPanel>
         </Grid>
