@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace FarmingGPS.Visualization
 {
@@ -14,6 +15,7 @@ namespace FarmingGPS.Visualization
         public EquipmentLevelBar()
         {
             InitializeComponent();
+
         }
         
         #region Public Methods
@@ -37,6 +39,7 @@ namespace FarmingGPS.Visualization
 
                 SetValue(FillLevelString, fillLevel.ToString("0 %"));
                 SetValue(WidthPercentage, _backGround.ActualWidth * fillLevel);
+                SetValue(FillColor, fillLevel > 10.0 ? Colors.LightGreen : Colors.Red);
             }
             else
                 Dispatcher.BeginInvoke(new Action<object, EventArgs>(EquipmentStat_StatUpdated), System.Windows.Threading.DispatcherPriority.Normal, sender, e);
@@ -49,6 +52,8 @@ namespace FarmingGPS.Visualization
         protected static readonly DependencyProperty FillLevelString = DependencyProperty.RegisterAttached("FillLevelString", typeof(string), typeof(EquipmentLevelBar));
 
         protected static readonly DependencyProperty WidthPercentage = DependencyProperty.RegisterAttached("WidthPercentage", typeof(double), typeof(EquipmentLevelBar));
+
+        protected static readonly DependencyProperty FillColor = DependencyProperty.RegisterAttached("FillColor", typeof(Brush), typeof(EquipmentLevelBar));
 
         #endregion
     }

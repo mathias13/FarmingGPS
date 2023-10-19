@@ -162,29 +162,36 @@ namespace FarmingGPS.Visualization
 
         public void UpdatePosition(Coordinate coord, Azimuth bearing)
         {
-            if (Dispatcher.Thread.Equals(Thread.CurrentThread))
+            try
             {
-                if (_viewTrackLine)
-                    return;
-                double x = coord.X;
-                double y = coord.Y;
-                if (_minPoint != null)
+                if (Dispatcher.Thread.Equals(Thread.CurrentThread))
                 {
-                    x -= _minPoint.X;
-                    y -= _minPoint.Y;
+                    if (_viewTrackLine)
+                        return;
+                    double x = coord.X;
+                    double y = coord.Y;
+                    if (_minPoint != null)
+                    {
+                        x -= _minPoint.X;
+                        y -= _minPoint.Y;
+                    }
+                    SetValue(ShiftXProperty, x);
+                    SetValue(ShiftYProperty, y);
+                    bearing = bearing.Subtract(90).Normalize();
+                    SetValue(ShiftHeadingProperty, bearing.DecimalDegrees);
+                    _lastPoint = new System.Windows.Point((double)GetValue(ShiftXProperty), (double)GetValue(ShiftYProperty));
+                    _lastAngle = (double)GetValue(ShiftHeadingProperty);
+                    _cameraPosition = new Vector3D(x, y, 0.0);
+                    _cameraRotation = bearing.DecimalDegrees;
+                    UpdateCamera();
                 }
-                SetValue(ShiftXProperty, x);
-                SetValue(ShiftYProperty, y);
-                bearing = bearing.Subtract(90).Normalize();
-                SetValue(ShiftHeadingProperty, bearing.DecimalDegrees);
-                _lastPoint = new System.Windows.Point((double)GetValue(ShiftXProperty), (double)GetValue(ShiftYProperty));
-                _lastAngle = (double)GetValue(ShiftHeadingProperty);
-                _cameraPosition = new Vector3D(x, y, 0.0);
-                _cameraRotation = bearing.DecimalDegrees;
-                UpdateCamera();
+                else
+                    Dispatcher.BeginInvoke(new Action<Coordinate, Azimuth>(UpdatePosition), System.Windows.Threading.DispatcherPriority.Render, coord, bearing);
             }
-            else
-                Dispatcher.BeginInvoke(new Action<Coordinate, Azimuth>(UpdatePosition), System.Windows.Threading.DispatcherPriority.Render, coord, bearing);
+            catch(Exception ex)
+            {
+                Log.Error("Failed to update position", ex);
+            }
         }
        
         public void FocusTrackingLine(TrackingLine trackingLine)

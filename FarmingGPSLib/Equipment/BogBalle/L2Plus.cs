@@ -20,6 +20,8 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         private double _endWeight = 0.0;
 
+        private double _prevContent = double.MaxValue;
+
         private Calibrator _calibrator;
         
         public L2Plus()
@@ -61,11 +63,16 @@ namespace FarmingGPSLib.Equipment.BogBalle
                 _endWeight = _startWeight;
             }
 
+            if (_prevContent > 10.0 && ContentLeft <= 10.0)
+                FarmingEvent.Invoke(this, "Mindre än 10% i spridaren");
+
             if (StatUpdated != null)
                 StatUpdated.Invoke(this, new EventArgs());
 
             if (StatusUpdate != null)
                 StatusUpdate.Invoke(this, new EventArgs());
+
+            _prevContent = ContentLeft;
         }
 
         private void _calibrator_IsConnectedChanged(object sender, bool e)
@@ -174,6 +181,8 @@ namespace FarmingGPSLib.Equipment.BogBalle
         #region IEquipmentStat interface
 
         public event EventHandler StatUpdated;
+
+        public event EventHandler<string> FarmingEvent;
 
         public double Content
         {

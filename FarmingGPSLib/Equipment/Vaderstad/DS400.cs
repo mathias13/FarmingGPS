@@ -18,6 +18,8 @@ namespace FarmingGPSLib.Equipment.Vaderstad
 
         private double _endWeight = 0.0;
 
+        private double _prevContent = double.MaxValue;
+
         private Controller _controller;
         
         public DS400()
@@ -42,11 +44,16 @@ namespace FarmingGPSLib.Equipment.Vaderstad
                 _endWeight = _startWeight;
             }
 
+            if (_prevContent > 10.0 && ContentLeft <= 10.0)
+                FarmingEvent.Invoke(this, "Mindre än 10% i såmaskinen");
+
             if (StatUpdated != null)
                 StatUpdated.Invoke(this, new EventArgs());
 
             if (StatusUpdate != null)
                 StatusUpdate.Invoke(this, new EventArgs());
+
+            _prevContent = ContentLeft;
         }
 
         private void _controller_IsConnectedChanged(object sender, bool e)
@@ -156,6 +163,8 @@ namespace FarmingGPSLib.Equipment.Vaderstad
         #region IEquipmentStat interface
 
         public event EventHandler StatUpdated;
+
+        public event EventHandler<string> FarmingEvent;
 
         public double Content
         {

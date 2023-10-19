@@ -1373,6 +1373,7 @@ namespace FarmingGPS
                 _equipmentControlGrid.Children.Add(Activator.CreateInstance(EQUIPMENTCONTROL_VISUALIZATION[equipmentControl.ControllerType], controller) as UserControl);
                 if (_equipment is IEquipmentStat)
                 {
+                    ((IEquipmentStat)_equipment).FarmingEvent += FarmingEvent;
                     while (_equipmentStatGrid.Children.Count > 1)
                         _equipmentStatGrid.Children.RemoveAt(1);
                     _equipmentStatGrid.Children.Add(new EquipmentStat((IEquipmentStat)_equipment));
@@ -1398,6 +1399,11 @@ namespace FarmingGPS
                 _equipmentGrid.Visibility = Visibility.Hidden;
                 _equipmentStatGrid.Visibility = Visibility.Hidden;
             }
+        }
+
+        private void MainWindow_FarmingEvent(object sender, string e)
+        {
+            throw new NotImplementedException();
         }
 
         private void SetFarmingMode(FarmingMode userControl)

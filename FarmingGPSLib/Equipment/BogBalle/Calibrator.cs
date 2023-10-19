@@ -384,6 +384,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
                                 throw new Exception(String.Format("Failed to write port {0}", _comPort));
                             }
                         }
+                        GC.KeepAlive(writeBytes);
 
                         if (bytesWritten == writeBytes.Length)
                         {
@@ -437,6 +438,8 @@ namespace FarmingGPSLib.Equipment.BogBalle
             Win32Com.CancelIo(portHandle);
             Win32Com.CloseHandle(portHandle);
             _readMessage.Finished = true;
+            GC.KeepAlive(portHandle);
+            GC.KeepAlive(buffer);
         }
 
         private void ReadThread()

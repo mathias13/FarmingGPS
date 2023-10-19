@@ -58,8 +58,6 @@
                 <Button x:Name="BTN_SET_TRACKINGLINE_AB" Style="{StaticResource BUTTON_TRACKLINE_AB}" Width="60" Height="60" Margin="10,10,10,10" Click="BTN_SET_TRACKINGLINE_AB_Click"/>
             </StackPanel>
         </StackPanel>
-        <Grid Grid.Row="1" Visibility="Hidden" VerticalAlignment="Top" Margin="40,0,0,0" HorizontalAlignment="Left" x:Name="_messageGrid" x:FieldModifier="private">
-        </Grid>
         <Border Background="Red" ClipToBounds="True" BorderBrush="Black" BorderThickness="2" CornerRadius="5" Margin="4" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1">
             <StackPanel Orientation="Horizontal">
                 <Grid>
@@ -95,6 +93,8 @@
             <Viewbox Margin="10,10,10,10" Stretch="Uniform">
                 <TextBlock Background="Transparent" Foreground="Red" Visibility="{Binding Path=CameraUnavailable, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}">X</TextBlock>
             </Viewbox>
+        </Grid>
+        <Grid Grid.Row="1" Visibility="Hidden" VerticalAlignment="Bottom" Margin="20,0,0,20" HorizontalAlignment="Left" x:Name="_messageGrid" x:FieldModifier="private">
         </Grid>
         <Grid Grid.Row="1" Margin="70,10,10,10" x:Name="_settingsGrid" x:FieldModifier="private" Visibility="Hidden">
             <ContentControl Template="{StaticResource MenuBorder}"/>

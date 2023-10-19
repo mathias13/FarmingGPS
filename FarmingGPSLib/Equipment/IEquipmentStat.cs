@@ -19,5 +19,7 @@ namespace FarmingGPSLib.Equipment
         double EndWeight { get; set; }
         
         event EventHandler StatUpdated;
+
+        event EventHandler<string> FarmingEvent;
     }
 }
