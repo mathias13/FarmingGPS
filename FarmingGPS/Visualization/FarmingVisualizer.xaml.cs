@@ -8,6 +8,7 @@ using log4net;
 using SharpDX;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -25,11 +26,8 @@ namespace FarmingGPS.Visualization
 
         struct PolygonData
         {
-            public ulong PolygonSum { get; set; }
-
             public Coordinate[] Coordinates { get; set; }
         }
-
         struct MeshData
         {
             public Vector3Collection Points { get; set; }
@@ -42,12 +40,10 @@ namespace FarmingGPS.Visualization
         #region Consts
 
         private const float LINE_Z_INDEX = 0.0f;
+                
+        private const double FIELD_TRACK_Z_INDEX = -0.01;
 
-        private const double FIELD_TRACK_HOLES_Z_INDEX = -0.03;
-        
-        private const double FIELD_TRACK_Z_INDEX = -0.06;
-
-        private const float FIELD_Z_INDEX = -0.09f;
+        private const float FIELD_Z_INDEX = -0.02f;
 
         private readonly Vector3D VIEW_TOP_POSTION = new Vector3D(2.0, 0.0, 30.0);
 
@@ -102,12 +98,6 @@ namespace FarmingGPS.Visualization
         private object _syncObject = new object();
 
         private IDictionary<int, MeshData> _trackMesh = new Dictionary<int, MeshData>();
-
-        private IDictionary<int, ulong> _trackSums = new Dictionary<int, ulong>();
-
-        private IDictionary<int, IList<MeshData>> _trackMeshHoles = new Dictionary<int, IList<MeshData>>();
-
-        private IDictionary<int, IList<ulong>> _trackSumsHoles = new Dictionary<int, IList<ulong>>();
 
         private bool _viewTopActive = false;
 
@@ -442,41 +432,19 @@ namespace FarmingGPS.Visualization
         {
             try
             {
-                if (_trackMesh.Keys.Contains(e.ID))
+                if (_trackMesh.ContainsKey(e.ID))
                 {
                     PolygonData polygonData = GetPolygonData(e.Polygon.Shell.Coordinates, FIELD_TRACK_Z_INDEX);
-                    if (polygonData.PolygonSum != _trackSums[e.ID])
-                    {
-                        Dispatcher.Invoke(new Action<PolygonData, int>(UpdatePolygon), System.Windows.Threading.DispatcherPriority.Normal, polygonData, e.ID);
-                        _trackSums[e.ID] = polygonData.PolygonSum;
-                    }
 
-                    IList<ulong> holePolygonSums = new List<ulong>(_trackSumsHoles[e.ID]);
-                    bool redrawHoles = false;
+                    List<PolygonData> holes = new List<PolygonData>();
                     for (int i = 0; i < e.Polygon.Holes.Length; i++)
                     {
-                        PolygonData holePolygonData = GetPolygonData(e.Polygon.Holes[i].Coordinates, FIELD_TRACK_HOLES_Z_INDEX);
-                        int holeIndex = _trackSumsHoles[e.ID].IndexOf(holePolygonData.PolygonSum);
-                        if (holeIndex > -1)
-                            holePolygonSums.Remove(holePolygonData.PolygonSum);
-                        else
-                        {
-                            _trackSumsHoles[e.ID].Add(holePolygonData.PolygonSum);
-                            Dispatcher.Invoke(new Action<PolygonData, int>(AddPolygonHole), System.Windows.Threading.DispatcherPriority.Normal, holePolygonData, e.ID);
-                            redrawHoles = true;
-                        }
+                        PolygonData holePolygonData = GetPolygonData(e.Polygon.Holes[i].Coordinates, FIELD_TRACK_Z_INDEX);
+                        holes.Add(holePolygonData);
                     }
 
-                    foreach (ulong holePolygonSum in holePolygonSums)
-                    {
-                        int holeIndex = _trackSumsHoles[e.ID].IndexOf(holePolygonSum);
-                        Dispatcher.Invoke(new Action<int, int>(RemovePolygonHole), System.Windows.Threading.DispatcherPriority.Normal, e.ID, holeIndex);
-                        _trackSumsHoles[e.ID].RemoveAt(holeIndex);
-                        redrawHoles = true;
-                    }
+                    Dispatcher.Invoke(new Action<PolygonData, List<PolygonData>, int>(UpdatePolygon), System.Windows.Threading.DispatcherPriority.Normal, polygonData, holes, e.ID);
 
-                    if (redrawHoles)
-                        Dispatcher.Invoke(new Action(RedrawHoles), System.Windows.Threading.DispatcherPriority.Normal);
                 }
                 else
                     AddCompletePolygon(e);
@@ -493,12 +461,11 @@ namespace FarmingGPS.Visualization
             PolygonData data = new PolygonData();
             List<Coordinate> newCoordinates = new List<Coordinate>();
 
-            for(int i = 0; i < coordinates.Count - 1; i++)
+            for(int i = coordinates.Count - 1; i != 0 ; i--)
             {
                 double x = coordinates[i].X - _minPoint.X;
                 double y = coordinates[i].Y - _minPoint.Y;
                 newCoordinates.Add(new Coordinate(x, y, zIndex));
-                data.PolygonSum += (ulong)(x * 10) + (ulong)(y * 10);
             }
 
             data.Coordinates = newCoordinates.ToArray();
@@ -510,21 +477,15 @@ namespace FarmingGPS.Visualization
             try
             {
                 PolygonData polygonData = GetPolygonData(e.Polygon.Shell.Coordinates, FIELD_TRACK_Z_INDEX);
-                Dispatcher.Invoke(new Action<PolygonData, int>(AddPolygon), System.Windows.Threading.DispatcherPriority.Normal, polygonData, e.ID);
-                _trackSums.Add(e.ID, polygonData.PolygonSum);
-                _trackSumsHoles.Add(e.ID, new List<ulong>());
 
-                bool redrawHoles = false;
-                foreach (ILinearRing hole in e.Polygon.Holes)
+                List<PolygonData> holes = new List<PolygonData>();
+                for (int i = 0; i < e.Polygon.Holes.Length; i++)
                 {
-                    PolygonData holePolygonData = GetPolygonData(hole.Coordinates, FIELD_TRACK_HOLES_Z_INDEX);
-                    Dispatcher.Invoke(new Action<PolygonData, int>(AddPolygonHole), System.Windows.Threading.DispatcherPriority.Normal, holePolygonData, e.ID);
-                    _trackSumsHoles[e.ID].Add(holePolygonData.PolygonSum);
-                    redrawHoles = true;
+                    PolygonData holePolygonData = GetPolygonData(e.Polygon.Holes[i].Coordinates, FIELD_TRACK_Z_INDEX);
+                    holes.Add(holePolygonData);
                 }
 
-                if (redrawHoles)
-                    Dispatcher.Invoke(new Action(RedrawHoles), System.Windows.Threading.DispatcherPriority.Normal);
+                Dispatcher.Invoke(new Action<PolygonData, List<PolygonData>, int>(AddPolygon), System.Windows.Threading.DispatcherPriority.Normal, polygonData, holes, e.ID);
 
             }
             catch(Exception e1)
@@ -533,13 +494,14 @@ namespace FarmingGPS.Visualization
             }
         }
 
-        private void UpdatePolygon(PolygonData polygonData, int polygonId)
+        private void UpdatePolygon(PolygonData polygonData, List<PolygonData> holesData, int polygonId)
         {
             try
             {
                 var geometry = new HelixToolkit.Wpf.SharpDX.MeshGeometry3D();
                 var polygonPositions = new Vector3Collection();
                 var polygonPoints = new List<Vector2>();
+                var holes = new List<List<Vector2>>();
                 var normals = new Vector3Collection();
                 foreach (var coord in polygonData.Coordinates)
                 {
@@ -548,9 +510,20 @@ namespace FarmingGPS.Visualization
                     normals.Add(new Vector3(0, 0, 1));
                 }
 
-                var indices = CuttingEarsTriangulator.Triangulate(polygonPoints);
-                if (indices == null)
-                    indices = SweepLinePolygonTriangulator.Triangulate(polygonPoints);
+                foreach (var PolygonData in holesData)
+                {
+                    var holePoints = new List<Vector2>();
+                    foreach (var coord in PolygonData.Coordinates)
+                    {
+                        polygonPositions.Add(new Vector3((float)coord.X, (float)coord.Y, (float)coord.Z));
+                        holePoints.Add(new Vector2((float)coord.X, (float)coord.Y));
+                        normals.Add(new Vector3(0, 0, 1));
+                    }
+                    holes.Add(holePoints);
+                }
+
+                var indices = SweepLinePolygonTriangulator.Triangulate(polygonPoints, holes);
+                
                 var meshData = new MeshData() { Points = polygonPositions, Indices = indices, Normals = normals };
                 _trackMesh[polygonId] = meshData;
 
@@ -580,11 +553,12 @@ namespace FarmingGPS.Visualization
             }
         }
         
-        private void AddPolygon(PolygonData polygonData, int polygonId)
+        private void AddPolygon(PolygonData polygonData, List<PolygonData> holesData, int polygonId)
         {
             var geometry = new HelixToolkit.Wpf.SharpDX.MeshGeometry3D();
             var polygonPositions = new Vector3Collection();
             var polygonPoints = new List<Vector2>();
+            var holes = new List<List<Vector2>>();
             var normals = new Vector3Collection();
             foreach (var coord in polygonData.Coordinates)
             {
@@ -593,12 +567,22 @@ namespace FarmingGPS.Visualization
                 normals.Add(new Vector3(0, 0, 1));
             }
 
-            var indices = CuttingEarsTriangulator.Triangulate(polygonPoints);
-            if (indices == null)
-                indices = SweepLinePolygonTriangulator.Triangulate(polygonPoints);
+            foreach (var PolygonData in holesData)
+            {
+                var holePoints = new List<Vector2>();
+                foreach (var coord in PolygonData.Coordinates)
+                {
+                    polygonPositions.Add(new Vector3((float)coord.X, (float)coord.Y, (float)coord.Z));
+                    holePoints.Add(new Vector2((float)coord.X, (float)coord.Y));
+                    normals.Add(new Vector3(0, 0, 1));
+                }
+                holes.Add(holePoints);
+            }
+
+            var indices = SweepLinePolygonTriangulator.Triangulate(polygonPoints, holes);
+
             var meshData = new MeshData() { Points = polygonPositions, Indices = indices, Normals = normals };
             _trackMesh.Add(polygonId, meshData);
-            _trackMeshHoles.Add(polygonId, new List<MeshData>());
 
             var offset = 0;
             var newPositions = new Vector3Collection();
@@ -619,52 +603,6 @@ namespace FarmingGPS.Visualization
             geometry.Indices = newIndices;
             geometry.Normals = newNormals;
             _fieldTrack.Geometry = geometry;
-        }
-
-        private void AddPolygonHole(PolygonData polygonData, int polygonId)
-        {
-            var polygonPositions = new Vector3Collection();
-            var polygonPoints = new List<Vector2>();
-            var normals = new Vector3Collection();
-            foreach (var coord in polygonData.Coordinates)
-            {
-                polygonPositions.Add(new Vector3((float)coord.X, (float)coord.Y, (float)coord.Z));
-                polygonPoints.Add(new Vector2((float)coord.X, (float)coord.Y));
-                normals.Add(new Vector3(0, 0, 1));
-            }
-
-            var indices = CuttingEarsTriangulator.Triangulate(polygonPoints);
-            if (indices == null)
-                indices = SweepLinePolygonTriangulator.Triangulate(polygonPoints);
-            var meshData = new MeshData() { Points = polygonPositions, Indices = indices, Normals = normals };
-            _trackMeshHoles[polygonId].Add(meshData);
-        }
-
-        private void RedrawHoles()
-        {
-            var offset = 0;
-            var geometry = new HelixToolkit.Wpf.SharpDX.MeshGeometry3D();
-            var newPositions = new Vector3Collection();
-            var newIndices = new IntCollection();
-            var normals = new Vector3Collection();
-            foreach (var polygonHoles in _trackMeshHoles.Values)
-            {
-                foreach (var mesh in polygonHoles)
-                {
-                    foreach (var point in mesh.Points)
-                        newPositions.Add(new Vector3((float)point.X, (float)point.Y, (float)point.Z));
-                    foreach (var indice in mesh.Indices)
-                        newIndices.Add(indice + offset);
-                    foreach (var normal in mesh.Normals)
-                        normals.Add(normal);
-                    offset += mesh.Points.Count;
-                }
-            }
-
-            geometry.Positions = newPositions;
-            geometry.Indices = newIndices;
-            geometry.Normals = normals;
-            _fieldTrackHoles.Geometry = geometry;
         }
 
         private void RemovePolygon(int polygonId)
@@ -694,16 +632,6 @@ namespace FarmingGPS.Visualization
             _fieldTrack.Geometry = geometry;
         }
 
-        private void RemovePolygonHole(int polygonId, int holeIndex)
-        {            
-            _trackMeshHoles[polygonId].RemoveAt(holeIndex);
-        }
-
-        private void RemovePolygonHoles(int polygonId)
-        {
-            _trackMeshHoles.Remove(polygonId);
-        }
-
         private void fieldTracker_PolygonUpdated(object sender, PolygonUpdatedEventArgs e)
         {
             UpdateFieldtrack(e);                    
@@ -713,18 +641,7 @@ namespace FarmingGPS.Visualization
         {
             if (_trackMesh.ContainsKey(e.ID))
             {
-                _trackSums.Remove(e.ID);
                 Dispatcher.Invoke(new Action<int>(RemovePolygon), System.Windows.Threading.DispatcherPriority.Normal, e.ID);
-            }
-
-            if (_trackMeshHoles.ContainsKey(e.ID))
-            {
-                bool redrawHoles = _trackSumsHoles[e.ID].Count > 0;
-                Dispatcher.Invoke(new Action<int>(RemovePolygonHoles), System.Windows.Threading.DispatcherPriority.Normal, e.ID);
-                _trackSumsHoles.Remove(e.ID);
-
-                if (redrawHoles)
-                    Dispatcher.Invoke(new Action(RedrawHoles), System.Windows.Threading.DispatcherPriority.Normal);
             }
             
         }
@@ -772,7 +689,6 @@ namespace FarmingGPS.Visualization
                 points.Add(new Vector3((float)x1, (float)y1, LINE_Z_INDEX));
             }
             trackingLine.ActiveChanged += trackingLine_ActiveChanged;
-            _trackingLines.Add(trackingLine, new MeshData() { Points = points  });
         }
 
         private void DoDeleteLine(TrackingLine trackingLine)
@@ -872,18 +788,11 @@ namespace FarmingGPS.Visualization
                 points2D.Add(new Vector2((float)(coordinates[i].X - _minPoint.X), (float)(coordinates[i].Y - _minPoint.Y)));
                 geometry.Normals.Add(new Vector3(0, 0, 1));
             }
-
-            var indices = CuttingEarsTriangulator.Triangulate(points2D);
-            if(indices == null)
-                indices = SweepLinePolygonTriangulator.Triangulate(points2D);
+            
+            var indices = SweepLinePolygonTriangulator.Triangulate(points2D);
             geometry.Positions = points3D;
             geometry.Indices = new IntCollection(indices);
             _fieldMesh.Geometry = geometry;
-        }
-
-        private void AddLine(List<Point3D> positions)
-        {
-
         }
 
         private void RedrawLines()

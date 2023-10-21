@@ -102,7 +102,7 @@
                     </hx:MeshGeometryModel3D>
                     <hx:LineGeometryModel3D x:Name="_fieldOutline" x:FieldModifier="private" Thickness="2.0" Color="Red" Smoothness="6">
                     </hx:LineGeometryModel3D>
-                    <hx:MeshGeometryModel3D x:Name="_fieldTrack" x:FieldModifier="private"  Material="{StaticResource TRACK_FILL}">
+                    <hx:MeshGeometryModel3D x:Name="_fieldTrack" x:FieldModifier="private" Material="{StaticResource TRACK_FILL}">
                     </hx:MeshGeometryModel3D>
                     <hx:MeshGeometryModel3D x:Name="_fieldTrackHoles" x:FieldModifier="private" Material="{StaticResource TRACK_HOLE}">
                     </hx:MeshGeometryModel3D>
