@@ -104,8 +104,6 @@
                     </hx:LineGeometryModel3D>
                     <hx:MeshGeometryModel3D x:Name="_fieldTrack" x:FieldModifier="private" Material="{StaticResource TRACK_FILL}">
                     </hx:MeshGeometryModel3D>
-                    <hx:MeshGeometryModel3D x:Name="_fieldTrackHoles" x:FieldModifier="private" Material="{StaticResource TRACK_HOLE}">
-                    </hx:MeshGeometryModel3D>
                     <hx:LineGeometryModel3D IsMultisampleEnabled="True" x:Name="_trackLineInactive" x:FieldModifier="private" Thickness="3.0" Smoothness="6" Color="{StaticResource TRACK_LINE_INACTIVE}">
                     </hx:LineGeometryModel3D>
                     <hx:LineGeometryModel3D IsMultisampleEnabled="True" x:Name="_trackLineFocus" x:FieldModifier="private" Thickness="4.0" Smoothness="6">
