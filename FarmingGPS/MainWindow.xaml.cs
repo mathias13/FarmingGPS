@@ -401,16 +401,10 @@ namespace FarmingGPS
 
         private void SecondaryTasksThread()
         {
-            var stopwatch = new System.Diagnostics.Stopwatch();
-            stopwatch.Start();
             while (!_secondaryTasksThreadStop)
             {
-                if(stopwatch.ElapsedMilliseconds > 5000)
-                    _receiverConnected = false;
-
                 if (_coordinateUpdateStructQueueSecondaryTasks.Count > 0)
                 {
-                    stopwatch.Restart();
                     CoordinateUpdateStruct[] coordinates = new CoordinateUpdateStruct[_coordinateUpdateStructQueueSecondaryTasks.Count];
                     for (int i = 0; i < coordinates.Length; i++)
                         coordinates[i] = _coordinateUpdateStructQueueSecondaryTasks.Dequeue();
