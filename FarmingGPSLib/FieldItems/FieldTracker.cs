@@ -242,13 +242,8 @@ namespace FarmingGPSLib.FieldItems
                                 OnAreaChanged();
                             }
                         }
-                        //Make sure we are a little bit behind and to the middle so that .Union doesn't throw an exception next update
-                        Angle angle = new Angle(new LineSegment(trackPoint.LeftPoint, trackPoint.RightPoint).Angle);
-                        angle -= new Angle(Angle.PI * 0.45);
-                        _prevLeftPoint = HelperClassCoordinate.ComputePoint(trackPoint.LeftPoint, angle.Radians, 0.05);
-                        angle = new Angle(new LineSegment(trackPoint.RightPoint, trackPoint.LeftPoint).Angle);
-                        angle += new Angle(Angle.PI * 0.45);
-                        _prevRightPoint = HelperClassCoordinate.ComputePoint(trackPoint.RightPoint, angle.Radians, 0.05);
+                        _prevLeftPoint = trackPoint.LeftPoint;
+                        _prevRightPoint = trackPoint.RightPoint;
                     }
 
                     foreach (var polygonDeleted in polygonsDeleted)
