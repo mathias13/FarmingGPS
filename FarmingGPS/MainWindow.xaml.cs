@@ -123,8 +123,6 @@ namespace FarmingGPS
 
         private bool _fieldTrackerActive = false;
 
-        private bool _fieldTrackerAutoStartStop = false;
-
         private FieldCreator _fieldCreator;
 
         private DistanceTrigger _distanceTriggerFieldTracker;
@@ -551,13 +549,13 @@ namespace FarmingGPS
                 if (e.Contains("START"))
                 {
                     ShowEventMessage("Starta");
-                    if (_fieldTrackerAutoStartStop && !_fieldTracker.IsTracking)
+                    if (_fieldTracker.AutoStartStop && !_fieldTracker.IsTracking)
                         ToggleFieldTracker();
                 }
                 else if (e.Contains("STOP"))
                 {
                     ShowEventMessage("Stoppa");
-                    if (_fieldTrackerAutoStartStop && _fieldTracker.IsTracking)
+                    if (_fieldTracker.AutoStartStop && _fieldTracker.IsTracking)
                         ToggleFieldTracker();
                 }
             }
@@ -1237,7 +1235,7 @@ namespace FarmingGPS
                 else if (settingControl.Settings is Visualization.Settings.LightBar)
                     _lightBar.Tolerance = new Distance((settingControl.Settings as Visualization.Settings.LightBar).Tolerance, DistanceUnit.Centimeters);
                 else if (settingControl.Settings is Visualization.Settings.FieldTracker)
-                    _fieldTrackerAutoStartStop = (settingControl.Settings as Visualization.Settings.FieldTracker).AutoStartStop;
+                    _fieldTracker.AutoStartStop = (settingControl.Settings as Visualization.Settings.FieldTracker).AutoStartStop;
                 else if (settingControl.Settings is Visualization.Settings.Camera)
                     SetupCamera(settingControl.Settings as Visualization.Settings.Camera);
                 else if (_equipment is IEquipmentControl)

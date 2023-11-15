@@ -63,11 +63,14 @@ namespace FarmingGPSLib.FieldItems
             public SimpleCoordinateArray[] Polygons;
             
             public SimpleCoordinateArray[] Holes;
+
+            public bool AutoStartStop;
             
-            public FieldTrackerState(SimpleCoordinateArray[] polygons, SimpleCoordinateArray[] holes)
+            public FieldTrackerState(SimpleCoordinateArray[] polygons, SimpleCoordinateArray[] holes, bool autoStartStop)
             {
                 Polygons = polygons;
                 Holes = holes;
+                AutoStartStop = autoStartStop;
             }
         }
 
@@ -397,6 +400,12 @@ namespace FarmingGPSLib.FieldItems
             get { return _fieldToCalculateAreaWithin; }
         }
 
+        public bool AutoStartStop
+        {
+            get;
+            set;
+        }
+
         #endregion
 
         #region Protected Methods
@@ -451,6 +460,7 @@ namespace FarmingGPSLib.FieldItems
             lock (_syncObject)
             {
                 FieldTrackerState state = (FieldTrackerState)restoredState;
+                AutoStartStop = state.AutoStartStop;
                 foreach (SimpleCoordinateArray polygon in state.Polygons)
                 {
                     List<ILinearRing> holes = new List<ILinearRing>();
@@ -494,7 +504,7 @@ namespace FarmingGPSLib.FieldItems
                     }
                 }
 
-                FieldTrackerState state = new FieldTrackerState(polygons.ToArray(), holes.ToArray());
+                FieldTrackerState state = new FieldTrackerState(polygons.ToArray(), holes.ToArray(), AutoStartStop);
                 return state;
             }
         }
