@@ -111,6 +111,8 @@ namespace FarmingGPS
 
         private IReceiver _receiver;
 
+        private System.Diagnostics.Stopwatch _coordinateTimeout = new System.Diagnostics.Stopwatch();
+
         private ICamera _camera;
                 
         private DateTime _trackingLineEvaluationTimeout = DateTime.MinValue;
@@ -830,6 +832,7 @@ namespace FarmingGPS
 
         private void _receiver_CoordinateUpdate(object sender, Coordinate actualPosition)
         {
+            _coordinateTimeout.Restart();
             _receiverConnected = true;
             IReceiver receiver = sender as IReceiver;
             if (_field == null || _vechile == null)
@@ -875,6 +878,9 @@ namespace FarmingGPS
 
                 _lightBarQueue.Enqueue(new LightBarUpdateStruct() { Direction = direction, Distance = Distance.FromMeters(orientationToLine.DistanceTo) });
             }
+
+            if (_coordinateTimeout.ElapsedMilliseconds > 3000)
+                _receiverConnected = false;
 
             _coordinateUpdateStructQueueSecondaryTasks.Enqueue(new CoordinateUpdateStruct() { LeftTip = leftTip, RightTip = rightTip, Center = vechileCoordinate, Heading = actualHeading, Reversing = _vechile.IsReversing });
             _coordinateUpdateStructQueueVisual.Enqueue(new CoordinateUpdateStruct() { LeftTip = leftTip, RightTip = rightTip, Center = vechileCoordinate, Heading = actualHeading, Reversing = _vechile.IsReversing });
@@ -1397,11 +1403,6 @@ namespace FarmingGPS
                 _equipmentGrid.Visibility = Visibility.Hidden;
                 _equipmentStatGrid.Visibility = Visibility.Hidden;
             }
-        }
-
-        private void MainWindow_FarmingEvent(object sender, string e)
-        {
-            throw new NotImplementedException();
         }
 
         private void SetFarmingMode(FarmingMode userControl)
