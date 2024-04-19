@@ -15,7 +15,6 @@ namespace FarmingGPS.Visualization
         public EquipmentLevelBar()
         {
             InitializeComponent();
-
         }
         
         #region Public Methods
@@ -39,7 +38,7 @@ namespace FarmingGPS.Visualization
 
                 SetValue(FillLevelString, fillLevel.ToString("0 %"));
                 SetValue(WidthPercentage, _backGround.ActualWidth * fillLevel);
-                SetValue(FillColor, fillLevel > 10.0 ? Colors.LightGreen : Colors.Red);
+                SetValue(FillColor, fillLevel > 10.0 ? new SolidColorBrush(Colors.LightGreen) : new SolidColorBrush(Colors.Red));
             }
             else
                 Dispatcher.BeginInvoke(new Action<object, EventArgs>(EquipmentStat_StatUpdated), System.Windows.Threading.DispatcherPriority.Normal, sender, e);

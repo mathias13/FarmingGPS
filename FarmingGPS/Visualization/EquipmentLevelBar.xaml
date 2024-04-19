@@ -9,7 +9,7 @@
              x:Name="EquipmentLevelControl">
     <Grid Margin="5,5,2,2">
         <Rectangle Fill="White" Width="Auto" Height="Auto" x:Name="_backGround" x:FieldModifier="private" RadiusX="4" RadiusY="4" Margin="2,2,2,2"/>
-        <Rectangle Fill="LightGreen" HorizontalAlignment="Left" Width="{Binding WidthPercentage, ElementName=EquipmentLevelControl}" Height="Auto" RadiusX="4" RadiusY="4" Margin="2,2,2,2"/>
+        <Rectangle Fill="{Binding FillColor, ElementName=EquipmentLevelControl}" HorizontalAlignment="Left" Width="{Binding WidthPercentage, ElementName=EquipmentLevelControl}" Height="Auto" RadiusX="4" RadiusY="4" Margin="2,2,2,2"/>
         <Border Background="Transparent" BorderBrush="Black" BorderThickness="2" CornerRadius="4"/>
         <TextBlock Margin="10,2,10,2" FontSize="20" TextAlignment="Center" Text="{Binding FillLevelString,ElementName=EquipmentLevelControl}"/>
     </Grid>
