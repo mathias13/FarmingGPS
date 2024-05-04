@@ -534,7 +534,7 @@ namespace FarmingGPS
 
         private void FarmingEvent(object sender, string e)
         {
-            if(e.Contains("EQUIPMENT"))
+            if (e.Contains("EQUIPMENT"))
             {
                 if (_equipment is IEquipmentControl)
                 {
@@ -561,6 +561,8 @@ namespace FarmingGPS
                         ToggleFieldTracker();
                 }
             }
+            else
+                ShowEventMessage(e);
         }
 
         private void ShowEventMessage(string message)
