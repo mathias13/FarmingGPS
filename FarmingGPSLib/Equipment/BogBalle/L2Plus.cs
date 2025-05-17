@@ -20,7 +20,7 @@ namespace FarmingGPSLib.Equipment.BogBalle
 
         private double _endWeight = 0.0;
 
-        private double _prevContent = double.MaxValue;
+        private double _prevContent = double.MinValue;
 
         private Calibrator _calibrator;
         

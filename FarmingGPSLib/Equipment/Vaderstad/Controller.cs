@@ -145,6 +145,8 @@ namespace FarmingGPSLib.Equipment.Vaderstad
 
         private bool _alarm = false;
 
+        private bool _emptying = false;
+
         #endregion
 
         #region Events
@@ -193,6 +195,7 @@ namespace FarmingGPSLib.Equipment.Vaderstad
         public void Stop()
         {
             WriteValue(STOP_COMMAND, string.Empty);
+            _emptying = false;
         }
 
         public void ResetSums()
@@ -217,7 +220,17 @@ namespace FarmingGPSLib.Equipment.Vaderstad
 
         public void SetSpeed(float speed)
         {
-            WriteValue(SPEED_COMMAND, (speed * 10).ToString("0000"));
+            if(_emptying)
+                WriteValue(SPEED_COMMAND, (100.0f).ToString("0000"));
+            else
+                WriteValue(SPEED_COMMAND, (speed * 10).ToString("0000"));
+        }
+
+        public void Emptying()
+        {
+            _emptying = true;
+            SetSpeed(10.0f);
+            Start();
         }
 
         #endregion
@@ -344,9 +357,9 @@ namespace FarmingGPSLib.Equipment.Vaderstad
                         dcb.Parity = 0;
                         dcb.StopBits = 0;
                         if (!Win32Com.SetupComm(portHandle, 8192, 4096))
-                            throw new Exception(String.Format("Failed to set queue settings for port {0}", _comPort));
+                            throw new Exception(String.Format("Failed to setup port {0}", _comPort));
                         if (!Win32Com.SetCommState(portHandle, ref dcb))
-                            throw new Exception(String.Format("Failed to set comm settings for port {0}", _comPort));
+                            throw new Exception(String.Format("Failed to set comm state for port {0}", _comPort));
                         if (!Win32Com.SetCommTimeouts(portHandle, ref commTimeouts))
                             throw new Exception(String.Format("Failed to set comm timeouts for port {0}", _comPort));
                     }
@@ -457,6 +470,13 @@ namespace FarmingGPSLib.Equipment.Vaderstad
                             }
                             _readMessage.Finished = true;
                         }
+                    }
+
+                    if ((_readMessage.Success && _readMessage.Finished) || (writeMessage.Success && writeMessage.Finished))
+                        _noAnswerCount = 0;
+                    else if ((!_readMessage.Success && _readMessage.Finished) || (!writeMessage.Success && writeMessage.Finished))
+                    {
+                        _noAnswerCount++;
                     }
                     else
                         Thread.Sleep(1);         
@@ -609,13 +629,9 @@ namespace FarmingGPSLib.Equipment.Vaderstad
                 Thread.Sleep(1);
 
             if (_readMessage.Success)
-            {
-                _noAnswerCount = 0;
                 return _readMessage.ReturnValue;
-            }
             else
             {
-                _noAnswerCount++;
                 Log.Warn("Failed to read value with command: " + command);
                 return String.Empty;
             }

@@ -115,5 +115,10 @@ namespace FarmingGPS.Usercontrols.Equipments
         {
             _controller.ResetSums();
         }
+
+        private void BTN_EMPTY_Click(object sender, RoutedEventArgs e)
+        {
+            _controller.Emptying();
+        }
     }
 }

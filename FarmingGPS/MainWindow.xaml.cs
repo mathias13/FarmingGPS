@@ -488,6 +488,10 @@ namespace FarmingGPS
                             _database.AddRock(obstacle.Coordinate);
                     }
                 }
+
+                if (_coordinateTimeout.ElapsedMilliseconds > 3000)
+                    _receiverConnected = false;
+
                 Thread.Sleep(1000);
             }
         }
@@ -880,9 +884,6 @@ namespace FarmingGPS
 
                 _lightBarQueue.Enqueue(new LightBarUpdateStruct() { Direction = direction, Distance = Distance.FromMeters(orientationToLine.DistanceTo) });
             }
-
-            if (_coordinateTimeout.ElapsedMilliseconds > 3000)
-                _receiverConnected = false;
 
             _coordinateUpdateStructQueueSecondaryTasks.Enqueue(new CoordinateUpdateStruct() { LeftTip = leftTip, RightTip = rightTip, Center = vechileCoordinate, Heading = actualHeading, Reversing = _vechile.IsReversing });
             _coordinateUpdateStructQueueVisual.Enqueue(new CoordinateUpdateStruct() { LeftTip = leftTip, RightTip = rightTip, Center = vechileCoordinate, Heading = actualHeading, Reversing = _vechile.IsReversing });

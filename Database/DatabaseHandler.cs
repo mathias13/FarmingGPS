@@ -416,14 +416,14 @@ namespace FarmingGPS.Database
             }
         }
 
-        public EquipmentRateFile[] GetEquipmentRate(int fieldId, int equipmentId)
+        public EquipmentRateFile[] GetEquipmentRate(int fieldId, int equipmentId, DateTime fromDate)
         {
             try
             {
                 lock (_syncObject)
                 {
                     var queryResult = from equipmentRate in _databaseContext.EquipmentRateFiles
-                                      where equipmentRate.FieldId == fieldId && equipmentRate.EquipmentId == equipmentId
+                                      where equipmentRate.FieldId == fieldId && equipmentRate.EquipmentId == equipmentId && equipmentRate.Added > fromDate
                                       orderby equipmentRate.Added descending
                                       select equipmentRate;
 

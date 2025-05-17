@@ -18,7 +18,7 @@ namespace FarmingGPSLib.Equipment.Vaderstad
 
         private double _endWeight = 0.0;
 
-        private double _prevContent = double.MaxValue;
+        private double _prevContent = double.MinValue;
 
         private Controller _controller;
         

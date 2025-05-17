@@ -104,7 +104,7 @@ namespace FarmingGPS.Usercontrols
                 return;
             _database = databaseHandler;
 
-            _equipmentRates = databaseHandler.GetEquipmentRate(_fieldChoosen.Value, _equipmentChoosen.Value);
+            _equipmentRates = databaseHandler.GetEquipmentRate(_fieldChoosen.Value, _equipmentChoosen.Value, DateTime.Now.AddYears(-1));
 
             if (_equipmentRates != null)
                 foreach (EquipmentRateFile equipmentRate in _equipmentRates)
